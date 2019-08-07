@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "clark": "^0.0.6",
+    "mongodb": "^3.3.0-beta2",
     "underscore": "^1.9.1"
   },
   "devDependencies": {

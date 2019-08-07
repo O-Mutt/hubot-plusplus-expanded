@@ -1,161 +1,193 @@
+const MongoClient = require('mongodb').MongoClient;
+const mongoUri = process.env.MONGODB_URI || process.env.MONGODB_URL || process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/plusPlus';
+const client = new MongoClient(mongoUri);
+const scoresDocumentName = 'scores';
+const logDocumentName = 'scoreLog';
+
 class ScoreKeeper {
   constructor(robot) {
+    this.db;
     this.robot = robot;
-    const storageLoaded = () => {
-      this.storage = this.robot.brain.data.plusPlus || (this.robot.brain.data.plusPlus = {
-        scores: {},
-        log: {},
-        reasons: {},
-        last: {}
+    client.connect((err) => {
+      if (!err) {
+        this.db = client.db();
+      } else {
+        this.robot.logger.debug(`Error connecting to mongo ${err}`);
+        process.exit();
+      }
+    });
+  }
+
+
+  async getUser(user) {
+    this.robot.logger.debug(`trying to find user ${user}`);
+    const dbUser = await this.db.collection(scoresDocumentName).findOneAndUpdate(
+      { 'name': user },
+      {
+        $setOnInsert: {
+          name: user,
+          score: 0,
+          reasons: {}
+        }
+      }, 
+      { 
+        returnOriginal: false,
+        upsert: true 
       });
-      if (typeof this.storage.last === "string") {
-        this.storage.last = {};
-      }
-
-      return this.robot.logger.debug(`Plus Plus Data Loaded: ${JSON.stringify(this.storage, null, 2)}`);
-    };
-    this.robot.brain.on("loaded", storageLoaded);
-    storageLoaded(); // just in case storage was loaded before we got here
+    this.robot.logger.debug(`findOneAndUpdate found: ${JSON.stringify(dbUser.value)}`);
+    /*if (!dbUser) {
+      dbUser = {
+        scores: 0,
+        reasons: {}
+      };
+    }*/
+    
+    return dbUser.value;
   }
 
+  async saveUser(user, from, room, reason, incrementObject) {
+    const result = await this.db.collection(scoresDocumentName)
+      .findOneAndUpdate(
+        { 'name': user.name }, 
+        { $inc: incrementObject }, 
+        { returnOriginal: false, upsert: true });
+    const updatedUser = result.value;
 
-  getUser(user) {
-    if (!this.storage.scores[user]) { this.storage.scores[user] = 0; }
-    if (!this.storage.reasons[user]) { this.storage.reasons[user] = {}; }
-    return user;
+    this.saveScoreLog(user.name, from, room, reason);
+    
+    this.robot.logger.debug(`Saving user original: [${user.name}: ${user.score}], new [${updatedUser.name}: ${updatedUser.score}]`);
+
+    return [ updatedUser.score, updatedUser.reasons[reason] || "none" ];
   }
 
-  saveUser(user, from, room, reason) {
-    this.saveScoreLog(user, from, room, reason);
-    this.robot.brain.save();
-
-    return [this.storage.scores[user], this.storage.reasons[user][reason] || "none"];
-  }
-
-  add(user, from, room, reason) {
-    if (this.validate(user, from)) {
-      user = this.getUser(user);
-      this.storage.scores[user]++;
-      if (!this.storage.reasons[user]) { this.storage.reasons[user] = {}; }
-
+  async add(user, from, room, reason) {
+    user = await this.getUser(user);
+    if (await this.validate(user, from)) {
+      
+      let incScoreObj = { score: 1 };
       if (reason) {
-        if (!this.storage.reasons[user][reason]) { this.storage.reasons[user][reason] = 0; }
-        this.storage.reasons[user][reason]++;
+        incScoreObj = {
+          score: 1,
+          reasons: {
+            [reason]: 1
+          }
+        };
       }
 
-      return this.saveUser(user, from, room, reason);
+      return await this.saveUser(user, from, room, reason, incScoreObj);
     } else {
       return [null, null];
     }
   }
 
-  subtract(user, from, room, reason) {
-    if (this.validate(user, from)) {
-      user = this.getUser(user);
-      this.storage.scores[user]--;
-      if (!this.storage.reasons[user]) { this.storage.reasons[user] = {}; }
-
+  async subtract(user, from, room, reason) {
+    user = await this.getUser(user);
+    if (await this.validate(user, from)) {
+      
+      let decScoreObj = { score: -1 };
       if (reason) {
-        if (!this.storage.reasons[user][reason]) { this.storage.reasons[user][reason] = 0; }
-        this.storage.reasons[user][reason]--;
+        decScoreObj = {
+          score: -1,
+          reasons: {
+            [reason]: -1
+          }
+        };
       }
 
-      return this.saveUser(user, from, room, reason);
+      return await this.saveUser(user, from, room, reason, decScoreObj);
     } else {
       return [null, null];
     }
   }
 
-  erase(user, from, room, reason) {
-    user = this.getUser(user);
+  async erase(user, from, room, reason) {
+    user = await this.getUser(user);
 
     if (reason) {
-      delete this.storage.reasons[user][reason];
-      this.saveUser(user, from.name, room);
+      //delete this.storage.reasons[user][reason];
+      //this.saveUser(user, from.name, room);
       return true;
     } else {
-      delete this.storage.scores[user];
-      delete this.storage.reasons[user];
+      //delete this.storage.scores[user];
+      //delete this.storage.reasons[user];
       return true;
     }
 
     return false;
   }
 
-  scoreForUser(user) {
-    user = this.getUser(user);
-    return this.storage.scores[user];
+  async scoreForUser(user) {
+    user = await this.getUser(user);
+    return user.score;
   }
 
-  reasonsForUser(user) {
-    user = this.getUser(user);
-    return this.storage.reasons[user];
+  async reasonsForUser(user) {
+    user = await this.getUser(user);
+    return user.reasons;
   }
 
   saveScoreLog(user, from, room, reason) {
-    if (typeof this.storage.log[from] !== "object") {
-      this.storage.log[from] = {};
-    }
-
-    this.storage.log[from][user] = new Date();
-    return this.storage.last[room] = {user, reason};
+    this.db.collection(logDocumentName).insert({
+      'from': from,
+      'to': user,
+      'date': new Date()
+    });
   }
 
   last(room) {
-    const last = this.storage.last[room];
+    /*const last = this.storage.last[room];
     if (typeof last === 'string') {
       return [last, ''];
     } else {
       return [last.user, last.reason];
-    }
+    }*/
   }
 
-  isSpam(user, from) {
-    if (!this.storage.log[from]) { this.storage.log[from] = {}; }
-
-    if (!this.storage.log[from][user]) {
-      return false;
-    }
-
-    const dateSubmitted = this.storage.log[from][user];
-
-    const date = new Date(dateSubmitted);
-    const messageIsSpam = date.setSeconds(date.getSeconds() + 5) > new Date();
-
-    if (!messageIsSpam) {
-      delete this.storage.log[from][user]; //clean it up
+  async isSpam(user, from) {
+    this.robot.logger.debug(`spam check`);
+    const previousScoreExists = await this.db.collection(logDocumentName)
+      .find({
+        'from': from,
+        'to': user }).count(true);
+    this.robot.logger.debug(`spam check result`, previousScoreExists);
+    if (previousScoreExists) {
+      this.robot.logger.debug(`spam check if true`, true);
+      return true;
     }
 
-    return messageIsSpam;
+    return false;
   }
 
-  validate(user, from) {
-    return (user !== from) && (user !== "") && !this.isSpam(user, from);
+  async validate(user, from) {
+    return (user.name !== from) && !await this.isSpam(user.name, from);
   }
 
-  length() {
-    return this.storage.log.length;
+  async top(amount) {
+    const results = await this.db.collection(scoresDocumentName)
+      .find()
+      .sort({ score: -1 })
+      .limit(amount)
+      .toArray();
+
+    this.robot.logger.debug(`Trying to find top scores`);
+
+    return results;
   }
 
-  top(amount) {
-    let score;
-    const tops = [];
-
-    for (let name in this.storage.scores) {
-      score = this.storage.scores[name];
-      tops.push({name, score});
-    }
-
-    return tops.sort((a,b) => b.score - a.score).slice(0,amount);
-  }
-
-  bottom(amount) {
-    const all = this.top(this.storage.scores.length);
-    return all.sort((a,b) => b.score - a.score).reverse().slice(0,amount);
+  async bottom(amount) {
+    const results = await this.db.collection(scoresDocumentName)
+      .find({})
+      .sort({ score: 1 })
+      .limit(amount)
+      .toArray();
+    
+    this.robot.logger.debug(`Trying to find top scores`);
+    
+    return results;
   }
 
   normalize(fn) {
-    const scores = {};
+    /*const scores = {};
 
     _.each(this.storage.scores, function(score, name) {
       scores[name] = fn(score);
@@ -163,7 +195,7 @@ class ScoreKeeper {
     });
 
     this.storage.scores = scores;
-    return this.robot.brain.save();
+    return this.robot.brain.save();*/
   }
 }
 

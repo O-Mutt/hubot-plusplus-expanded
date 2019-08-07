@@ -64,7 +64,7 @@ module.exports = function(robot) {
   /**
    * Functions for responding to commands
    */
-  function upOrDownVote(msg) {
+  async function upOrDownVote(msg) {
     let [ fullMatch, name, operator, reason ] = msg.match;
     const room = msg.message.room
     name = helper.cleanName(name).replace(msg.message._robot_name, '');
@@ -77,9 +77,10 @@ module.exports = function(robot) {
     
     let newScore, reasonScore;
     if (operator === '++') {
-      [ newScore, reasonScore ] = scoreKeeper.add(name, from, room, reason);
+      robot.logger.debug(`add score for ${name}, ${from}`);
+      [ newScore, reasonScore ] = await scoreKeeper.add(name, from, room, reason);
     } else if (operator === '--') {
-      [ newScore, reasonScore ] = scoreKeeper.subtract(name, from, room, reason);
+      [ newScore, reasonScore ] = await scoreKeeper.subtract(name, from, room, reason);
     }
     
     if (newScore === null && reasonScore === null) {
@@ -130,15 +131,15 @@ module.exports = function(robot) {
 
     let messages;
     if (operator === '++') {
-      messages = cleanNames.map((name) => {
-        [ newScore, reasonScore ] = scoreKeeper.add(name, from, room, reason);
+      messages = cleanNames.map(async (name) => {
+        [ newScore, reasonScore ] = await scoreKeeper.add(name, from, room, reason);
         robot.logger.debug(`clean names map [${name}]: ${newScore}, the reason ${reasonScore}`);
         return getMessageForNewScore(newScore, name, operator, reason, reasonScore);
       })
       .filter((message) => !!message);
     } else if (operator === '--') {
-      messages = cleanNames.map((name) => {
-        [ newScore, reasonScore ] = scoreKeeper.subtract(name, from, room, reason);
+      messages = cleanNames.map(async (name) => {
+        [ newScore, reasonScore ] = await scoreKeeper.subtract(name, from, room, reason);
         return getMessageForNewScore(newScore, name, operator, reason, reasonScore);
       })
       .filter((message) => !!message);
@@ -186,11 +187,11 @@ module.exports = function(robot) {
     });
   }
 
-  function respondWithLeaderLoserBoard(msg) {
+  async function respondWithLeaderLoserBoard(msg) {
     const amount = parseInt(msg.match[2]) || 10;
     const topOrBottom = msg.match[1].trim();
     
-    const tops = scoreKeeper[topOrBottom](amount);
+    const tops = await scoreKeeper[topOrBottom](amount);
     
     let message = [];
     if (tops.length > 0) {
