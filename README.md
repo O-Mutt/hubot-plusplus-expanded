@@ -1,6 +1,10 @@
 hubot-plusplus-improved
 ==============
 
+[![Known Vulnerabilities](https://snyk.io//test/github/Mutmatt/hubot-plusplus-improved/badge.svg?targetFile=package.json)](https://snyk.io//test/github/Mutmatt/hubot-plusplus-improved?targetFile=package.json)
+
+[![Build Status](https://travis-ci.org/MutMatt/hubot-plusplus-improved.png?branch=master)](https://travis-ci.org/MutMatt/hubot-plusplus-improved)
+
 Give (or take away) points from people and things, all from the comfort of your
 personal Hubot.
 
