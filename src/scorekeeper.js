@@ -33,11 +33,12 @@ const scoresDocumentName = 'scores';
 const logDocumentName = 'scoreLog';
 
 class ScoreKeeper {
-  constructor(robot, uri, peerFeedbackUrl, furtherFeedbackScore = 10) {
+  constructor(robot, uri, peerFeedbackUrl,  spamMessage, furtherFeedbackScore = 10,) {
     this.uri = uri;
     this.robot = robot;
     this.peerFeedbackUrl = peerFeedbackUrl;
     this.furtherFeedbackScore = parseInt(furtherFeedbackScore, 10);
+    this.spamMessage = spamMessage
   }
 
   async init() {
@@ -92,7 +93,7 @@ class ScoreKeeper {
     return [updatedUser.score, updatedUser.reasons[reason] || 'none'];
   }
 
-  async add(msg, user, from, room, reason) {
+  async add(user, from, room, reason) {
     const toUser = await this.getUser(user);
     if (await this.validate(toUser, from)) {
       let incScoreObj = { score: 1 };
@@ -103,13 +104,13 @@ class ScoreKeeper {
         };
       }
       
-      await this.savePointsGiven(msg, from, toUser.name, 1);
+      await this.savePointsGiven(from, toUser.name, 1);
       return this.saveUser(toUser, from, room, reason, incScoreObj);
     }
     return [null, null];
   }
 
-  async subtract(msg, user, from, room, reason) {
+  async subtract(user, from, room, reason) {
     const toUser = await this.getUser(user);
     if (await this.validate(toUser, from)) {
       let decScoreObj = { score: -1 };
@@ -121,7 +122,7 @@ class ScoreKeeper {
       }
 
       
-      await this.savePointsGiven(msg, from, toUser.name, -1);
+      await this.savePointsGiven(from, toUser.name, -1);
       return this.saveUser(toUser, from, room, reason, decScoreObj);
     }
     return [null, null];
@@ -155,26 +156,29 @@ class ScoreKeeper {
   async saveSpamLog(user, from) {
     const db = await this.getDb();
     db.collection(logDocumentName).insertOne({
-      from,
+      from: from.name,
       to: user,
       date: new Date(),
     });
   }
 
-  async savePointsGiven(msg, from, to, score) {
+  async savePointsGiven(from, to, score) {
     const db = await this.getDb();
     const cleanName = helpers.cleanAndEncode(to);
     
     const incObject = { [`pointsGiven.${cleanName}`]: score };
     const result = await db.collection(scoresDocumentName)
       .findOneAndUpdate(
-        { name: from },
+        { name: from.name },
         { $inc: incObject },
         { returnOriginal: false, upsert: true },
       );
     const updatedUser = result.value;
-    if (updatedUser.pointsGiven[cleanName] % 10 === 0 && score === 1) {
-      msg.reply(`Looks like you've given ${to} quite a few points, maybe you should look at submitting a ${this.peerFeedbackUrl}`)
+    if (updatedUser.pointsGiven[cleanName] % this.furtherFeedbackScore === 0 && score === 1) {
+      this.robot.logger.debug(`trying to send DM about peer feedback to ${from.name}, ${from.id}`);
+      //try { this.robot.messageRoom(from.id.jid, `Looks like you've given ${to} quite a few points, maybe you should look at submitting a ${this.peerFeedbackUrl}`); } catch (e) { this.robot.logger.debug(`$$$$$ failed from.id.jid`); }
+      //try { this.robot.messageRoom(from.name, `Looks like you've given ${to} quite a few points, maybe you should look at submitting a ${this.peerFeedbackUrl}`); } catch (e) { this.robot.logger.debug(`$$$$$ failed from.name`); }
+      try { this.robot.messageRoom(from.id, `Looks like you've given ${to} quite a few points, maybe you should look at submitting a ${this.peerFeedbackUrl}`); } catch (e) { this.robot.logger.debug(`$$$$$ failed from.id`); }
     }
     return;
   }
@@ -194,12 +198,12 @@ class ScoreKeeper {
     const db = await this.getDb();
     const previousScoreExists = await db.collection(logDocumentName)
       .find({
-        from,
+        from: from.name,
         to: user,
       }).count(true);
     this.robot.logger.debug('spam check result', previousScoreExists);
     if (previousScoreExists) {
-      this.robot.logger.debug('spam check if true', true);
+      this.robot.messageRoom(from.id, this.spamMessage);
       return true;
     }
 
@@ -207,7 +211,7 @@ class ScoreKeeper {
   }
 
   async validate(user, from) {
-    return (user.name !== from) && !await this.isSpam(user.name, from);
+    return (user.name !== from.name) && !await this.isSpam(user.name, from);
   }
 
   async top(amount) {
