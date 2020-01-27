@@ -64,7 +64,7 @@ class ScoreKeeper {
           name: user,
           score: 0,
           reasons: {},
-          pointsGiven: {}
+          pointsGiven: {},
         },
       },
       {
@@ -86,8 +86,12 @@ class ScoreKeeper {
       );
     const updatedUser = result.value;
 
-    this.saveSpamLog(user.name, from, room, reason);
-
+    try {
+      this.saveSpamLog(user.name, from.name, room, reason);
+    } catch (e) {
+      this.robot.logger.warn(`failed saving spam log for user ${user.name} from ${from.name} in room ${room} because ${reason}`, e);
+      // ignore
+    }
     this.robot.logger.debug(`Saving user original: [${user.name}: ${user.score} ${user.reasons[reason] || 'none'}], new [${updatedUser.name}: ${updatedUser.score} ${updatedUser.reasons[reason] || 'none'}]`);
 
     return [updatedUser.score, updatedUser.reasons[reason] || 'none'];
@@ -152,10 +156,10 @@ class ScoreKeeper {
   }
 
   // eslint-disable-next-line
-  async saveSpamLog(user, from) {
+  async saveSpamLog(user, fromUser) {
     const db = await this.getDb();
     db.collection(logDocumentName).insertOne({
-      from: from.name,
+      from: fromUser,
       to: user,
       date: new Date(),
     });

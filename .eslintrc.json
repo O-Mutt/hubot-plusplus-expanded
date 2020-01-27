@@ -16,7 +16,7 @@
         "ecmaVersion": 2018
     },
     "rules": {
-        "max-len": [ "error", { "code": 180 }]
+        "max-len": [ "error", { "code": 240 }]
     },
     "plugins": [
         "mocha"
