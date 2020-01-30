@@ -42,7 +42,12 @@ class ScoreKeeper {
   }
 
   async init() {
-    const client = new MongoClient(this.uri, { useNewUrlParser: true });
+    const client = new MongoClient(this.uri,
+      {
+        useNewUrlParser: true,
+        reconnectTries: Number.MAX_VALUE,
+        reconnectInterval: 1000,
+      });
     const connection = await client.connect();
     this.db = connection.db();
   }
