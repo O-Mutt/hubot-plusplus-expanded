@@ -92,7 +92,7 @@ class ScoreKeeper {
     const updatedUser = result.value;
 
     try {
-      this.saveSpamLog(user.name, from.name, room, reason);
+      await this.saveSpamLog(user.name, from.name, room, reason);
     } catch (e) {
       this.robot.logger.warn(`failed saving spam log for user ${user.name} from ${from.name} in room ${room} because ${reason}`, e);
       // ignore
