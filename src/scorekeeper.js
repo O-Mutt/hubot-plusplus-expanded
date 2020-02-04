@@ -92,7 +92,7 @@ class ScoreKeeper {
     const updatedUser = result.value;
 
     try {
-      await this.saveSpamLog(user.name, from.name, room, reason);
+      this.saveSpamLog(user.name, from.name, room, reason);
     } catch (e) {
       this.robot.logger.warn(`failed saving spam log for user ${user.name} from ${from.name} in room ${room} because ${reason}`, e);
       // ignore
@@ -160,7 +160,6 @@ class ScoreKeeper {
     return dbUser.reasons;
   }
 
-  // eslint-disable-next-line
   async saveSpamLog(user, fromUser) {
     const db = await this.getDb();
     db.collection(logDocumentName).insertOne({

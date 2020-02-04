@@ -118,14 +118,16 @@ describe('Helpers', () => {
       ['\'you are the best matt\'--', '\'you are the best matt\'--', '\'you are the best matt\'', '--', undefined],
       ['you are the best matt++ cuz you started #matt-s', 'matt++ cuz you started #matt-s', 'matt', '++', 'you started #matt-s'],
       ['you are the best matt++ cuz you started #matt-s', 'matt++ cuz you started #matt-s', 'matt', '++', 'you started #matt-s'],
-      ['such.a.complex-name-hyphens++', 'such.a.complex-name-hyphens++', 'such.a.complex-name-hyphens', '++', undefined]
+      ['such.a.complex-name-hyphens++', 'such.a.complex-name-hyphens++', 'such.a.complex-name-hyphens', '++', undefined],
+      ['\”such a complex-name-hyphens\” ++', '\”such a complex-name-hyphens\” ++', '\”such a complex-name-hyphens\”', '++', undefined]
     ])
       .it('should hear name [%3$s] up/down [%4$s] with reason [%5$s]', (fullText, firstMatch, name, operator, reason) => {
         const upVoteOrDownVoteRegExp = helpers.createUpDownVoteRegExp();
         expect(upVoteOrDownVoteRegExp).to.be.a('RegExp');
-        expect(fullText.match(upVoteOrDownVoteRegExp)).to.be.an('array');
-        expect(fullText.match(upVoteOrDownVoteRegExp).length).to.equal(4);
-        expect(fullText.match(upVoteOrDownVoteRegExp)).to.deep.equal([firstMatch, name, operator, reason]);
+        const fullMatch = fullText.match(upVoteOrDownVoteRegExp);
+        expect(fullMatch).to.be.an('array');
+        expect(fullMatch.length).to.equal(4);
+        expect(fullMatch).to.deep.equal([firstMatch, name, operator, reason]);
       });
   });
 
