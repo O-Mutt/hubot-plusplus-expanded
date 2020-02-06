@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "clark": "^0.0.6",
-    "mongodb": "^3.3.3",
+    "mongodb": "^3.3.4",
     "request": "^2.88.0",
     "underscore": "^1.9.1"
   },
