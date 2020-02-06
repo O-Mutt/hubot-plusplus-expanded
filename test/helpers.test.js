@@ -150,6 +150,7 @@ describe('Helpers', () => {
       [1, 'matt', '++', 'cool runnings!', 99, 'matt has 1 point, 99 of which are for cool runnings!.'],// this doesn't make sense but the message doesn't care
       [145, 'matt', '++', 'cool runnings!', 99, 'matt has 145 points, 99 of which are for cool runnings!.'],
       [200, 'matt', '++', 'cool runnings!', 99, ':200: matt has 200 points :200:, 99 of which are for cool runnings!.'],
+      [0, 'matt', '++', undefined, 0, ':zero: matt has 0 points :zero:'],
       [28, 'heat', '++', undefined, 0, `podríamos subir un gradin la calefa???\nLa temperatura debería estar en 28 ℃.`],
       [28, 'heat', '--', undefined, 0, `podríamos bajar un gradin la calefa???\nLa temperatura debería estar en 28 ℃.`],
     ])

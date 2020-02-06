@@ -107,7 +107,11 @@ function getMessageForNewScore(score, name, messageOperator, reason, reasonScore
       scoreStr = `${name} has ${score} point`;
     }
     if (score % 100 === 0) {
-      const extraFlare = `:${(score).toString()}:`;
+      let scoreFlareStr = (score).toString();
+      if (score === 0) {
+        scoreFlareStr = 'zero';
+      }
+      const extraFlare = `:${scoreFlareStr}:`;
       scoreStr = `${extraFlare} ${scoreStr} ${extraFlare}`;
       reasonStr = '';
     }
