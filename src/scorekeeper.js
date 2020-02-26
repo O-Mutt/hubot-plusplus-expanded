@@ -75,6 +75,7 @@ class ScoreKeeper {
       {
         returnOriginal: false,
         upsert: true,
+        sort: { score: -1 },
       },
     );
 
@@ -87,7 +88,11 @@ class ScoreKeeper {
       .findOneAndUpdate(
         { name: user.name },
         { $inc: incrementObject },
-        { returnOriginal: false, upsert: true },
+        {
+          returnOriginal: false,
+          upsert: true,
+          sort: { score: -1 },
+        },
       );
     const updatedUser = result.value;
 
@@ -178,7 +183,11 @@ class ScoreKeeper {
       .findOneAndUpdate(
         { name: from.name },
         { $inc: incObject },
-        { returnOriginal: false, upsert: true },
+        {
+          returnOriginal: false,
+          upsert: true,
+          sort: { score: -1 },
+        },
       );
     const updatedUser = result.value;
     if (updatedUser.pointsGiven[cleanName] % this.furtherFeedbackScore === 0 && score === 1) {
