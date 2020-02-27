@@ -39,7 +39,8 @@ const msgSpy = sinon.spy(robotStub, 'messageRoom');
 describe('ScoreKeeper', function() {
   let scoreKeeper;
   before(async function () {
-    const url = await mongoUnit.start();
+    await mongoUnit.start();
+    const url = mongoUnit.getUrl();
     scoreKeeper = new ScoreKeeper(robotStub, url, peerFeedbackUrl, spamMessage);
     return await scoreKeeper.init();
   });

@@ -28,6 +28,7 @@ describe('Helpers', () => {
       ['this.should.work', new Buffer.from('this.should.work').toString('base64')],
       ['      why are you    so good?!', new Buffer.from('why are you    so good?!').toString('base64')],
       ['HELLO', new Buffer.from('hello').toString('base64')],
+      ['“HELLO“', new Buffer.from('“hello“').toString('base64')],
       ['', undefined],
       [undefined, undefined],
     ]).it('should clean the reason %j and base 64 encode it to %j', (reason, encoded) => {
@@ -41,6 +42,7 @@ describe('Helpers', () => {
       [new Buffer.from('this.should.work').toString('base64'), 'this.should.work'],
       [new Buffer.from('why are you    so good?!').toString('base64'), 'why are you    so good?!'],
       [new Buffer.from('hello').toString('base64'), 'hello'],
+      [new Buffer.from('“hello“').toString('base64'), '“hello“'],
       [undefined, undefined],
       [undefined, undefined, undefined],
     ]).it('should decode the reason %j from base 64 encode to %j', (encoded, cleaned) => {
@@ -112,6 +114,7 @@ describe('Helpers', () => {
   describe('createUpDownVoteRegExp', () => {
     forEach([
       ['@matt++', '@matt++', '@matt', '++', undefined],
+      ['@matt++ for being "great"', '@matt++ for being "great"', '@matt', '++', 'being "great"'],
       ['@matt++ cuz he is awesome', '@matt++ cuz he is awesome', '@matt', '++', 'he is awesome'],
       ['\'what are you doing\'--', '\'what are you doing\'--', '\'what are you doing\'', '--', undefined],
       ['you are the best matt--', 'matt--', 'matt', '--', undefined],
@@ -119,7 +122,8 @@ describe('Helpers', () => {
       ['you are the best matt++ cuz you started #matt-s', 'matt++ cuz you started #matt-s', 'matt', '++', 'you started #matt-s'],
       ['you are the best matt++ cuz you started #matt-s', 'matt++ cuz you started #matt-s', 'matt', '++', 'you started #matt-s'],
       ['such.a.complex-name-hyphens++', 'such.a.complex-name-hyphens++', 'such.a.complex-name-hyphens', '++', undefined],
-      ['\”such a complex-name-hyphens\” ++', '\”such a complex-name-hyphens\” ++', '\”such a complex-name-hyphens\”', '++', undefined]
+      ['\”such a complex-name-hyphens\” ++', '\”such a complex-name-hyphens\” ++', '\”such a complex-name-hyphens\”', '++', undefined],
+      ['@matt—', '@matt—', '@matt', '—', undefined]
     ])
       .it('should hear name [%3$s] up/down [%4$s] with reason [%5$s]', (fullText, firstMatch, name, operator, reason) => {
         const upVoteOrDownVoteRegExp = helpers.createUpDownVoteRegExp();

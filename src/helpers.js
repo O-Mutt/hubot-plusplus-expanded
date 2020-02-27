@@ -5,7 +5,9 @@ const reasonConjunctions = process.env.HUBOT_PLUSPLUS_CONJUNCTIONS || 'for|becau
 const votedObject = '((?:[\\-\\w@.-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]+(?<![+-]))|(?:[\'"”][^\'"”]*[\'"”]))';
 // allow for spaces after the thing being upvoted (@user ++)
 const allowSpaceAfterObject = '\\s*';
-const operator = '(\\+\\+|--|—)';
+const positiveOperators = '\\+\\+';
+const negativeOperators = '--|—|\u2013|\u2014';
+const operator = `(${positiveOperators}|${negativeOperators})`;
 const reasonForVote = `(?:\\s+(?:${reasonConjunctions})\\s+(.+))?`;
 const eol = '$';
 
@@ -27,7 +29,8 @@ function cleanAndEncode(str) {
     return undefined;
   }
 
-  const trimmed = str.trim().toLowerCase();
+  // this should fix a dumb issue with mac quotes
+  const trimmed = JSON.parse(JSON.stringify(str.trim().toLowerCase()));
   // eslint-disable-next-line
   const buff = new Buffer.from(trimmed);
   const base64data = buff.toString('base64');
@@ -38,9 +41,10 @@ function decode(str) {
   if (!str) {
     return undefined;
   }
+  
   // eslint-disable-next-line
   const buff = new Buffer.from(str, 'base64');
-  const text = buff.toString('ascii');
+  const text = buff.toString('UTF-8');
   return text;
 }
 
@@ -144,6 +148,8 @@ const helpers = {
   createUpDownVoteRegExp,
   getMessageForNewScore,
   votedObject,
+  positiveOperators,
+  negativeOperators,
 };
 
 module.exports = helpers;

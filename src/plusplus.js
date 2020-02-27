@@ -29,7 +29,7 @@
 
 const clark = require('clark');
 const request = require('request');
-const _ = require('underscore');
+const _ = require('lodash');
 const ScoreKeeper = require('./scorekeeper');
 const helper = require('./helpers');
 
@@ -75,16 +75,17 @@ module.exports = function plusPlus(robot) {
     reason = helper.cleanAndEncode(reason);
     const from = msg.message.user;
 
-    if (name === 'heat' && operator === '++') {
+    if (name === 'heat' && helper.positiveOperators.match(operator)) {
       msg.send('podríamos subir un gradin la calefa???');
     }
 
     let newScore; let
       reasonScore;
-    if (operator === '++') {
+    if (helper.positiveOperators.match(operator)) {
       robot.logger.debug(`add score for ${name}, ${from.name}`);
       [newScore, reasonScore] = await scoreKeeper.add(name, from, room, reason);
-    } else if (operator === '--') {
+    } else if (helper.negativeOperators.match(operator)) {
+      robot.logger.debug(`removing score for ${name}, ${from.name}`);
       [newScore, reasonScore] = await scoreKeeper.subtract(name, from, room, reason);
     }
 
@@ -132,13 +133,13 @@ module.exports = function plusPlus(robot) {
 
     let messages;
     let results;
-    if (operator === '++') {
+    if (helper.positiveOperators.match(operator)) {
       results = cleanNames.map(async (name) => {
         const [newScore, reasonScore] = await scoreKeeper.add(name, from, room, encodedReason);
         robot.logger.debug(`clean names map [${name}]: ${newScore}, the reason ${reasonScore}`);
         return helper.getMessageForNewScore(newScore, name, operator, encodedReason, reasonScore);
       });
-    } else if (operator === '--') {
+    } else if (helper.negativeOperators.match(operator)) {
       results = cleanNames.map(async (name) => {
         const [newScore, reasonScore] = await scoreKeeper.subtract(name, from, room, encodedReason);
         return helper.getMessageForNewScore(newScore, name, operator, encodedReason, reasonScore);
