@@ -81,6 +81,7 @@ module.exports = function plusPlus(robot) {
 
     let newScore; let
       reasonScore;
+      console.error("base value", operator, helper.positiveOperators, helper.negativeOperators, helper.positiveOperators === operator);
     if (helper.positiveOperators === operator) {
       robot.logger.debug(`add score for ${name}, ${from.name}`);
       [newScore, reasonScore] = await scoreKeeper.add(name, from, room, reason);

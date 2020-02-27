@@ -6,6 +6,7 @@ const votedObject = '((?:[\\-\\w@.-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]+(?<
 // allow for spaces after the thing being upvoted (@user ++)
 const allowSpaceAfterObject = '\\s*';
 const positiveOperators = '\\+\\+';
+const positiveOperatorsString = '++';
 const negativeOperators = '--|—|\u2013|\u2014';
 const operator = `(${positiveOperators}|${negativeOperators})`;
 const reasonForVote = `(?:\\s+(?:${reasonConjunctions})\\s+(.+))?`;
@@ -102,7 +103,7 @@ function getMessageForNewScore(score, name, messageOperator, reason, reasonScore
   // if we got a score, then display all the things and fire off events!
   if (typeof score !== 'undefined' && score !== null) {
     if (name === 'heat') {
-      const upOrDown = positiveOperators === messageOperator ? 'subir' : 'bajar';
+      const upOrDown = positiveOperatorsString === messageOperator ? 'subir' : 'bajar';
       return `podríamos ${upOrDown} un gradin la calefa???\nLa temperatura debería estar en ${score} ℃.`;
     }
     let scoreStr = `${name} has ${score} points`;
@@ -148,7 +149,7 @@ const helpers = {
   createUpDownVoteRegExp,
   getMessageForNewScore,
   votedObject,
-  positiveOperators,
+  positiveOperators: positiveOperatorsString,
   negativeOperators,
 };
 
