@@ -102,7 +102,7 @@ function getMessageForNewScore(score, name, messageOperator, reason, reasonScore
   // if we got a score, then display all the things and fire off events!
   if (typeof score !== 'undefined' && score !== null) {
     if (name === 'heat') {
-      const upOrDown = messageOperator === '++' ? 'subir' : 'bajar';
+      const upOrDown = positiveOperators === messageOperator ? 'subir' : 'bajar';
       return `podríamos ${upOrDown} un gradin la calefa???\nLa temperatura debería estar en ${score} ℃.`;
     }
     let scoreStr = `${name} has ${score} points`;
