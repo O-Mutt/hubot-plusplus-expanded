@@ -116,6 +116,7 @@ describe('Helpers', () => {
       ['@matt++', '@matt++', '@matt', '++', undefined],
       ['@matt++ for being "great"', '@matt++ for being "great"', '@matt', '++', 'being "great"'],
       ['@matt++ cuz he is awesome', '@matt++ cuz he is awesome', '@matt', '++', 'he is awesome'],
+      ['@matt++ thanks for being awesome', '@matt++ thanks for being awesome', '@matt', '++', 'being awesome'],
       ['\'what are you doing\'--', '\'what are you doing\'--', '\'what are you doing\'', '--', undefined],
       ['you are the best matt--', 'matt--', 'matt', '--', undefined],
       ['\'you are the best matt\'--', '\'you are the best matt\'--', '\'you are the best matt\'', '--', undefined],
