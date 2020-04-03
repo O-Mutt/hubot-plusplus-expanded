@@ -45,8 +45,7 @@ class ScoreKeeper {
     const client = new MongoClient(this.uri,
       {
         useNewUrlParser: true,
-        reconnectTries: Number.MAX_VALUE,
-        reconnectInterval: 1000,
+        useUnifiedTopology: true,
       });
     const connection = await client.connect();
     this.db = connection.db();
