@@ -36,7 +36,8 @@ const defaultData = {
 const msgSpy = sinon.spy(robotStub, 'messageRoom');
 
 
-describe('ScoreKeeper', function() {
+describe('ScoreKeeper', function scorekeeperTest() {
+  this.timeout('25s');
   let scoreKeeper;
   before(async function () {
     await mongoUnit.start();
@@ -90,11 +91,12 @@ describe('ScoreKeeper', function() {
     });
 
     it('should call for a special reponse if user has 10 "gives"', async () => {
-      const client = new MongoClient(mongoUnit.getUrl(), { useNewUrlParser: true });
+      const url = await mongoUnit.start();
+      const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
       const connection = await client.connect();
       const db = connection.db();
       const encodedName = helpers.cleanAndEncode('derp');
-      db.collection('scores').insertOne({ name: 'matt', score: 1, reasons: {}, pointsGiven: { [encodedName]: 9 } });
+      await db.collection('scores').insertOne({ name: 'matt', score: 9, reasons: {}, pointsGiven: { [encodedName]: 9 } });
       const r = await scoreKeeper.add('derp', { name: 'matt', id: '123' }, 'room', 'because points');
       expect(r).to.be.an('array');
       expect(r).to.deep.equal([1, 1]);
