@@ -1,8 +1,8 @@
-hubot-plusplus-improved
+hubot-plusplus-expanded
 ==============
 
-[![Known Vulnerabilities](https://snyk.io//test/github/Mutmatt/hubot-plusplus-improved/badge.svg?targetFile=package.json)](https://snyk.io//test/github/Mutmatt/hubot-plusplus-improved?targetFile=package.json)
-![Node CI](https://github.com/Mutmatt/hubot-plusplus-improved/workflows/Node%20CI/badge.svg?branch=master)
+[![Known Vulnerabilities](https://snyk.io//test/github/Mutmatt/hubot-plusplus-expanded/badge.svg?targetFile=package.json)](https://snyk.io//test/github/Mutmatt/hubot-plusplus-expanded?targetFile=package.json)
+![Node CI](https://github.com/Mutmatt/hubot-plusplus-expanded/workflows/Node%20CI/badge.svg?branch=master)
 
 Give (or take away) points from people and things, all from the comfort of your
 personal Hubot.
@@ -37,16 +37,16 @@ robot.emit "plus-one", {
 
 Run the following command 
 
-    $ npm install hubot-plusplus-improved
+    $ npm install hubot-plusplus-expanded
 
 Then to make sure the dependencies are installed:
 
     $ npm install
 
-To enable the script, add a `hubot-plusplus-improved` entry to the `external-scripts.json`
+To enable the script, add a `hubot-plusplus-expanded` entry to the `external-scripts.json`
 file (you may need to create this file).
 
-    ["hubot-plusplus-improved"]
+    ["hubot-plusplus-expanded"]
 
 ## Configuration
 
