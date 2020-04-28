@@ -1,6 +1,6 @@
 {
   "name": "hubot-plusplus-expanded",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A hubot script for micro praise",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/Mutmatt/hubot-plusplus-improved.git"
+    "url": "git://github.com/Mutmatt/hubot-plusplus-expanded.git"
   },
   "keywords": [
     "hubot",
@@ -21,11 +21,11 @@
   "author": {
     "name": "Matt Erickson",
     "email": "hubot@matterickson.me",
-    "url": "https://github.com/Mutmatt/hubot-plusplus-improved"
+    "url": "https://github.com/Mutmatt/hubot-plusplus-expanded"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Mutmatt/hubot-plusplus-improved/issues"
+    "url": "https://github.com/Mutmatt/hubot-plusplus-expanded/issues"
   },
   "dependencies": {
     "clark": "^0.0.6",
