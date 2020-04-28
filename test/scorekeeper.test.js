@@ -117,6 +117,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
   });
 
   describe('subtracting', () => {
+    this.timeout('5s');
     it('adds points to a user', async () => {
       const r = await scoreKeeper.subtract('to', { name: 'from', id: '123' }, 'room');
       expect(r[0]).to.equal(-1);

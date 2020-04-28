@@ -42,7 +42,7 @@ function decode(str) {
   if (!str) {
     return undefined;
   }
-  
+
   // eslint-disable-next-line
   const buff = new Buffer.from(str, 'base64');
   const text = buff.toString('UTF-8');

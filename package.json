@@ -1,10 +1,10 @@
 {
-  "name": "hubot-plusplus-improved",
-  "version": "1.5.0",
-  "description": "A hubot script for adding or removing points",
+  "name": "hubot-plusplus-expanded",
+  "version": "1.0.0",
+  "description": "A hubot script for micro praise",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --timeout 5000 **/*.test.* --exit",
+    "test": "mocha --timeout 35000 **/*.test.* --exit",
     "tdd": "mocha --watch **/*.test.*",
     "lint": "eslint src --fix"
   },
