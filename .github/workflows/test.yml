@@ -1,7 +1,6 @@
-name: Test Node.js 8, 10, 12
+on: push
 
-on: 
-  [push]
+name: Test Node.js 8, 10, 12
 
 jobs:
   test:

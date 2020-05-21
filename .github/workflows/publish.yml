@@ -1,8 +1,9 @@
-name: Publish NPM Package
-
-on: 
+on:
   release:
-    types: [published]
+    types:
+      - created
+
+name: Publish NPM Package
 
 jobs:
   publish:

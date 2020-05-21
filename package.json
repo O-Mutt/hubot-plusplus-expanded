@@ -1,6 +1,6 @@
 {
   "name": "hubot-plusplus-expanded",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A hubot script for micro praise",
   "main": "index.js",
   "publishConfig": { "registry": "https://npm.pkg.github.com/" },
