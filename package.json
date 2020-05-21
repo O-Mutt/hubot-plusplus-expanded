@@ -3,7 +3,6 @@
   "version": "1.0.4",
   "description": "A hubot script for micro praise",
   "main": "index.js",
-  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
   "scripts": {
     "test": "mocha --timeout 35000 **/*.test.* --exit",
     "tdd": "mocha --watch **/*.test.*",
