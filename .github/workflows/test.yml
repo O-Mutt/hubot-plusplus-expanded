@@ -1,4 +1,4 @@
-name: Node CI
+name: Test Node.js 8, 10, 12
 
 on: 
   [push]
