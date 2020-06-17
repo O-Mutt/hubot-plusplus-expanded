@@ -4,22 +4,20 @@ hubot-plusplus-expanded
 [![Known Vulnerabilities](https://snyk.io//test/github/Mutmatt/hubot-plusplus-expanded/badge.svg?targetFile=package.json)](https://snyk.io//test/github/Mutmatt/hubot-plusplus-expanded?targetFile=package.json)
 ![Node CI](https://github.com/Mutmatt/hubot-plusplus-expanded/workflows/Node%20CI/badge.svg?branch=master)
 
-Give (or take away) points from people and things, all from the comfort of your
-personal Hubot.
+Give or take away points. Keeps track and even prints out graphs.
+
 
 API
 ---
-
-* `thing++` - add a point to `thing`
-* `++` - add a point to the most previously voted-on thing
-* `thing++ for stuff` - keep track of why you gave thing points
-* `thing--` - remove a point from `thing`
-* `--` - remove a point from the most previously voted-on thing
-* `thing-- for stuff` - keep track of why you removed thing points
-* `hubot erase thing` - erase thing from scoreboard (permanently deletes thing from memory)
-* `hubot erase thing for reason` erase given reason from thing's score board (does not deduct from total score)
-* `hubot top 10` - show the top 10, with a graph of points
-* `hubot score thing` - check the score for and reasons for `thing`
+* \<name>++ [\<reason>] - Increment score for a name (for a reason)
+* \<name>-- [\<reason>] - Decrement score for a name (for a reason)
+* {name1, name2, name3}++ [\<reason>] - Increment score for all names (for a reason)
+* {name1, name2, name3}-- [\<reason>] - Decrement score for all names (for a reason)
+* hubot score <name> - Display the score for a name and some of the reasons
+* hubot top <amount> - Display the top scoring <amount>
+* hubot bottom <amount> - Display the bottom scoring <amount>
+* hubot erase <name> [\<reason>] - Remove the score for a name (for a reason)
+* how much are hubot points worth (how much point) - Shows how much hubot points are worth
 
 Uses Hubot brain. Also exposes the following events, should you wish to hook
 into it to do things like print out funny gifs for point streaks:
@@ -52,23 +50,23 @@ file (you may need to create this file).
 
 Some of the behavior of this plugin is configured in the environment:
 
-`HUBOT_PLUSPLUS_KEYWORD` - alters the word you use to ask for the points, default `score`.
+`HUBOT_PLUSPLUS_KEYWORD` - the keyword that will make hubot give the score for a name and the reasons. For example you can set this to "score|karma" so hubot will answer to both keywords. If not provided will default to `score`
 
 `HUBOT_PLUSPLUS_REASONS` - the text used for the word "reasons" when hubot lists the top-N report, default `reasons`.
 
-`HUBOT_PLUSPLUS_CONJUNCTIONS` - the words that are used as reason conjuntions (*default:* `'for|because|cause|cuz|as|porque'`).
+`HUBOT_PLUSPLUS_REASON_CONJUNCTIONS` - a pipe separated list of conjunctions be used when specifying reasons. The default value is `for|because|cause|cuz|as|porque`. E.g. "foo++ for being awesome" or "foo++ cuz they are awesome".
 
-`MONGO_URI` | `MONGODB_URL` | `MONGOLAB_URI` | `MONGOHQ_URL` - the uri of the mongo instance that hubot will use to store data. (*default:* `'mongodb://localhost/plusPlus'`).
+`MONGODB_URI` | `MONGO_URI` | `MONGODB_URL` | `MONGOLAB_URI` | `MONGOHQ_URL` - the uri of the mongo instance that hubot will use to store data. (*default:* `'mongodb://localhost/plusPlus'`).
 
-`HUBOT_SPAM_MESSAGE` - the text that will be used if a user hits the spam filter. (*default:* `Please slow your roll.`).
+`HUBOT_SPAM_MESSAGE` - the text that will be used if a user hits the spam filter. (*default:* `Looks like you hit the spam filter. Please slow your role.`).
 
-`HUBOT_COMPANY_NAME` - the name of the company that is using hubot (*default:* `company`).
+`HUBOT_COMPANY_NAME` - the name of the company that is using hubot (*default:* `Auth0`).
 
-`HUBOT_PEER_FEEDBACK_URL` - this is the message that will be used if a user gives `HUBOT_FURTHER_FEEDBACK_SCORE` points to another user (*default:* `'Small Improvements' (${companyName}.small-improvements.com)`).
+`HUBOT_PEER_FEEDBACK_URL` - this is the message that will be used if a user gives `HUBOT_FURTHER_FEEDBACK_SCORE` points to another user (*default:* `'Lattice' (https://${companyName}.latticehq.com/)`).
 
 `HUBOT_FURTHER_FEEDBACK_SCORE` - the score that would add a suggestion to provide the user with more feedback (*default:* `10`).
 
-There needs to be an index on the `scoreLogs` table for a TTL or the user will only be able to send one `++|--` before they will be spam blocked. 
+**Required** There needs to be an index on the `scoreLogs` table for a TTL or the user will only be able to send one `++|--` before they will be spam blocked. 
 `db.scoreLog.createIndex( { "date": 1 }, { expireAfterSeconds: 5 } )`
 
 ## Mongo data Layout

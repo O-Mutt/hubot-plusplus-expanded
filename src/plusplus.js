@@ -8,7 +8,7 @@
 //   "score|karma" so hubot will answer to both keywords.
 //   If not provided will default to 'score'.
 //
-//   HUBOT_PLUSPLUS_REASON_CONJUNCTIONS: a pipe separated list of conjuntions to
+//   HUBOT_PLUSPLUS_REASON_CONJUNCTIONS: a pipe separated list of conjunctionss to
 //   be used when specifying reasons. The default value is
 //   "for|because|cause|cuz|as|porque", so it can be used like:
 //   "foo++ for being awesome" or "foo++ cuz they are awesome".
@@ -34,13 +34,13 @@ const ScoreKeeper = require('./scorekeeper');
 const helper = require('./helpers');
 
 module.exports = function plusPlus(robot) {
-  const mongoUri = process.env.MONGODB_URI || process.env.MONGODB_URL || process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/plusPlus';
+  const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGODB_URL || process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/plusPlus';
   const spamMessage = process.env.HUBOT_SPAM_MESSAGE || 'Looks like you hit the spam filter. Please slow your role.';
-  const futherFeedbackSuggestedScore = process.env.HUBOT_FURTHER_FEEDBACK_SCORE;
+  const furtherFeedbackSuggestedScore = process.env.HUBOT_FURTHER_FEEDBACK_SCORE || 10;
   const companyName = process.env.HUBOT_COMPANY_NAME || 'Auth0';
   const peerFeedbackUrl = process.env.HUBOT_PEER_FEEDBACK_URL || `'Lattice' (https://${companyName}.latticehq.com/)`;
   const reasonsKeyword = process.env.HUBOT_PLUSPLUS_REASONS || 'reasons';
-  const scoreKeeper = new ScoreKeeper(robot, mongoUri, peerFeedbackUrl, spamMessage, futherFeedbackSuggestedScore);
+  const scoreKeeper = new ScoreKeeper(robot, mongoUri, peerFeedbackUrl, spamMessage, furtherFeedbackSuggestedScore);
   scoreKeeper.init();
 
   const upOrDownVoteRegexp = helper.createUpDownVoteRegExp();
@@ -79,8 +79,8 @@ module.exports = function plusPlus(robot) {
       msg.send('podríamos subir un gradin la calefa???');
     }
 
-    let newScore; let
-      reasonScore;
+    let newScore;
+    let reasonScore;
     console.error('base value', operator, helper.positiveOperators, helper.negativeOperators, helper.positiveOperators === operator);
     if (helper.positiveOperators === operator) {
       robot.logger.debug(`add score for ${name}, ${from.name}`);

@@ -107,35 +107,45 @@ class ScoreKeeper {
   }
 
   async add(user, from, room, reason) {
-    const toUser = await this.getUser(user);
-    if (await this.validate(toUser, from)) {
-      let incScoreObj = { score: 1 };
-      if (reason) {
-        incScoreObj = {
-          score: 1,
-          [`reasons.${reason}`]: 1,
-        };
-      }
+    let incScoreObj = { score: 1 };
+    try {
+      const toUser = await this.getUser(user);
+      if (await this.validate(toUser, from)) {
+        if (reason) {
+          incScoreObj = {
+            score: 1,
+            [`reasons.${reason}`]: 1,
+          };
+        }
 
-      await this.savePointsGiven(from, toUser.name, 1);
-      return this.saveUser(toUser, from, room, reason, incScoreObj);
+        await this.savePointsGiven(from, toUser.name, 1);
+        const saveResponse = await this.saveUser(toUser, from, room, reason, incScoreObj);
+        return saveResponse;
+      }
+    } catch (e) {
+      this.robot.logger.error(`failed to add point to [${user ? user.name : 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${incScoreObj}]`);
     }
     return [null, null];
   }
 
   async subtract(user, from, room, reason) {
-    const toUser = await this.getUser(user);
-    if (await this.validate(toUser, from)) {
-      let decScoreObj = { score: -1 };
-      if (reason) {
-        decScoreObj = {
-          score: -1,
-          [`reasons.${reason}`]: -1,
-        };
-      }
+    let decScoreObj = { score: -1 };
+    try {
+      const toUser = await this.getUser(user);
+      if (await this.validate(toUser, from)) {
+        if (reason) {
+          decScoreObj = {
+            score: -1,
+            [`reasons.${reason}`]: -1,
+          };
+        }
 
-      await this.savePointsGiven(from, toUser.name, -1);
-      return this.saveUser(toUser, from, room, reason, decScoreObj);
+        await this.savePointsGiven(from, toUser.name, -1);
+        const saveResponse = this.saveUser(toUser, from, room, reason, decScoreObj);
+        return saveResponse;
+      }
+    } catch (e) {
+      this.robot.logger.error(`failed to subtract point to [${user ? user.name : 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${decScoreObj}]`);
     }
     return [null, null];
   }
@@ -166,7 +176,7 @@ class ScoreKeeper {
 
   async saveSpamLog(user, fromUser) {
     const db = await this.getDb();
-    db.collection(logDocumentName).insertOne({
+    await db.collection(logDocumentName).insertOne({
       from: fromUser,
       to: user,
       date: new Date(),
