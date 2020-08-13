@@ -34,7 +34,7 @@
     "mongodb": "^3.5.9",
     "request": "^2.88.2",
     "lodash": "^4.17.15",
-    "snyk": "^1.349.0"
+    "snyk": "^1.364.2"
   },
   "devDependencies": {
     "chai": "^4.2.0",
