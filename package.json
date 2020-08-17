@@ -33,7 +33,7 @@
     "clark": "^0.0.6",
     "mongodb": "^3.5.9",
     "request": "^2.88.2",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.20",
     "snyk": "^1.349.0"
   },
   "devDependencies": {
