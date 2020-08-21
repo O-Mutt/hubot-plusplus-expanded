@@ -18,7 +18,10 @@
     "hubot",
     "points",
     "plus",
-    "karma"
+    "karma",
+    "micro-praise",
+    "bot",
+    "slack"
   ],
   "author": {
     "name": "Matt Erickson",
