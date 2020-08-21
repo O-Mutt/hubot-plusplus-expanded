@@ -1,3 +1,5 @@
+/* eslint-disable new-cap */
+/* eslint-disable mocha/no-setup-in-describe */
 const chai = require('chai');
 const sinon = require('sinon');
 chai.use(require('sinon-chai'));
@@ -7,9 +9,8 @@ const { expect } = chai;
 
 const helpers = require('../src/helpers.js');
 
-
-describe('Helpers', () => {
-  describe('cleanName', () => {
+describe('Helpers', function () {
+  describe('cleanName', function () {
     forEach([
       ['@matt', 'matt'],
       ['hello @derp', 'hello @derp'],
@@ -22,7 +23,7 @@ describe('Helpers', () => {
     });
   });
 
-  describe('cleanAndEncodeReason', () => {
+  describe('cleanAndEncodeReason', function () {
     forEach([
       ['You are the best!', new Buffer.from('you are the best!').toString('base64')],
       ['this.should.work', new Buffer.from('this.should.work').toString('base64')],
@@ -36,7 +37,7 @@ describe('Helpers', () => {
     });
   });
 
-  describe('decodeReason', () => {
+  describe('decodeReason', function () {
     forEach([
       [new Buffer.from('you are the best!').toString('base64'), 'you are the best!'],
       [new Buffer.from('this.should.work').toString('base64'), 'this.should.work'],
@@ -50,7 +51,7 @@ describe('Helpers', () => {
     });
   });
 
-  describe('createAskForScoreRegExp', () => {
+  describe('createAskForScoreRegExp', function () {
     forEach([
       ['score for matt', 'for ', 'matt'],
       ['score matt', undefined, 'matt'],
@@ -68,7 +69,7 @@ describe('Helpers', () => {
       });
   });
 
-  describe('createEraseUserScoreRegExp', () => {
+  describe('createEraseUserScoreRegExp', function () {
     forEach([
       ['erase @matt cuz he is bad', '@matt', 'he is bad'],
       ['erase @frank', '@frank', undefined],
@@ -81,7 +82,7 @@ describe('Helpers', () => {
     });
   });
 
-  describe('createMultiUserVoteRegExp', () => {
+  describe('createMultiUserVoteRegExp', function () {
     forEach([
       ['{@matt, @phil}++', '{@matt, @phil}++', '@matt, @phil', '++', undefined],
       ['{@matt, @phil}-- cuz they are the best team', '{@matt, @phil}-- cuz they are the best team', '@matt, @phil', '--', 'they are the best team'],
@@ -97,7 +98,7 @@ describe('Helpers', () => {
       });
   });
 
-  describe('createTopBottomRegExp', () => {
+  describe('createTopBottomRegExp', function () {
     forEach([
       ['top 10', 'top', '10'],
       ['bottom 5', 'bottom', '5'],
@@ -111,7 +112,7 @@ describe('Helpers', () => {
       });
   });
 
-  describe('createUpDownVoteRegExp', () => {
+  describe('createUpDownVoteRegExp', function () {
     forEach([
       ['@matt++', '@matt++', '@matt', '++', undefined],
       ['@matt++ for being "great"', '@matt++ for being "great"', '@matt', '++', 'being "great"'],
@@ -137,8 +138,8 @@ describe('Helpers', () => {
   });
 
   // This method expects base64 encoded reasons but we are stubbing out the decode method
-  describe('getMessageForNewScore', () => {
-    before(() => {
+  describe('getMessageForNewScore', function () {
+    before(function () {
       const mockHelpers = sinon.stub(helpers, 'decode');
       mockHelpers.returnsArg(0);
     });
@@ -156,13 +157,13 @@ describe('Helpers', () => {
       [145, 'matt', '++', 'cool runnings!', 99, 'matt has 145 points, 99 of which are for cool runnings!.'],
       [200, 'matt', '++', 'cool runnings!', 99, ':200: matt has 200 points :200:, 99 of which are for cool runnings!.'],
       [0, 'matt', '++', undefined, 0, ':zero: matt has 0 points :zero:'],
-      [28, 'heat', '++', undefined, 0, `podríamos subir un gradin la calefa???\nLa temperatura debería estar en 28 ℃.`],
-      [28, 'heat', '--', undefined, 0, `podríamos bajar un gradin la calefa???\nLa temperatura debería estar en 28 ℃.`],
+      [28, 'heat', '++', undefined, 0, 'podríamos subir un gradin la calefa???\nLa temperatura debería estar en 28 ℃.'],
+      [28, 'heat', '--', undefined, 0, 'podríamos bajar un gradin la calefa???\nLa temperatura debería estar en 28 ℃.'],
     ])
-    .it('should take the score %j, name %j, operator %j, reason %j, reason score %j and print %j',
-      (score, name, messageOperator, reason, reasonScore, expectedMessage) => {
-        const message = helpers.getMessageForNewScore(score, name, messageOperator, reason, reasonScore);
-        expect(message).to.equal(expectedMessage);
-    });
+      .it('should take the score %j, name %j, operator %j, reason %j, reason score %j and print %j',
+        (score, name, messageOperator, reason, reasonScore, expectedMessage) => {
+          const message = helpers.getMessageForNewScore(score, name, messageOperator, reason, reasonScore);
+          expect(message).to.equal(expectedMessage);
+        });
   });
 });
