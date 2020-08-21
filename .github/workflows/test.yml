@@ -1,6 +1,6 @@
 on: push
 
-name: Test Node.js 8, 10, 12
+name: Test Node.js 8, 10, 12, 14
 
 jobs:
   test:
@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [8.x, 10.x, 12.x]
+        node-version: [8.x, 10.x, 12.x, 14.x]
         os: [ubuntu-latest]
 
     steps:

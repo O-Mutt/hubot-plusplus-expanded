@@ -18,7 +18,10 @@
     "hubot",
     "points",
     "plus",
-    "karma"
+    "karma",
+    "micro-praise",
+    "bot",
+    "slack"
   ],
   "author": {
     "name": "Matt Erickson",
@@ -31,7 +34,7 @@
   },
   "dependencies": {
     "clark": "^0.0.6",
-    "mongodb": "^3.5.9",
+    "mongodb": "^3.6.0",
     "request": "^2.88.2",
     "lodash": "^4.17.15",
     "snyk": "^1.366.2"
