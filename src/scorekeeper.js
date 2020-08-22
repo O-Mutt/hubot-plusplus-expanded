@@ -123,7 +123,7 @@ class ScoreKeeper {
         return saveResponse;
       }
     } catch (e) {
-      this.robot.logger.error(`failed to add point to [${toUser ? toUser.name : 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(incScoreObj)}]`, e);
+      this.robot.logger.error(`failed to add point to [${user ? user : 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(incScoreObj)}]`, e);
     }
     return [null, null];
   }
@@ -145,7 +145,7 @@ class ScoreKeeper {
         return saveResponse;
       }
     } catch (e) {
-      this.robot.logger.error(`failed to subtract point to [${toUser ? toUser.name : 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(decScoreObj)}]`, e);
+      this.robot.logger.error(`failed to subtract point to [${user ? user : 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(decScoreObj)}]`, e);
     }
     return [null, null];
   }
