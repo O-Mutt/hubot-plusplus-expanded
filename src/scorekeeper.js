@@ -123,7 +123,7 @@ class ScoreKeeper {
         return saveResponse;
       }
     } catch (e) {
-      this.robot.logger.error(`failed to add point to [${user ? user.name : 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(incScoreObj)}]`, e);
+      this.robot.logger.error(`failed to add point to [${toUser ? toUser.name : 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(incScoreObj)}]`, e);
     }
     return [null, null];
   }
@@ -141,11 +141,11 @@ class ScoreKeeper {
         }
 
         await this.savePointsGiven(from, toUser.name, -1);
-        const saveResponse = this.saveUser(toUser, from, room, reason, decScoreObj);
+        const saveResponse = await this.saveUser(toUser, from, room, reason, decScoreObj);
         return saveResponse;
       }
     } catch (e) {
-      this.robot.logger.error(`failed to subtract point to [${user ? user.name : 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(decScoreObj)}]`, e);
+      this.robot.logger.error(`failed to subtract point to [${toUser ? toUser.name : 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(decScoreObj)}]`, e);
     }
     return [null, null];
   }
@@ -155,10 +155,12 @@ class ScoreKeeper {
     const db = await this.getDb();
 
     if (reason) {
+      this.robot.logger.debug(`Erasing score for reason ${reason} for ${dbUser.name} by ${from}`);
       await db.collection(scoresDocumentName)
         .drop({ name: [dbUser], reasons: [reason] }, { justOne: true });
       return true;
     }
+    this.robot.logger.debug(`Erasing all scores for ${dbUser.name} by ${from}`);
     await db.collection(scoresDocumentName)
       .drop({ name: [user] });
     return true;
