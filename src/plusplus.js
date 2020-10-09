@@ -220,7 +220,7 @@ module.exports = function plusPlus(robot) {
 
     if (topOrBottom === 'top') {
       const graphSize = Math.min(tops.length, Math.min(amount, 20));
-      message.splice(0, 0, clark(_.first(_.pluck(tops, 'score'), graphSize)));
+      message.splice(0, 0, clark(_.first(_.map(tops, 'score'), graphSize)));
     }
 
     return msg.send(message.join('\n'));
