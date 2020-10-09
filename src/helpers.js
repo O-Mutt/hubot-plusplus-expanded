@@ -98,7 +98,7 @@ function createUpDownVoteRegExp() {
   return new RegExp(`${votedObject}${allowSpaceAfterObject}${operator}${reasonForVote}${eol}`, 'i');
 }
 
-function getMessageForNewScore(score, name, messageOperator, reason, reasonScore, robotName = '', cakeDay = false) {
+function getMessageForNewScore(score, name, messageOperator, reason, reasonScore, cakeDay, robotName = '') {
   // if we got a score, then display all the things and fire off events!
   if (typeof score !== 'undefined' && score !== null) {
     if (name === 'heat') {
@@ -134,8 +134,9 @@ function getMessageForNewScore(score, name, messageOperator, reason, reasonScore
       }
     }
 
-    if (cakeDay) {
-      cakeDayStr = `\n:birthday: Today is ${name}'s ${robotName} day! :birthday:`;
+    if (this.isCakeDay(cakeDay)) {
+      const yearsAsString = this.getYearsAsString(cakeDay);
+      cakeDayStr = `\n:birthday: Today is ${name}'s ${yearsAsString} ${robotName} day! :birthday:`;
     }
     return `${scoreStr}${reasonStr}${cakeDayStr}`;
   }
@@ -146,12 +147,29 @@ function isCakeDay(dateObject) {
   try {
     const robotDay = new Date(dateObject);
     const today = new Date();
-    if (robotDay.getDay() === today.getDay() && robotDay.getMonth() === today.getMonth()) {
+    if (robotDay.getDate() === today.getDate() && robotDay.getMonth() === today.getMonth()) {
       return true;
     }
   // eslint-disable-next-line no-empty
   } catch (e) { }
   return false;
+}
+
+function getYearsAsString(dateObj) {
+  const robotDay = new Date(dateObj);
+  const today = new Date();
+  const years = today.getFullYear() - robotDay.getFullYear();
+  const lastDigit = years.toString().split('').pop();
+  if (lastDigit === '1') {
+    return `${years}st`;
+  }
+  if (lastDigit === '2') {
+    return `${years}nd`;
+  }
+  if (lastDigit === '3') {
+    return `${years}rd`;
+  }
+  return `${years}th`;
 }
 
 const helpers = {
@@ -168,6 +186,7 @@ const helpers = {
   positiveOperators: positiveOperatorsString,
   negativeOperators,
   isCakeDay,
+  getYearsAsString,
 };
 
 module.exports = helpers;

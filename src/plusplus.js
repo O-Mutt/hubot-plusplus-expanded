@@ -94,8 +94,7 @@ module.exports = function plusPlus(robot) {
       return;
     }
 
-    const isCakeDay = helper.isCakeDay(userObject[`${robot.name}Day`]) || false;
-    const message = helper.getMessageForNewScore(newScore, name, operator, reason, reasonScore, robot.name, isCakeDay);
+    const message = helper.getMessageForNewScore(newScore, name, operator, reason, reasonScore, userObject[`${robot.name}Day`], robot.name);
 
     if (message) {
       msg.send(message);
@@ -139,14 +138,12 @@ module.exports = function plusPlus(robot) {
       results = cleanNames.map(async (name) => {
         const [newScore, reasonScore, userObject] = await scoreKeeper.add(name, from, room, encodedReason);
         robot.logger.debug(`clean names map [${name}]: ${newScore}, the reason ${reasonScore}`);
-        const isCakeDay = helper.isCakeDay(userObject[`${robot.name}Day`]) || false;
-        return helper.getMessageForNewScore(newScore, name, operator, encodedReason, reasonScore, robot.name, isCakeDay);
+        return helper.getMessageForNewScore(newScore, name, operator, encodedReason, reasonScore, userObject[`${robot.name}Day`], robot.name);
       });
     } else if (`(${helper.negativeOperators})`.match(operator)) {
       results = cleanNames.map(async (name) => {
         const [newScore, reasonScore, userObject] = await scoreKeeper.subtract(name, from, room, encodedReason);
-        const isCakeDay = helper.isCakeDay(userObject[`${robot.name}Day`]) || false;
-        return helper.getMessageForNewScore(newScore, name, operator, encodedReason, reasonScore, robot.name, isCakeDay);
+        return helper.getMessageForNewScore(newScore, name, operator, encodedReason, reasonScore, userObject[`${robot.name}Day`], robot.name);
       });
     }
     messages = await Promise.all(results);

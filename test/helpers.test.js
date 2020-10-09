@@ -144,26 +144,29 @@ describe('Helpers', function () {
       mockHelpers.returnsArg(0);
     });
     forEach([
-      [undefined, undefined, undefined, undefined, undefined, false, ''],
-      [1, 'matt', undefined, undefined, undefined, false, 'matt has 1 point.'],
-      [2, 'matt', undefined, undefined, undefined, false, 'matt has 2 points.'],
-      [100, 'matt', undefined, undefined, undefined, false, ':100: matt has 100 points :100:'],
-      [1000, 'matt', undefined, undefined, undefined, false, ':1000: matt has 1000 points :1000:'],
-      [300, 'matt', undefined, undefined, undefined, false, ':300: matt has 300 points :300:'],
-      [45, 'matt', '++', 'winning', 1, false, 'matt has 45 points, 1 of which is for winning.'],
-      [1, 'matt', '++', 'cool runnings!', 1, false, 'matt has 1 point for cool runnings!.'],
-      [1, 'matt', '++', 'cool runnings!', 1, true, 'matt has 1 point for cool runnings!.\n:birthday: Today is matt\'s testBot day! :birthday:'],
-      [99, 'matt', '++', 'cool runnings!', 'none', false, 'matt has 99 points, none of which are for cool runnings!.'],
-      [1, 'matt', '++', 'cool runnings!', 99, false, 'matt has 1 point, 99 of which are for cool runnings!.'], // this doesn't make sense but the message doesn't care
-      [145, 'matt', '++', 'cool runnings!', 99, false, 'matt has 145 points, 99 of which are for cool runnings!.'],
-      [200, 'matt', '++', 'cool runnings!', 99, false, ':200: matt has 200 points :200:, 99 of which are for cool runnings!.'],
-      [0, 'matt', '++', undefined, 0, false, ':zero: matt has 0 points :zero:'],
-      [28, 'heat', '++', undefined, 0, false, 'podríamos subir un gradin la calefa???\nLa temperatura debería estar en 28 ℃.'],
-      [28, 'heat', '--', undefined, 0, false, 'podríamos bajar un gradin la calefa???\nLa temperatura debería estar en 28 ℃.'],
+      [undefined, undefined, undefined, undefined, undefined, undefined, ''],
+      [1, 'matt', undefined, undefined, undefined, undefined, 'matt has 1 point.'],
+      [2, 'matt', undefined, undefined, undefined, undefined, 'matt has 2 points.'],
+      [100, 'matt', undefined, undefined, undefined, undefined, ':100: matt has 100 points :100:'],
+      [1000, 'matt', undefined, undefined, undefined, undefined, ':1000: matt has 1000 points :1000:'],
+      [300, 'matt', undefined, undefined, undefined, undefined, ':300: matt has 300 points :300:'],
+      [45, 'matt', '++', 'winning', 1, undefined, 'matt has 45 points, 1 of which is for winning.'],
+      [1, 'matt', '++', 'cool runnings!', 1, undefined, 'matt has 1 point for cool runnings!.'],
+      [1, 'matt', '++', 'cool runnings!', 1, new Date(), 'matt has 1 point for cool runnings!.\n:birthday: Today is matt\'s 1st testBot day! :birthday:'],
+      [99, 'matt', '++', 'cool runnings!', 'none', undefined, 'matt has 99 points, none of which are for cool runnings!.'],
+      [1, 'matt', '++', 'cool runnings!', 99, undefined, 'matt has 1 point, 99 of which are for cool runnings!.'], // this doesn't make sense but the message doesn't care
+      [145, 'matt', '++', 'cool runnings!', 99, undefined, 'matt has 145 points, 99 of which are for cool runnings!.'],
+      [200, 'matt', '++', 'cool runnings!', 99, undefined, ':200: matt has 200 points :200:, 99 of which are for cool runnings!.'],
+      [0, 'matt', '++', undefined, 0, undefined, ':zero: matt has 0 points :zero:'],
+      [28, 'heat', '++', undefined, 0, undefined, 'podríamos subir un gradin la calefa???\nLa temperatura debería estar en 28 ℃.'],
+      [28, 'heat', '--', undefined, 0, undefined, 'podríamos bajar un gradin la calefa???\nLa temperatura debería estar en 28 ℃.'],
     ])
-      .it('should take the score %j, name %j, operator %j, reason %j, reason score %j and print %j',
-        (score, name, messageOperator, reason, reasonScore, isCake, expectedMessage) => {
-          const message = helpers.getMessageForNewScore(score, name, messageOperator, reason, reasonScore, 'testBot', isCake);
+      .it('should take the score %j, name %j, operator %j, reason %j, reason score %j with cake day %j and print %j',
+        (score, name, messageOperator, reason, reasonScore, cakeDay, expectedMessage) => {
+          if (cakeDay !== undefined) {
+            cakeDay.setFullYear((new Date().getFullYear() - 1));
+          }
+          const message = helpers.getMessageForNewScore(score, name, messageOperator, reason, reasonScore, cakeDay, 'testBot');
           expect(message).to.equal(expectedMessage);
         });
   });
