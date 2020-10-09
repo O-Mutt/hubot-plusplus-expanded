@@ -217,11 +217,7 @@ module.exports = function plusPlus(robot) {
     } else {
       message.push('No scores to keep track of yet!');
     }
-
-    if (topOrBottom === 'top') {
-      const graphSize = Math.min(tops.length, Math.min(amount, 20));
-      message.splice(0, 0, clark(_.first(_.map(tops, 'score'), graphSize)));
-    }
+    message.splice(0, 0, clark(_.map(tops, 'score')));
 
     return msg.send(message.join('\n'));
   }

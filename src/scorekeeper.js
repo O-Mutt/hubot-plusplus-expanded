@@ -259,12 +259,12 @@ class ScoreKeeper {
   async bottom(amount) {
     const db = await this.getDb();
     const results = await db.collection(scoresDocumentName)
-      .find({})
+      .find({ score: { $gt: Number.MIN_SAFE_INTEGER } })
       .sort({ score: 1 })
       .limit(amount)
       .toArray();
 
-    this.robot.logger.debug('Trying to find top scores');
+    this.robot.logger.debug('Trying to find bottom scores');
 
     return results;
   }
