@@ -32,6 +32,7 @@ const request = require('request');
 const _ = require('lodash');
 const ScoreKeeper = require('./scorekeeper');
 const helper = require('./helpers');
+const { random } = require('lodash');
 
 module.exports = function plusPlus(robot) {
   const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGODB_URL || process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/plusPlus';
@@ -173,7 +174,15 @@ module.exports = function plusPlus(robot) {
     const reasons = await scoreKeeper.reasonsForUser(name);
 
     if (typeof reasons === 'object' && Object.keys(reasons).length > 0) {
-      const sampleReasons = _.sampleSize(reasons, 5);
+      const sampleReasons = {};
+      const keys = Object.keys(reasons);
+      // eslint-disable-next-line no-plusplus
+      for (let i = 0; i < 5; i++) {
+        const randomNumber = _.random(0, keys.length);
+        const reason = keys[randomNumber];
+        const value = reasons[keys[randomNumber]];
+        sampleReasons[reason] = value;
+      }
       const reasonMap = _.reduce(sampleReasons, (memo, val, key) => {
         const decodedKey = helper.decode(key);
         const pointStr = val > 1 ? 'points' : 'point';

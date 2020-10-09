@@ -1,6 +1,6 @@
 {
   "name": "hubot-plusplus-expanded",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "A hubot script for micro praise",
   "main": "index.js",
   "engines": {
@@ -37,10 +37,10 @@
   },
   "dependencies": {
     "clark": "^0.0.6",
+    "lodash": "^4.17.20",
     "mongodb": "^3.6.1",
     "request": "^2.88.2",
-    "lodash": "^4.17.20",
-    "snyk": "^1.381.2"
+    "snyk": "^1.413.2"
   },
   "devDependencies": {
     "chai": "^4.2.0",
