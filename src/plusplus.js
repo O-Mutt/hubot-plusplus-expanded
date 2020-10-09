@@ -217,7 +217,9 @@ module.exports = function plusPlus(robot) {
     } else {
       message.push('No scores to keep track of yet!');
     }
-    message.splice(0, 0, clark(_.map(tops, 'score')));
+
+    const graphSize = Math.min(tops.length, Math.min(amount, 20));
+    message.splice(0, 0, clark(_.take(_.map(tops, 'score'), graphSize)));
 
     return msg.send(message.join('\n'));
   }
