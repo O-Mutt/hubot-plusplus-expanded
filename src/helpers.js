@@ -1,4 +1,3 @@
-
 const scoreKeyword = process.env.HUBOT_PLUSPLUS_KEYWORD || 'score|scores|karma';
 const reasonConjunctions = process.env.HUBOT_PLUSPLUS_CONJUNCTIONS || 'for|because|cause|cuz|as|porque|just|thanks for';
 
@@ -99,7 +98,7 @@ function createUpDownVoteRegExp() {
   return new RegExp(`${votedObject}${allowSpaceAfterObject}${operator}${reasonForVote}${eol}`, 'i');
 }
 
-function getMessageForNewScore(score, name, messageOperator, reason, reasonScore) {
+function getMessageForNewScore(score, name, messageOperator, reason, reasonScore, robotName = '', cakeDay = false) {
   // if we got a score, then display all the things and fire off events!
   if (typeof score !== 'undefined' && score !== null) {
     if (name === 'heat') {
@@ -108,6 +107,7 @@ function getMessageForNewScore(score, name, messageOperator, reason, reasonScore
     }
     let scoreStr = `${name} has ${score} points`;
     let reasonStr = '.';
+    let cakeDayStr = '';
     if (score === 1) {
       scoreStr = `${name} has ${score} point`;
     }
@@ -133,9 +133,25 @@ function getMessageForNewScore(score, name, messageOperator, reason, reasonScore
         reasonStr = `, ${reasonScore} of which are for ${decodedReason}.`;
       }
     }
-    return `${scoreStr}${reasonStr}`;
+
+    if (cakeDay) {
+      cakeDayStr = `\n:birthday: Today is ${name}'s ${robotName} day! :birthday:`;
+    }
+    return `${scoreStr}${reasonStr}${cakeDayStr}`;
   }
   return '';
+}
+
+function isCakeDay(dateObject) {
+  try {
+    const robotDay = new Date(dateObject);
+    const today = new Date();
+    if (robotDay.getDay() === today.getDay() && robotDay.getMonth() === today.getMonth()) {
+      return true;
+    }
+  // eslint-disable-next-line no-empty
+  } catch (e) { }
+  return false;
 }
 
 const helpers = {
@@ -151,6 +167,7 @@ const helpers = {
   votedObject,
   positiveOperators: positiveOperatorsString,
   negativeOperators,
+  isCakeDay,
 };
 
 module.exports = helpers;

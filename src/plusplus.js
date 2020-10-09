@@ -79,22 +79,22 @@ module.exports = function plusPlus(robot) {
       msg.send('podríamos subir un gradin la calefa???');
     }
 
-    let newScore;
-    let reasonScore;
+    let newScore; let reasonScore; let userObject;
     console.error('base value', operator, helper.positiveOperators, helper.negativeOperators, helper.positiveOperators === operator);
     if (helper.positiveOperators === operator) {
       robot.logger.debug(`add score for ${name}, ${from.name}`);
-      [newScore, reasonScore] = await scoreKeeper.add(name, from, room, reason);
+      [newScore, reasonScore, userObject] = await scoreKeeper.add(name, from, room, reason);
     } else if (`(${helper.negativeOperators})`.match(operator)) {
       robot.logger.debug(`removing score for ${name}, ${from.name}`);
-      [newScore, reasonScore] = await scoreKeeper.subtract(name, from, room, reason);
+      [newScore, reasonScore, userObject] = await scoreKeeper.subtract(name, from, room, reason);
     }
 
     if (newScore === null && reasonScore === null) {
       return;
     }
 
-    const message = helper.getMessageForNewScore(newScore, name, operator, reason, reasonScore);
+    const isCakeDay = helper.isCakeDay(userObject[`${robot.name}Day`]) || false;
+    const message = helper.getMessageForNewScore(newScore, name, operator, reason, reasonScore, isCakeDay);
 
     if (message) {
       msg.send(message);
@@ -171,7 +171,8 @@ module.exports = function plusPlus(robot) {
     const reasons = await scoreKeeper.reasonsForUser(name);
 
     if (typeof reasons === 'object' && Object.keys(reasons).length > 0) {
-      const reasonMap = _.reduce(reasons, (memo, val, key) => {
+      const sampleReasons = _.sampleSize(reasons, 5);
+      const reasonMap = _.reduce(sampleReasons, (memo, val, key) => {
         const decodedKey = helper.decode(key);
         const pointStr = val > 1 ? 'points' : 'point';
         // eslint-disable-next-line

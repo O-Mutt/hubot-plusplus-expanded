@@ -69,6 +69,7 @@ class ScoreKeeper {
           score: 0,
           reasons: {},
           pointsGiven: {},
+          [`${this.robot.name}Day`]: new Date(),
         },
       },
       {
@@ -83,10 +84,13 @@ class ScoreKeeper {
 
   async saveUser(user, from, room, reason, incrementObject) {
     const db = await this.getDb();
+    await db.collection(scoresDocumentName).updateOne({ name: user.name, [`${this.robot.name}Day`]: { $exists: false } }, { $set: { [`${this.robot.name}Day`]: new Date() } });
     const result = await db.collection(scoresDocumentName)
       .findOneAndUpdate(
         { name: user.name },
-        { $inc: incrementObject },
+        {
+          $inc: incrementObject,
+        },
         {
           returnOriginal: false,
           upsert: true,
@@ -103,7 +107,7 @@ class ScoreKeeper {
     }
     this.robot.logger.debug(`Saving user original: [${user.name}: ${user.score} ${user.reasons[reason] || 'none'}], new [${updatedUser.name}: ${updatedUser.score} ${updatedUser.reasons[reason] || 'none'}]`);
 
-    return [updatedUser.score, updatedUser.reasons[reason] || 'none'];
+    return [updatedUser.score, updatedUser.reasons[reason] || 'none', updatedUser];
   }
 
   async add(user, from, room, reason) {
@@ -123,9 +127,9 @@ class ScoreKeeper {
         return saveResponse;
       }
     } catch (e) {
-      this.robot.logger.error(`failed to add point to [${user ? user : 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(incScoreObj)}]`, e);
+      this.robot.logger.error(`failed to add point to [${user || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(incScoreObj)}]`, e);
     }
-    return [null, null];
+    return [null, null, null];
   }
 
   async subtract(user, from, room, reason) {
@@ -145,9 +149,9 @@ class ScoreKeeper {
         return saveResponse;
       }
     } catch (e) {
-      this.robot.logger.error(`failed to subtract point to [${user ? user : 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(decScoreObj)}]`, e);
+      this.robot.logger.error(`failed to subtract point to [${user || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(decScoreObj)}]`, e);
     }
-    return [null, null];
+    return [null, null, null];
   }
 
   async erase(user, from, room, reason) {
