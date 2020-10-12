@@ -38,7 +38,7 @@
   "dependencies": {
     "clark": "^0.0.6",
     "lodash": "^4.17.20",
-    "mongodb": "^3.6.1",
+    "mongodb": "^3.6.2",
     "request": "^2.88.2",
     "snyk": "^1.413.2"
   },
