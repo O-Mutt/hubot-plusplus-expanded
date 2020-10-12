@@ -136,7 +136,7 @@ function getMessageForNewScore(score, name, messageOperator, reason, reasonScore
 
     if (this.isCakeDay(cakeDay)) {
       const yearsAsString = this.getYearsAsString(cakeDay);
-      cakeDayStr = `\n:birthday: Today is ${name}'s ${yearsAsString} ${robotName} day! :birthday:`;
+      cakeDayStr = `\n:birthday: Today is ${name}'s ${yearsAsString}${robotName} day! :birthday:`;
     }
     return `${scoreStr}${reasonStr}${cakeDayStr}`;
   }
@@ -160,16 +160,19 @@ function getYearsAsString(dateObj) {
   const today = new Date();
   const years = today.getFullYear() - robotDay.getFullYear();
   const lastDigit = years.toString().split('').pop();
+  if (years === 0) {
+    return '';
+  }
   if (lastDigit === '1') {
-    return `${years}st`;
+    return `${years}st `;
   }
   if (lastDigit === '2') {
-    return `${years}nd`;
+    return `${years}nd `;
   }
   if (lastDigit === '3') {
-    return `${years}rd`;
+    return `${years}rd `;
   }
-  return `${years}th`;
+  return `${years}th `;
 }
 
 const helpers = {
