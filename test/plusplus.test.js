@@ -37,15 +37,45 @@ describe.only('PlusPlus', function plusPlusTest() {
     it('should respond with 5 reasons if the user has 5', async function respondWithScore() {
       room.user.say('matt.erickson', '@hubot score for matt.erickson');
       // eslint-disable-next-line new-cap
-      await (new Promise.delay(1000)); // wait for the db call in hubot
+      await (new Promise.delay(20)); // wait for the db call in hubot
       expect(room.messages[1][1]).to.match(/matt\.erickson has 227 points\.\n\n:star: Here are some reasons :star:(\n.*:.*){5}/);
     });
 
     it('should respond with 3 reasons if the user has 3', async function respondWithScore() {
       room.user.say('matt.erickson.min', '@hubot score for matt.erickson.min');
       // eslint-disable-next-line new-cap
-      await (new Promise.delay(1000)); // wait for the db call in hubot
+      await (new Promise.delay(20)); // wait for the db call in hubot
       expect(room.messages[1][1]).to.match(/matt\.erickson\.min has 8 points\.\n\n:star: Here are some reasons :star:(\n.*:.*){3}/);
+    });
+  });
+
+  describe('respondWithUsersBotDay', function respondWithUsersBotDay() {
+    it('should respond with the hubot day when asked', async function respondWithDay() {
+      room.user.say('matt.erickson', 'hubot when is my hubotday?');
+      // eslint-disable-next-line new-cap
+      await (new Promise.delay(30)); // wait for the db call in hubot
+      expect(room.messages[1][1]).to.equal('Your hubotday is 07-09-2020');
+    });
+
+    it('should respond with the hubot day when asked about a different persons hubot day', async function respondWithDay() {
+      room.user.say('phil.bob', 'hubot what day is matt.erickson hubot day?');
+      // eslint-disable-next-line new-cap
+      await (new Promise.delay(30)); // wait for the db call in hubot
+      expect(room.messages[1][1]).to.equal('matt.erickson\'s hubotday is 07-09-2020');
+    });
+
+    it('should respond with the hubot day when asked about a different persons (with \') hubot day', async function respondWithDay() {
+      room.user.say('phil.bob', 'hubot what day is matt.erickson\'s hubot day?');
+      // eslint-disable-next-line new-cap
+      await (new Promise.delay(30)); // wait for the db call in hubot
+      expect(room.messages[1][1]).to.equal('matt.erickson\'s hubotday is 07-09-2020');
+    });
+
+    it('should respond with the hubot day when asked about a different persons (with space \') hubot day', async function respondWithDay() {
+      room.user.say('phil.bob', 'hubot what day is matt.erickson \'s hubot day?');
+      // eslint-disable-next-line new-cap
+      await (new Promise.delay(30)); // wait for the db call in hubot
+      expect(room.messages[1][1]).to.equal('matt.erickson\'s hubotday is 07-09-2020');
     });
   });
 });

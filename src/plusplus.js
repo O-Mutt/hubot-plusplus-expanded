@@ -30,6 +30,7 @@
 const clark = require('clark');
 const request = require('request');
 const _ = require('lodash');
+const moment = require('moment');
 const ScoreKeeper = require('./scorekeeper');
 const helper = require('./helpers');
 
@@ -48,6 +49,7 @@ module.exports = function plusPlus(robot) {
   const multiUserVoteRegExp = helper.createMultiUserVoteRegExp();
   const topOrBottomRegExp = helper.createTopBottomRegExp();
   const eraseScoreRegExp = helper.createEraseUserScoreRegExp();
+  const botDayRegexp = helper.createBotDayRegExp(robot.name);
 
   /* eslint-disable */
   // listen to everything
@@ -58,6 +60,7 @@ module.exports = function plusPlus(robot) {
   // listen for bot tag/ping
   robot.respond(askForScoreRegexp, respondWithScore);
   robot.respond(topOrBottomRegExp, respondWithLeaderLoserBoard);
+  robot.respond(botDayRegexp, respondWithUsersBotDay);
 
   // admin
   robot.respond(eraseScoreRegExp, eraseUserScore);
@@ -222,6 +225,18 @@ module.exports = function plusPlus(robot) {
     message.splice(0, 0, clark(_.take(_.map(tops, 'score'), graphSize)));
 
     return msg.send(message.join('\n'));
+  }
+
+  async function respondWithUsersBotDay(msg) {
+    let userToLookup = msg.message.user.name;
+    let messageName = 'Your';
+    if (msg.match[2].toLowerCase() !== 'my') {
+      userToLookup = helper.cleanName(msg.match[2]);
+      messageName = `${userToLookup}'s`;
+    }
+    const user = await scoreKeeper.getUser(userToLookup);
+    const dateObj = new Date(user[`${robot.name}Day`]);
+    msg.send(`${messageName} ${robot.name}day is ${moment(dateObj).format('MM-DD-yyyy')}`);
   }
 
   async function eraseUserScore(msg) {

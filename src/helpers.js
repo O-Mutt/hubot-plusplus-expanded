@@ -67,6 +67,13 @@ function createEraseUserScoreRegExp() {
 }
 
 /**
+ * 
+ */
+function createBotDayRegExp(botName) {
+  return new RegExp(`(what day|when|which day|which) is (my|\\w+\\.\\w+)( )?('s)? ${botName}( )?day(\\?)?`, 'i');
+}
+
+/**
  * { user1, user2 }++
  * { user1, user2 }--
  */
@@ -190,6 +197,7 @@ const helpers = {
   negativeOperators,
   isCakeDay,
   getYearsAsString,
+  createBotDayRegExp,
 };
 
 module.exports = helpers;
