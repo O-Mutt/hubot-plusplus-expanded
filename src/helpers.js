@@ -136,7 +136,7 @@ function getMessageForNewScore(score, name, messageOperator, reason, reasonScore
 
     if (this.isCakeDay(cakeDay)) {
       const yearsAsString = this.getYearsAsString(cakeDay);
-      cakeDayStr = `\n:birthday: Today is ${name}'s ${yearsAsString}${robotName} day! :birthday:`;
+      cakeDayStr = `\n:birthday: Today is ${name}'s ${yearsAsString}${robotName}day! :birthday:`;
     }
     return `${scoreStr}${reasonStr}${cakeDayStr}`;
   }

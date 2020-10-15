@@ -1,0 +1,17 @@
+{
+	"_id" : "5dsdfeec7ef94a17a032da2fe",
+	"name" : "matt.erickson.min",
+	"score" : 8,
+	"reasons" : {
+		"eWVzPw==" : -1,
+		"aGUgaXMgYW4gZXZpbCB3YXJsb2NrIHdobyBlYXRzIGthbGU=" : -1,
+		"bWFraW5nIHFyYWZ0eSBncmVhdCBhZ2Fpbg==" : 1,
+		"c2hvd2luZyB0aGUgd29ybGQgaG93IGF3ZXNvbWUgcXJhZnR5IGNhbiBiZSE=" : 1
+	},
+	"pointsGiven" : {
+		"ZGFuLmFyaWFz" : 1,
+		"c2ViYQ==" : -4,
+		"cHNhYXMtYXBwbGljYXRpb25z" : 1
+	},
+	"qraftyDay" : "2020-07-09T16:55:04.374Z"
+}

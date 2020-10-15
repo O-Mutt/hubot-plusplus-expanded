@@ -152,7 +152,7 @@ describe('Helpers', function () {
       [300, 'matt', undefined, undefined, undefined, undefined, ':300: matt has 300 points :300:'],
       [45, 'matt', '++', 'winning', 1, undefined, 'matt has 45 points, 1 of which is for winning.'],
       [1, 'matt', '++', 'cool runnings!', 1, undefined, 'matt has 1 point for cool runnings!.'],
-      [1, 'matt', '++', 'cool runnings!', 1, new Date(), 'matt has 1 point for cool runnings!.\n:birthday: Today is matt\'s 1st testBot day! :birthday:'],
+      [1, 'matt', '++', 'cool runnings!', 1, new Date(), 'matt has 1 point for cool runnings!.\n:birthday: Today is matt\'s 1st testBotday! :birthday:'],
       [99, 'matt', '++', 'cool runnings!', 'none', undefined, 'matt has 99 points, none of which are for cool runnings!.'],
       [1, 'matt', '++', 'cool runnings!', 99, undefined, 'matt has 1 point, 99 of which are for cool runnings!.'], // this doesn't make sense but the message doesn't care
       [145, 'matt', '++', 'cool runnings!', 99, undefined, 'matt has 145 points, 99 of which are for cool runnings!.'],
