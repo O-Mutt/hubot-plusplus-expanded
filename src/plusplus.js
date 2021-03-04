@@ -36,7 +36,7 @@ const helper = require('./helpers');
 
 module.exports = function plusPlus(robot) {
   const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGODB_URL || process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/plusPlus';
-  const spamMessage = process.env.HUBOT_SPAM_MESSAGE || 'Looks like you hit the spam filter. Please slow your role.';
+  const spamMessage = process.env.HUBOT_SPAM_MESSAGE || 'Looks like you hit the spam filter. Please slow your roll.';
   const furtherFeedbackSuggestedScore = process.env.HUBOT_FURTHER_FEEDBACK_SCORE || 10;
   const companyName = process.env.HUBOT_COMPANY_NAME || 'Auth0';
   const peerFeedbackUrl = process.env.HUBOT_PEER_FEEDBACK_URL || `'Lattice' (https://${companyName}.latticehq.com/)`;
