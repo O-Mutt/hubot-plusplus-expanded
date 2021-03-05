@@ -67,8 +67,8 @@ class ScoreKeeper {
         $setOnInsert: {
           name: user,
           score: 0,
-          reasons: {},
-          pointsGiven: {},
+          reasons: { },
+          pointsGiven: { },
           [`${this.robot.name}Day`]: new Date(),
         },
       },
@@ -84,7 +84,19 @@ class ScoreKeeper {
 
   async saveUser(user, from, room, reason, incrementObject) {
     const db = await this.getDb();
-    await db.collection(scoresDocumentName).updateOne({ name: user.name, [`${this.robot.name}Day`]: { $exists: false } }, { $set: { [`${this.robot.name}Day`]: new Date() } });
+    await db.collection(scoresDocumentName)
+      .updateOne(
+        {
+          name: user.name,
+          [`${this.robot.name}Day`]: { $exists: false },
+        },
+        {
+          $set: {
+            [`${this.robot.name}Day`]: new Date(),
+          },
+        },
+      );
+
     const result = await db.collection(scoresDocumentName)
       .findOneAndUpdate(
         { name: user.name },
