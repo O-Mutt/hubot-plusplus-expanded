@@ -83,12 +83,10 @@ module.exports = function plusPlus(robot) {
     }
 
     let newScore; let reasonScore; let userObject;
-    console.error('base value', operator, helper.positiveOperators, helper.negativeOperators, helper.positiveOperators === operator);
+    robot.logger.debug(`${operator === helper.positiveOperators ? 'add' : 'remove'} score for [${name}] from [${from && from.name ? from.name : 'missing from name'}]`);
     if (helper.positiveOperators === operator) {
-      robot.logger.debug(`add score for ${name}, ${from.name}`);
       [newScore, reasonScore, userObject] = await scoreKeeper.add(name, from, room, reason);
     } else if (`(${helper.negativeOperators})`.match(operator)) {
-      robot.logger.debug(`removing score for ${name}, ${from.name}`);
       [newScore, reasonScore, userObject] = await scoreKeeper.subtract(name, from, room, reason);
     }
 
@@ -230,6 +228,7 @@ module.exports = function plusPlus(robot) {
   async function respondWithUsersBotDay(msg) {
     let userToLookup = msg.message.user.name;
     let messageName = 'Your';
+    robot.logger.debug(`respond with users bot day ${msg.match}`);
     if (msg.match[2].toLowerCase() !== 'my') {
       userToLookup = helper.cleanName(msg.match[2]);
       messageName = `${userToLookup}'s`;

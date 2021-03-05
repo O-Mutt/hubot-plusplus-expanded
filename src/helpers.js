@@ -67,7 +67,7 @@ function createEraseUserScoreRegExp() {
 }
 
 /**
- * 
+ *
  */
 function createBotDayRegExp(botName) {
   return new RegExp(`(what day|when|which day|which) is (my|\\w+\\.\\w+)( )?('s)? ${botName}( )?day(\\?)?`, 'i');

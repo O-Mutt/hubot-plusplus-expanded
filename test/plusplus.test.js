@@ -11,7 +11,7 @@ const Helper = require('hubot-test-helper');
 const mockMinUser = require('./mock_minimal_user.json');
 const mockFullUser = require('./mock_full_user.json');
 
-describe.only('PlusPlus', function plusPlusTest() {
+describe('PlusPlus', function plusPlusTest() {
   let room; let db; let plusPlusHelper;
   this.timeout('25s');
   before(async function () {
@@ -30,7 +30,7 @@ describe.only('PlusPlus', function plusPlusTest() {
 
   afterEach(async function () {
     room.destroy();
-    await db.collection('scores').remove({});
+    await db.collection('scores').deleteMany({});
   });
 
   describe('getScore', function getScoreTest() {
