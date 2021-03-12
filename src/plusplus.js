@@ -218,7 +218,7 @@ module.exports = function plusPlus(robot) {
 
     Promise.all(promises).then((promise) => msg.send(
       // eslint-disable-next-line no-underscore-dangle
-      `A bitcoin is worth ${promise[1].bitcoin} USD right now (${promise[1].ars} ARS), a satoshi is about ${promise[1].satoshi}, Okta is worth ${promise[0]}, and ${msg.message._robot_name} points are worth nothing!`
+      `A bitcoin is worth ${promise[1].bitcoin} USD right now (${promise[1].ars} ARS), a satoshi is about ${promise[1].satoshi}, Okta is worth ${promise[0]}/share, and ${msg.message._robot_name} points are worth nothing!`
     // eslint-disable-next-line no-underscore-dangle
     )).catch(() => msg.send(`Seems like we are having trouble getting some data... Don't worry, though, your ${msg.message._robot_name} points are still worth nothing!`));
   }
