@@ -1,6 +1,6 @@
 {
   "name": "hubot-plusplus-expanded",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A hubot script for micro praise",
   "main": "index.js",
   "engines": {
@@ -58,7 +58,6 @@
     "mocha": "^8.3.2",
     "mocha-each": "^2.0.1",
     "mock-env": "^0.2.0",
-    "mockuire": "^2.1.1",
     "mongo-unit": "^2.0.1",
     "sinon": "^9.2.4",
     "sinon-chai": "^3.5.0"
