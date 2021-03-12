@@ -54,7 +54,7 @@ module.exports = function plusPlus(robot) {
   /* eslint-disable */
   // listen to everything
   robot.hear(upOrDownVoteRegexp, upOrDownVote);
-  robot.hear(/^[Hh]ow\s*much\s*.*point.*$/, tellHowMuchPointsAreWorth);
+  robot.hear(new RegExp(`^how\s*much\s*.*point.*$`, 'i'), tellHowMuchPointsAreWorth);
   robot.hear(multiUserVoteRegExp, multipleUsersVote);
 
   // listen for bot tag/ping

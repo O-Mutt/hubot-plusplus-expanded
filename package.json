@@ -41,11 +41,11 @@
     "moment": "^2.29.1",
     "mongodb": "^3.6.4",
     "request": "^2.88.2",
-    "snyk": "^1.473.0"
+    "snyk": "^1.483.0"
   },
   "devDependencies": {
     "bluebird": "^3.7.2",
-    "chai": "^4.3.3",
+    "chai": "^4.3.4",
     "eslint": "^7.21.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-standard": "^16.0.2",
@@ -55,7 +55,7 @@
     "eslint-plugin-promise": "^4.3.1",
     "eslint-plugin-standard": "^4.0.1",
     "hubot-test-helper": "^1.9.0",
-    "mocha": "^8.3.0",
+    "mocha": "^8.3.2",
     "mocha-each": "^2.0.1",
     "mock-env": "^0.2.0",
     "mockuire": "^2.1.1",
