@@ -28,7 +28,7 @@
 // Author: Mutmatt
 
 const clark = require('clark');
-const request = require('request');
+const { default: axios } = require('axios');
 const _ = require('lodash');
 const moment = require('moment');
 const ScoreKeeper = require('./scorekeeper');
@@ -54,7 +54,7 @@ module.exports = function plusPlus(robot) {
   /* eslint-disable */
   // listen to everything
   robot.hear(upOrDownVoteRegexp, upOrDownVote);
-  robot.hear(new RegExp(`^how\s*much\s*.*point.*$`, 'i'), tellHowMuchPointsAreWorth);
+  robot.hear(new RegExp(`how much .*point.*`, 'i'), tellHowMuchPointsAreWorth);
   robot.hear(multiUserVoteRegExp, multipleUsersVote);
 
   // listen for bot tag/ping
@@ -194,12 +194,37 @@ module.exports = function plusPlus(robot) {
   }
 
   function tellHowMuchPointsAreWorth(msg) {
-    request.get('https://api.coindesk.com/v1/bpi/currentprice/ARS.json', { json: true }, (err, res, body) => {
-      const bitcoin = body.bpi.USD.rate_float;
-      const ars = body.bpi.ARS.rate_float;
+    msg.send("getting the quote");
+    const promises = [];
+    promises.push(
+      axios({
+        url: 'https://www.marketwatch.com/investing/stock/okta',
+        transformResponse: [data => {
+          const startIndex = data.indexOf('<meta name="price" content="');
+          const oktaStockQuota = data.substring(startIndex + 28, startIndex + 35);
+          return oktaStockQuota;
+        }]
+      }).then(response => {
+        return response.data;
+      })
+    );
+    promises.push(
+      axios({
+        url: 'https://api.coindesk.com/v1/bpi/currentprice/ARS.json'
+      }).then(resp => {
+      const bitcoin = resp.data.bpi.USD.rate_float;
+      const ars = resp.data.bpi.ARS.rate_float;
       const satoshi = bitcoin / 1e8;
+      return { bitcoin, ars, satoshi };
+      })
+    );
+      
+    Promise.all(promises).then(promise => {
       // eslint-disable-next-line
-      return msg.send(`A bitcoin is worth ${bitcoin} USD right now (${ars} ARS), a satoshi is about ${satoshi} and ${msg.message._robot_name} points are worth nothing!`);
+      return msg.send(`A bitcoin is worth ${promise[1].bitcoin} USD right now (${promise[1].ars} ARS), a satoshi is about ${promise[1].satoshi}, Okta is worth ${promise[0]}, and ${msg.message._robot_name} points are worth nothing!`);
+    }).catch(err => {
+      msg.send(err);
+      return msg.send(`Seems like we are having trouble getting some data... Don\'t worry, though, your ${msg.message._robot_name} points are still worth nothing!`);
     });
   }
 
