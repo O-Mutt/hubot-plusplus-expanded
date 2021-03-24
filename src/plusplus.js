@@ -194,33 +194,17 @@ module.exports = function plusPlus(robot) {
   }
 
   function tellHowMuchPointsAreWorth(msg) {
-    const promises = [];
-    promises.push(
-      axios({
-        url: 'https://www.marketwatch.com/investing/stock/okta',
-        transformResponse: [(data) => {
-          const startIndex = data.indexOf('<meta name="price" content="');
-          const oktaStockQuota = data.substring(startIndex + 28, startIndex + 35);
-          return oktaStockQuota;
-        }],
-      }).then((response) => response.data),
-    );
-    promises.push(
-      axios({
-        url: 'https://api.coindesk.com/v1/bpi/currentprice/ARS.json'
-      }).then((resp) => {
-        const bitcoin = resp.data.bpi.USD.rate_float;
-        const ars = resp.data.bpi.ARS.rate_float;
-        const satoshi = bitcoin / 1e8;
-        return { bitcoin, ars, satoshi };
-      }),
-    );
-
-    Promise.all(promises).then((promise) => msg.send(
+    axios({
+      url: 'https://api.coindesk.com/v1/bpi/currentprice/ARS.json'
+    }).then((resp) => {
+      const bitcoin = resp.data.bpi.USD.rate_float;
+      const ars = resp.data.bpi.ARS.rate_float;
+      const satoshi = bitcoin / 1e8;
       // eslint-disable-next-line no-underscore-dangle
-      `A bitcoin is worth ${promise[1].bitcoin} USD right now (${promise[1].ars} ARS), a satoshi is about ${promise[1].satoshi}, Okta is worth ${promise[0]}/share, and ${msg.message._robot_name} points are worth nothing!`
-    // eslint-disable-next-line no-underscore-dangle
-    )).catch(() => msg.send(`Seems like we are having trouble getting some data... Don't worry, though, your ${msg.message._robot_name} points are still worth nothing!`));
+      return msg.send(`A bitcoin is worth ${bitcoin} USD right now (${ars} ARS), a satoshi is about ${satoshi}, and ${msg.message._robot_name} points are worth nothing!`);
+    })
+      // eslint-disable-next-line no-underscore-dangle
+      .catch(() => msg.send(`Seems like we are having trouble getting some data... Don't worry, though, your ${msg.message._robot_name} points are still worth nothing!`));
   }
 
   async function respondWithLeaderLoserBoard(msg) {
