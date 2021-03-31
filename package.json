@@ -41,7 +41,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "mongodb": "^3.6.4",
-    "snyk": "^1.483.0"
+    "snyk": "^1.518.0"
   },
   "devDependencies": {
     "bluebird": "^3.7.2",
