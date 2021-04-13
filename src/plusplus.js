@@ -39,7 +39,7 @@ module.exports = function plusPlus(robot) {
   const spamMessage = process.env.HUBOT_SPAM_MESSAGE || 'Looks like you hit the spam filter. Please slow your roll.';
   const furtherFeedbackSuggestedScore = process.env.HUBOT_FURTHER_FEEDBACK_SCORE || 10;
   const companyName = process.env.HUBOT_COMPANY_NAME || 'Auth0';
-  const peerFeedbackUrl = process.env.HUBOT_PEER_FEEDBACK_URL || `'Lattice' (https://${companyName}.latticehq.com/)`;
+  const peerFeedbackUrl = process.env.HUBOT_PEER_FEEDBACK_URL || `praise in Lattice (https://${companyName}.latticehq.com/)`;
   const reasonsKeyword = process.env.HUBOT_PLUSPLUS_REASONS || 'reasons';
   const scoreKeeper = new ScoreKeeper(robot, mongoUri, peerFeedbackUrl, spamMessage, furtherFeedbackSuggestedScore);
   scoreKeeper.init();
