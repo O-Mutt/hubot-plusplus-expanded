@@ -1,6 +1,6 @@
 on: [push, pull_request]
 
-name: Test Node.js 12, 14, 15
+name: Test Node.js 12, 14
 
 jobs:
   test:
@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 15.x]
+        node-version: [12.x, 14.x]
         os: [ubuntu-latest]
 
     steps:
