@@ -33,13 +33,15 @@ robot.emit "plus-one", {
 
 ## Installation
 
-Run the following command 
+This is a plugin for Hubot and should be installed as a consumed package by a hubot.
 
-    $ npm install hubot-plusplus-expanded
+Run the following command
+
+  `npm install hubot-plusplus-expanded`
 
 Then to make sure the dependencies are installed:
 
-    $ npm install
+  `npm install`
 
 To enable the script, add a `hubot-plusplus-expanded` entry to the `external-scripts.json`
 file (you may need to create this file).
@@ -98,6 +100,14 @@ PointsGivenObject:
   [to]: int
 }
 ```
+
+## Testing
+
+Individual run:
+`npm run test`
+
+Tdd:
+`npm run tdd`
 
 ## Known issue
 As of now there is an issue that has shown up a couple times without a root cause. The `$setOnInsert` excludes the `reasons: {}` object. The fix, currently, is to identify the bad document in mongo `db.scores.find({ "reasons: null"});` and update them  `db.scores.updateMany({ "reasons: null"}, { $set: { "reasons": {} });`
