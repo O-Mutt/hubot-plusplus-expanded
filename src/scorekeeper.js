@@ -219,7 +219,7 @@ class ScoreKeeper {
     const updatedUser = result.value;
     if (updatedUser.pointsGiven[cleanName] % this.furtherFeedbackScore === 0 && score === 1) {
       this.robot.logger.debug(`${from.name} has sent a lot of points to ${to} suggesting further feedback`);
-      this.robot.messageRoom(from.id, `Looks like you've given ${to} quite a few points, maybe you should look at submitting a ${this.peerFeedbackUrl}`);
+      this.robot.messageRoom(from.id, `Looks like you've given ${to} quite a few points, maybe you should look at submitting ${this.peerFeedbackUrl}`);
     }
   }
 

@@ -113,7 +113,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
       expect(r[1]).to.equal(1);
       expect(typeof r[2]).to.equal('object');
       expect(msgSpy.called).to.equal(true);
-      expect(msgSpy).to.have.been.calledWith('123', `Looks like you've given derp quite a few points, maybe you should look at submitting a ${peerFeedbackUrl}`);
+      expect(msgSpy).to.have.been.calledWith('123', `Looks like you've given derp quite a few points, maybe you should look at submitting ${peerFeedbackUrl}`);
     });
 
     it('adds more points to a user for a reason', async function () {
