@@ -2,7 +2,7 @@ hubot-plusplus-expanded
 ==============
 
 [![Known Vulnerabilities](https://snyk.io//test/github/Mutmatt/hubot-plusplus-expanded/badge.svg?targetFile=package.json)](https://snyk.io//test/github/Mutmatt/hubot-plusplus-expanded?targetFile=package.json)
-![Node CI](https://github.com/Mutmatt/hubot-plusplus-expanded/workflows/Node%20CI/badge.svg?branch=master)
+![Node CI](https://github.com/Mutmatt/hubot-plusplus-expanded/workflows/Node%20CI/badge.svg?branch=main)
 
 Give or take away points. Keeps track and even prints out graphs.
 
