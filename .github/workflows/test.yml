@@ -1,8 +1,14 @@
-on: [push, pull_request]
+on: 
+  push:
+    branches: [master]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [master]
 
 name: Test Node.js 12, 14
 
 jobs:
+
   test:
     name: Test on node ${{ matrix.node-version }} and ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
