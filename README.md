@@ -72,20 +72,20 @@ Some of the behavior of this plugin is configured in the environment:
 `db.scoreLog.createIndex( { "date": 1 }, { expireAfterSeconds: 5 } )`
 
 ## Mongo data Layout
-```json
+``` javascript
 scores: [
   {
-    name: string
-    score: int
-    reasons: ReasonsObject
+    name: string,
+    score: int,
+    reasons: ReasonsObject,
     pointsGiven: PointsGivenObject
   }
 ]
 
 scoreLog: [
   {
-    from: string
-    to: string
+    from: string,
+    to: string,
     date: datetime
   }
 ]
