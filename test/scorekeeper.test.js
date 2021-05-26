@@ -12,7 +12,7 @@ const helpers = require('../src/helpers');
 const ScoreKeeper = require('../src/scorekeeper.js');
 
 const peerFeedbackUrl = '\'Small Improvements\' (company.small-improvements.com)';
-const spamMessage = 'Please slow your role.';
+const spamMessage = 'Please slow your roll.';
 const robotStub = {
   brain: {
     data: { },
@@ -22,6 +22,8 @@ const robotStub = {
   },
   logger: {
     debug() {},
+    info() {},
+    warn() {},
     error() {},
   },
   name: 'testBot',
@@ -43,8 +45,10 @@ describe('ScoreKeeper', function scorekeeperTest() {
   before(async function () {
     await mongoUnit.start();
     const url = mongoUnit.getUrl();
-    scoreKeeper = new ScoreKeeper(robotStub, url, peerFeedbackUrl, spamMessage);
-    return scoreKeeper.init();
+    scoreKeeper = new ScoreKeeper({
+      robot: robotStub, mongoUri: url, peerFeedbackUrl, spamMessage, furtherFeedbackSuggestedScore: 10,
+    });
+    return true;
   });
 
   beforeEach(async function () { return mongoUnit.load(defaultData); });
@@ -100,7 +104,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
       expect(msgSpy).to.have.been.calledWith('123', spamMessage);
     });
 
-    it('should call for a special reponse if user has 10 "gives"', async function () {
+    it('should call for a special response if user has 10 "gives"', async function () {
       const url = await mongoUnit.start();
       const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
       const connection = await client.connect();

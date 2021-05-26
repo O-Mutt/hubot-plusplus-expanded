@@ -1,131 +1,26 @@
-const { MongoClient } = require('mongodb');
-const helpers = require('./helpers');
-
-/*
- * scores: []
- * {
- *   name: string
- *   score: int
- *   reasons: ReasonsObject
- *   pointsGiven: PointsGivenObject
- * }
- *
- * ReasonsObject:
- * {
- *   [reason]: int
- * }
- *
- * PointsGivenObject:
- * {
- *   [to]: int
- * }
- */
-const scoresDocumentName = 'scores';
-
-/*
- * scoreLog: []
- * {
- *   from: string
- *   to: string
- *   date: datetime
- * }
- */
-const logDocumentName = 'scoreLog';
+const DatabaseService = require('./services/database');
 
 class ScoreKeeper {
-  constructor(robot, uri, peerFeedbackUrl, spamMessage, furtherFeedbackScore = 10) {
-    this.uri = uri;
-    this.robot = robot;
-    this.peerFeedbackUrl = peerFeedbackUrl;
-    this.furtherFeedbackScore = parseInt(furtherFeedbackScore, 10);
-    this.spamMessage = spamMessage;
-  }
-
-  async init() {
-    const client = new MongoClient(this.uri,
-      {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      });
-    const connection = await client.connect();
-    this.db = connection.db();
-  }
-
-  async getDb() {
-    if (!this.db) {
-      await this.init();
-    }
-    return this.db;
-  }
-
-  async getUser(user) {
-    this.robot.logger.debug(`trying to find user ${user}`);
-    const db = await this.getDb();
-    const dbUser = await db.collection(scoresDocumentName).findOneAndUpdate(
-      { name: user },
-      {
-        $setOnInsert: {
-          name: user,
-          score: 0,
-          reasons: { },
-          pointsGiven: { },
-          [`${this.robot.name}Day`]: new Date(),
-        },
-      },
-      {
-        returnOriginal: false,
-        upsert: true,
-        sort: { score: -1 },
-      },
-    );
-
-    return dbUser.value;
-  }
-
-  async saveUser(user, from, room, reason, incrementObject) {
-    const db = await this.getDb();
-    await db.collection(scoresDocumentName)
-      .updateOne(
-        {
-          name: user.name,
-          [`${this.robot.name}Day`]: { $exists: false },
-        },
-        {
-          $set: {
-            [`${this.robot.name}Day`]: new Date(),
-          },
-        },
-      );
-
-    const result = await db.collection(scoresDocumentName)
-      .findOneAndUpdate(
-        { name: user.name },
-        {
-          $inc: incrementObject,
-        },
-        {
-          returnOriginal: false,
-          upsert: true,
-          sort: { score: -1 },
-        },
-      );
-    const updatedUser = result.value;
-
-    try {
-      this.saveSpamLog(user.name, from.name, room, reason);
-    } catch (e) {
-      this.robot.logger.warn(`failed saving spam log for user ${user.name} from ${from.name} in room ${room} because ${reason}`, e);
-      // ignore
-    }
-    this.robot.logger.debug(`Saving user original: [${user.name}: ${user.score} ${user.reasons[reason] || 'none'}], new [${updatedUser.name}: ${updatedUser.score} ${updatedUser.reasons[reason] || 'none'}]`);
-
-    return [updatedUser.score, updatedUser.reasons[reason] || 'none', updatedUser];
+  /*
+  * params.robot
+  * params.peerFeedbackUrl
+  * params.furtherFeedbackSuggestedScore
+  * params.spamMessage
+  * params.mongoUri
+  */
+  constructor(params) {
+    this.robot = params.robot;
+    this.peerFeedbackUrl = params.peerFeedbackUrl;
+    this.furtherFeedbackScore = parseInt(params.furtherFeedbackSuggestedScore, 10);
+    this.spamMessage = params.spamMessage;
+    this.databaseService = new DatabaseService(params);
+    this.databaseService.init(); // this is async but it is just initializing the db connection, we let it run
   }
 
   async add(user, from, room, reason) {
     let incScoreObj = { score: 1 };
     try {
-      const toUser = await this.getUser(user);
+      const toUser = await this.databaseService.getUser(user);
       if (await this.validate(toUser, from)) {
         if (reason) {
           incScoreObj = {
@@ -134,10 +29,13 @@ class ScoreKeeper {
           };
         }
 
-        await this.savePointsGiven(from, toUser.name, 1);
-        const saveResponse = await this.saveUser(toUser, from, room, reason, incScoreObj);
+        await this.databaseService.savePointsGiven(from, toUser.name, 1);
+        const saveResponse = await this.databaseService.saveUser(toUser, from, room, reason, incScoreObj);
         return saveResponse;
       }
+
+      // this add is invalid
+      this.robot.messageRoom(from.id, this.spamMessage);
     } catch (e) {
       this.robot.logger.error(`failed to add point to [${user || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(incScoreObj)}]`, e);
     }
@@ -147,7 +45,7 @@ class ScoreKeeper {
   async subtract(user, from, room, reason) {
     let decScoreObj = { score: -1 };
     try {
-      const toUser = await this.getUser(user);
+      const toUser = await this.databaseService.getUser(user);
       if (await this.validate(toUser, from)) {
         if (reason) {
           decScoreObj = {
@@ -156,73 +54,40 @@ class ScoreKeeper {
           };
         }
 
-        await this.savePointsGiven(from, toUser.name, -1);
-        const saveResponse = await this.saveUser(toUser, from, room, reason, decScoreObj);
+        await this.databaseService.savePointsGiven(from, toUser.name, -1);
+        const saveResponse = await this.databaseService.saveUser(toUser, from, room, reason, decScoreObj);
         return saveResponse;
       }
+
+      // this subtraction is invalid
+      this.robot.messageRoom(from.id, this.spamMessage);
     } catch (e) {
       this.robot.logger.error(`failed to subtract point to [${user || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(decScoreObj)}]`, e);
     }
     return [null, null, null];
   }
 
-  async erase(user, from, room, reason) {
-    const dbUser = await this.getUser(user);
-    const db = await this.getDb();
-
-    if (reason) {
-      this.robot.logger.debug(`Erasing score for reason ${reason} for ${dbUser.name} by ${from}`);
-      await db.collection(scoresDocumentName)
-        .drop({ name: [dbUser], reasons: [reason] }, { justOne: true });
-      return true;
-    }
-    this.robot.logger.debug(`Erasing all scores for ${dbUser.name} by ${from}`);
-    await db.collection(scoresDocumentName)
-      .drop({ name: [user] });
-    return true;
-  }
-
   async scoreForUser(user) {
-    const dbUser = await this.getUser(user);
+    const dbUser = await this.databaseService.getUser(user);
     return dbUser.score;
   }
 
   async reasonsForUser(user) {
-    const dbUser = await this.getUser(user);
+    const dbUser = await this.databaseService.getUser(user);
     return dbUser.reasons;
   }
 
-  async saveSpamLog(user, fromUser) {
-    const db = await this.getDb();
-    await db.collection(logDocumentName).insertOne({
-      from: fromUser,
-      to: user,
-      date: new Date(),
-    });
-  }
-
-  async savePointsGiven(from, to, score) {
-    const db = await this.getDb();
-    const cleanName = helpers.cleanAndEncode(to);
-
-    const incObject = { [`pointsGiven.${cleanName}`]: score };
-    const result = await db.collection(scoresDocumentName)
-      .findOneAndUpdate(
-        { name: from.name },
-        { $inc: incObject },
-        {
-          returnOriginal: false,
-          upsert: true,
-          sort: { score: -1 },
-        },
-      );
-    const updatedUser = result.value;
-    if (updatedUser.pointsGiven[cleanName] % this.furtherFeedbackScore === 0 && score === 1) {
-      this.robot.logger.debug(`${from.name} has sent a lot of points to ${to} suggesting further feedback`);
-      this.robot.messageRoom(from.id, `Looks like you've given ${to} quite a few points, maybe you should look at submitting ${this.peerFeedbackUrl}`);
+  async erase(user, from, room, reason) {
+    if (reason) {
+      this.robot.logger.warn(`Erasing score for reason ${reason} for ${user} by ${from}`);
+      this.databaseService.erase(user, reason);
+      return true;
     }
-  }
+    this.robot.logger.warn(`Erasing all scores for ${user} by ${from}`);
+    this.databaseService.erase(user);
 
+    return true;
+  }
   // eslint-disable-next-line
   last(room) {
     /* const last = this.storage.last[room];
@@ -233,52 +98,8 @@ class ScoreKeeper {
     } */
   }
 
-  async isSpam(user, from) {
-    this.robot.logger.debug('spam check');
-    const db = await this.getDb();
-    const previousScoreExists = await db.collection(logDocumentName)
-      .find({
-        from: from.name,
-        to: user,
-      }).count(true);
-    this.robot.logger.debug('spam check result', previousScoreExists);
-    if (previousScoreExists) {
-      this.robot.logger.debug(`${from.name} is spamming points to ${user}! STOP THEM!!!!`);
-      this.robot.messageRoom(from.id, this.spamMessage);
-      return true;
-    }
-
-    return false;
-  }
-
   async validate(user, from) {
-    return (user.name !== from.name) && !await this.isSpam(user.name, from);
-  }
-
-  async top(amount) {
-    const db = await this.getDb();
-    const results = await db.collection(scoresDocumentName)
-      .find()
-      .sort({ score: -1 })
-      .limit(amount)
-      .toArray();
-
-    this.robot.logger.debug('Trying to find top scores');
-
-    return results;
-  }
-
-  async bottom(amount) {
-    const db = await this.getDb();
-    const results = await db.collection(scoresDocumentName)
-      .find({ score: { $gt: Number.MIN_SAFE_INTEGER } })
-      .sort({ score: 1 })
-      .limit(amount)
-      .toArray();
-
-    this.robot.logger.debug('Trying to find bottom scores');
-
-    return results;
+    return (user.name !== from.name) && !await this.databaseService.isSpam(user.name, from);
   }
 
   // eslint-disable-next-line
