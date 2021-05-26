@@ -4,7 +4,7 @@
   "description": "A hubot script for micro praise",
   "main": "index.js",
   "engines": {
-    "node": ">=0.12"
+    "node": "^14"
   },
   "scripts": {
     "test": "mocha --timeout 35000 **/*.test.* --exit",
@@ -40,8 +40,8 @@
     "clark": "^0.0.6",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
-    "mongodb": "^3.6.5",
-    "snyk": "^1.518.0"    
+    "mongodb": "^3.6.8",
+    "snyk": "^1.611.0"
   },
   "devDependencies": {
     "bluebird": "^3.7.2",

@@ -7,7 +7,8 @@ const forEach = require('mocha-each');
 
 const { expect } = chai;
 
-const helpers = require('../src/helpers.js');
+const helpers = require('../src/helpers');
+const regexp = require('../src/regexp');
 
 describe('Helpers', function () {
   describe('cleanName', function () {
@@ -17,7 +18,7 @@ describe('Helpers', function () {
       ['what', 'what'],
       ['', ''],
       ['name.hyphe-nated', 'name.hyphe-nated'],
-      ['dot.name', 'dot.name']
+      ['dot.name', 'dot.name'],
     ]).it('should clean %j of the @ sign and be %j if @ is the first char', (fullName, cleaned) => {
       expect(helpers.cleanName(fullName)).to.equal(cleaned);
     });
@@ -58,10 +59,10 @@ describe('Helpers', function () {
       ['score with matt', 'with ', 'matt'],
       ['scores for matt', 'for ', 'matt'],
       ['karma phil', undefined, 'phil'],
-      ['score such.a.complex-name-hyphens', undefined, 'such.a.complex-name-hyphens']
+      ['score such.a.complex-name-hyphens', undefined, 'such.a.complex-name-hyphens'],
     ])
       .it('should match the search %j', (searchQuery, middleMatch, name) => {
-        const scoreMatchRegExp = helpers.createAskForScoreRegExp();
+        const scoreMatchRegExp = regexp.createAskForScoreRegExp();
         expect(scoreMatchRegExp).to.be.a('RegExp');
         expect(searchQuery.match(scoreMatchRegExp)).to.be.an('array');
         expect(searchQuery.match(scoreMatchRegExp).length).to.equal(3);
@@ -74,7 +75,7 @@ describe('Helpers', function () {
       ['erase @matt cuz he is bad', '@matt', 'he is bad'],
       ['erase @frank', '@frank', undefined],
     ]).it('%j should match the erase user regexp', (searchQuery, user, reason) => {
-      const eraseUserScoreRegExp = helpers.createEraseUserScoreRegExp();
+      const eraseUserScoreRegExp = regexp.createEraseUserScoreRegExp();
       expect(eraseUserScoreRegExp).to.be.a('RegExp');
       expect(searchQuery.match(eraseUserScoreRegExp)).to.be.an('array');
       expect(searchQuery.match(eraseUserScoreRegExp).length).to.equal(3);
@@ -90,7 +91,7 @@ describe('Helpers', function () {
     ])
       .it('should match \'%j\'', (fullText, firstMatch, names, operator, reason) => {
         const dummy = '';
-        const multiUserVoteRegExp = helpers.createMultiUserVoteRegExp();
+        const multiUserVoteRegExp = regexp.createMultiUserVoteRegExp();
         expect(multiUserVoteRegExp).to.be.a('RegExp');
         expect(fullText.match(multiUserVoteRegExp)).to.be.an('array');
         expect(fullText.match(multiUserVoteRegExp).length).to.equal(5);
@@ -104,7 +105,7 @@ describe('Helpers', function () {
       ['bottom 5', 'bottom', '5'],
     ])
       .it('should match %j', (requestForScores, topOrBottom, numberOfUsers) => {
-        const topBottomRegExp = helpers.createTopBottomRegExp();
+        const topBottomRegExp = regexp.createTopBottomRegExp();
         expect(topBottomRegExp).to.be.a('RegExp');
         expect(requestForScores.match(topBottomRegExp)).to.be.an('array');
         expect(requestForScores.match(topBottomRegExp).length).to.equal(3);
@@ -124,11 +125,11 @@ describe('Helpers', function () {
       ['you are the best matt++ cuz you started #matt-s', 'matt++ cuz you started #matt-s', 'matt', '++', 'you started #matt-s'],
       ['you are the best matt++ cuz you started #matt-s', 'matt++ cuz you started #matt-s', 'matt', '++', 'you started #matt-s'],
       ['such.a.complex-name-hyphens++', 'such.a.complex-name-hyphens++', 'such.a.complex-name-hyphens', '++', undefined],
-      ['\”such a complex-name-hyphens\” ++', '\”such a complex-name-hyphens\” ++', '\”such a complex-name-hyphens\”', '++', undefined],
-      ['@matt—', '@matt—', '@matt', '—', undefined]
+      ['”such a complex-name-hyphens” ++', '”such a complex-name-hyphens” ++', '”such a complex-name-hyphens”', '++', undefined],
+      ['@matt—', '@matt—', '@matt', '—', undefined],
     ])
       .it('should hear name [%3$s] up/down [%4$s] with reason [%5$s]', (fullText, firstMatch, name, operator, reason) => {
-        const upVoteOrDownVoteRegExp = helpers.createUpDownVoteRegExp();
+        const upVoteOrDownVoteRegExp = regexp.createUpDownVoteRegExp();
         expect(upVoteOrDownVoteRegExp).to.be.a('RegExp');
         const fullMatch = fullText.match(upVoteOrDownVoteRegExp);
         expect(fullMatch).to.be.an('array');
@@ -158,8 +159,6 @@ describe('Helpers', function () {
       [145, 'matt', '++', 'cool runnings!', 99, undefined, 'matt has 145 points, 99 of which are for cool runnings!.'],
       [200, 'matt', '++', 'cool runnings!', 99, undefined, ':200: matt has 200 points :200:, 99 of which are for cool runnings!.'],
       [0, 'matt', '++', undefined, 0, undefined, ':zero: matt has 0 points :zero:'],
-      [28, 'heat', '++', undefined, 0, undefined, 'podríamos subir un gradin la calefa???\nLa temperatura debería estar en 28 ℃.'],
-      [28, 'heat', '--', undefined, 0, undefined, 'podríamos bajar un gradin la calefa???\nLa temperatura debería estar en 28 ℃.'],
     ])
       .it('should take the score %j, name %j, operator %j, reason %j, reason score %j with cake day %j and print %j',
         (score, name, messageOperator, reason, reasonScore, cakeDay, expectedMessage) => {

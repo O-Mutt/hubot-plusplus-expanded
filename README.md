@@ -62,7 +62,7 @@ Some of the behavior of this plugin is configured in the environment:
 
 `HUBOT_SPAM_MESSAGE` - the text that will be used if a user hits the spam filter. (*default:* `Looks like you hit the spam filter. Please slow your role.`).
 
-`HUBOT_COMPANY_NAME` - the name of the company that is using hubot (*default:* `Auth0`).
+`HUBOT_COMPANY_NAME` - the name of the company that is using hubot (*default:* `Company Name`).
 
 `HUBOT_PEER_FEEDBACK_URL` - this is the message that will be used if a user gives `HUBOT_FURTHER_FEEDBACK_SCORE` points to another user (*default:* `'Lattice' (https://${companyName}.latticehq.com/)`).
 
