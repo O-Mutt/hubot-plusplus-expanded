@@ -36,15 +36,19 @@ const wallet = require('./wallet');
 const ScoreKeeper = require('./scorekeeper');
 const helper = require('./helpers');
 
+const reasonsKeyword = process.env.HUBOT_PLUSPLUS_REASONS || 'reasons';
+const spamMessage = process.env.HUBOT_SPAM_MESSAGE || 'Looks like you hit the spam filter. Please slow your roll.';
+const companyName = process.env.HUBOT_COMPANY_NAME || 'Company Name';
+const peerFeedbackUrl = process.env.HUBOT_PEER_FEEDBACK_URL || `praise in Lattice (https://${companyName}.latticehq.com/)`;
+const furtherFeedbackSuggestedScore = process.env.HUBOT_FURTHER_FEEDBACK_SCORE || 10;
+const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGODB_URL || process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/plusPlus';
+
 module.exports = function plusPlus(robot) {
-  const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGODB_URL || process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/plusPlus';
-  const spamMessage = process.env.HUBOT_SPAM_MESSAGE || 'Looks like you hit the spam filter. Please slow your roll.';
-  const furtherFeedbackSuggestedScore = process.env.HUBOT_FURTHER_FEEDBACK_SCORE || 10;
-  const companyName = process.env.HUBOT_COMPANY_NAME || 'Company Name';
-  const peerFeedbackUrl = process.env.HUBOT_PEER_FEEDBACK_URL || `praise in Lattice (https://${companyName}.latticehq.com/)`;
-  const reasonsKeyword = process.env.HUBOT_PLUSPLUS_REASONS || 'reasons';
-  const scoreKeeper = new ScoreKeeper(robot, mongoUri, peerFeedbackUrl, spamMessage, furtherFeedbackSuggestedScore);
-  scoreKeeper.init();
+  const scoreKeeper = new ScoreKeeper(
+    {
+      robot, spamMessage, companyName, peerFeedbackUrl, furtherFeedbackSuggestedScore, mongoUri,
+    },
+  );
 
   /* eslint-disable */
   // listen to everything
@@ -58,7 +62,7 @@ module.exports = function plusPlus(robot) {
   robot.respond(regexp.createBotDayRegExp(robot.name), respondWithUsersBotDay);
 
   // DM only
-  robot.respond(regexp.createLevelUpAccount, wallet.levelUpAccount);
+  robot.respond(regexp.createLevelUpAccount(), wallet.levelUpAccount);
 
   // admin
   robot.respond(regexp.createEraseUserScoreRegExp(), eraseUserScore);
@@ -231,7 +235,7 @@ module.exports = function plusPlus(robot) {
       userToLookup = helper.cleanName(msg.match[2]);
       messageName = `${userToLookup}'s`;
     }
-    const user = await scoreKeeper.getUser(userToLookup);
+    const user = await scoreKeeper.databaseService.getUser(userToLookup);
     const dateObj = new Date(user[`${robot.name}Day`]);
     msg.send(`${messageName} ${robot.name}day is ${moment(dateObj).format('MM-DD-yyyy')}`);
   }
