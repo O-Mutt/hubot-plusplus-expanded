@@ -2,7 +2,7 @@ hubot-plusplus-expanded
 ==============
 
 [![Known Vulnerabilities](https://snyk.io//test/github/Mutmatt/hubot-plusplus-expanded/badge.svg?targetFile=package.json)](https://snyk.io//test/github/Mutmatt/hubot-plusplus-expanded?targetFile=package.json)
-![Node CI](https://github.com/Mutmatt/hubot-plusplus-expanded/workflows/Node%20CI/badge.svg?branch=master)
+[![Node CI](https://github.com/O-Mutt/hubot-plusplus-expanded/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/O-Mutt/hubot-plusplus-expanded/actions/workflows/test.yml)
 
 Give or take away points. Keeps track and even prints out graphs.
 
@@ -33,13 +33,15 @@ robot.emit "plus-one", {
 
 ## Installation
 
-Run the following command 
+This is a plugin for Hubot and should be installed as a consumed package by a hubot.
 
-    $ npm install hubot-plusplus-expanded
+Run the following command
+
+  `npm install hubot-plusplus-expanded`
 
 Then to make sure the dependencies are installed:
 
-    $ npm install
+  `npm install`
 
 To enable the script, add a `hubot-plusplus-expanded` entry to the `external-scripts.json`
 file (you may need to create this file).
@@ -70,20 +72,20 @@ Some of the behavior of this plugin is configured in the environment:
 `db.scoreLog.createIndex( { "date": 1 }, { expireAfterSeconds: 5 } )`
 
 ## Mongo data Layout
-```json
+``` javascript
 scores: [
   {
-    name: string
-    score: int
-    reasons: ReasonsObject
+    name: string,
+    score: int,
+    reasons: ReasonsObject,
     pointsGiven: PointsGivenObject
   }
 ]
 
 scoreLog: [
   {
-    from: string
-    to: string
+    from: string,
+    to: string,
     date: datetime
   }
 ]
@@ -98,6 +100,14 @@ PointsGivenObject:
   [to]: int
 }
 ```
+
+## Testing
+
+Individual run:
+`npm run test`
+
+Tdd:
+`npm run tdd`
 
 ## Known issue
 As of now there is an issue that has shown up a couple times without a root cause. The `$setOnInsert` excludes the `reasons: {}` object. The fix, currently, is to identify the bad document in mongo `db.scores.find({ "reasons: null"});` and update them  `db.scores.updateMany({ "reasons: null"}, { $set: { "reasons": {} });`
