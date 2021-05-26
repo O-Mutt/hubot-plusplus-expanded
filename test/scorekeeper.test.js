@@ -147,6 +147,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
 
     it('subtracts points from a user for a reason', async function () {
       const r = await scoreKeeper.subtract('to', { name: 'from', id: '123' }, 'room', 'because points');
+      this.timeout('15s');
       expect(r).to.be.an('array');
       expect(r[0]).to.equal(-1);
       expect(r[1]).to.equal(-1);
