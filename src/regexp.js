@@ -27,7 +27,7 @@ regexp.createEraseUserScoreRegExp = () => {
   const eraseClause = '(?:erase)';
 
   return new RegExp(`${eraseClause}${allowSpaceAfterObject}${votedObject}${allowSpaceAfterObject}${reasonForVote}${eol}`, 'i');
-}
+};
 
 /**
  *
@@ -45,7 +45,7 @@ regexp.createMultiUserVoteRegExp = () => {
   const multiUserVotedObject = '{(.*(,?))\\}';
 
   return new RegExp(`${beginningOfLine}${multiUserVotedObject}${allowSpaceAfterObject}${operator}${reasonForVote}${eol}`, 'i');
-}
+};
 
 /**
  * botName top 100
@@ -55,7 +55,7 @@ regexp.createTopBottomRegExp = () => {
   const topOrBottom = '(top|bottom)';
   const digits = '(\\d+)';
   return new RegExp(`${topOrBottom}${allowSpaceAfterObject}${digits}`, 'i');
-}
+};
 
 /**
  * user1++ for being dope

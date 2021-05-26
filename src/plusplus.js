@@ -27,13 +27,12 @@
 //
 // Author: O-Mutt
 
-import regexp from './regexp';
-import wallet from './wallet';
-
 const clark = require('clark');
 const { default: axios } = require('axios');
 const _ = require('lodash');
 const moment = require('moment');
+const regexp = require('./regexp');
+const wallet = require('./wallet');
 const ScoreKeeper = require('./scorekeeper');
 const helper = require('./helpers');
 
