@@ -6,6 +6,11 @@
   "engines": {
     "node": "^14"
   },
+  "config": {
+    "mongodbMemoryServer": {
+      "version": "latest"
+    }
+  },
   "scripts": {
     "test": "mocha --timeout 35000 **/*.test.* --exit",
     "tdd": "mocha --watch **/*.test.*",
