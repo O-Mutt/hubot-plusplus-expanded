@@ -8,7 +8,7 @@
 //   "score|karma" so hubot will answer to both keywords.
 //   If not provided will default to 'score'.
 //
-//   HUBOT_PLUSPLUS_REASON_CONJUNCTIONS: a pipe separated list of conjunctionss to
+//   HUBOT_PLUSPLUS_REASON_CONJUNCTIONS: a pipe separated list of conjunctions to
 //   be used when specifying reasons. The default value is
 //   "for|because|cause|cuz|as|porque", so it can be used like:
 //   "foo++ for being awesome" or "foo++ cuz they are awesome".
@@ -25,7 +25,10 @@
 //   how much are hubot points worth (how much point) - Shows how much hubot points are worth
 //
 //
-// Author: Mutmatt
+// Author: O-Mutt
+
+import regexp from './regexp';
+import wallet from './wallet';
 
 const clark = require('clark');
 const { default: axios } = require('axios');
@@ -38,32 +41,28 @@ module.exports = function plusPlus(robot) {
   const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGODB_URL || process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/plusPlus';
   const spamMessage = process.env.HUBOT_SPAM_MESSAGE || 'Looks like you hit the spam filter. Please slow your roll.';
   const furtherFeedbackSuggestedScore = process.env.HUBOT_FURTHER_FEEDBACK_SCORE || 10;
-  const companyName = process.env.HUBOT_COMPANY_NAME || 'Auth0';
+  const companyName = process.env.HUBOT_COMPANY_NAME || 'Company Name';
   const peerFeedbackUrl = process.env.HUBOT_PEER_FEEDBACK_URL || `praise in Lattice (https://${companyName}.latticehq.com/)`;
   const reasonsKeyword = process.env.HUBOT_PLUSPLUS_REASONS || 'reasons';
   const scoreKeeper = new ScoreKeeper(robot, mongoUri, peerFeedbackUrl, spamMessage, furtherFeedbackSuggestedScore);
   scoreKeeper.init();
 
-  const upOrDownVoteRegexp = helper.createUpDownVoteRegExp();
-  const askForScoreRegexp = helper.createAskForScoreRegExp();
-  const multiUserVoteRegExp = helper.createMultiUserVoteRegExp();
-  const topOrBottomRegExp = helper.createTopBottomRegExp();
-  const eraseScoreRegExp = helper.createEraseUserScoreRegExp();
-  const botDayRegexp = helper.createBotDayRegExp(robot.name);
-
   /* eslint-disable */
   // listen to everything
-  robot.hear(upOrDownVoteRegexp, upOrDownVote);
+  robot.hear(regexp.createUpDownVoteRegExp(), upOrDownVote);
   robot.hear(new RegExp(`how much .*point.*`, 'i'), tellHowMuchPointsAreWorth);
-  robot.hear(multiUserVoteRegExp, multipleUsersVote);
+  robot.hear(regexp.createMultiUserVoteRegExp(), multipleUsersVote);
 
   // listen for bot tag/ping
-  robot.respond(askForScoreRegexp, respondWithScore);
-  robot.respond(topOrBottomRegExp, respondWithLeaderLoserBoard);
-  robot.respond(botDayRegexp, respondWithUsersBotDay);
+  robot.respond(regexp.createAskForScoreRegExp(), respondWithScore);
+  robot.respond(regexp.createTopBottomRegExp(), respondWithLeaderLoserBoard);
+  robot.respond(regexp.createBotDayRegExp(robot.name), respondWithUsersBotDay);
+
+  // DM only
+  robot.respond(regexp.createLevelUpAccount, wallet.levelUpAccount);
 
   // admin
-  robot.respond(eraseScoreRegExp, eraseUserScore);
+  robot.respond(regexp.createEraseUserScoreRegExp(), eraseUserScore);
   /* eslint-enable */
 
   /**
@@ -77,10 +76,6 @@ module.exports = function plusPlus(robot) {
     name = helper.cleanName(name);
     reason = helper.cleanAndEncode(reason);
     const from = msg.message.user;
-
-    if (name === 'heat' && helper.positiveOperators === operator) {
-      msg.send('podríamos subir un gradin la calefa???');
-    }
 
     let newScore; let reasonScore; let userObject;
     robot.logger.debug(`${operator === helper.positiveOperators ? 'add' : 'remove'} score for [${name}] from [${name}]`);
@@ -195,7 +190,7 @@ module.exports = function plusPlus(robot) {
 
   function tellHowMuchPointsAreWorth(msg) {
     axios({
-      url: 'https://api.coindesk.com/v1/bpi/currentprice/ARS.json'
+      url: 'https://api.coindesk.com/v1/bpi/currentprice/ARS.json',
     }).then((resp) => {
       const bitcoin = resp.data.bpi.USD.rate_float;
       const ars = resp.data.bpi.ARS.rate_float;
