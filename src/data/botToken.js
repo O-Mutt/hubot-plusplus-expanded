@@ -1,6 +1,6 @@
 /*
  *
- * name: 
+ * name: string
  * publicWalletAddress: string
  * tokens: Int32
  *

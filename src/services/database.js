@@ -181,7 +181,7 @@ class DatabaseService {
   async levelUpAccount(user) {
     const db = await this.getDb();
     let tokensAdded = 0;
-    await db.collection(scoresDocumentName).find({ name: user.name }).foreach((mappedUser) => {
+    await db.collection(scoresDocumentName).find({ name: user.name }).forEach((mappedUser) => {
       // we are leveling up from 0 (which is level 1) -> 2 or 2 -> 3
       const newLevel = !mappedUser.accountLevel ? 2 : 3;
       mappedUser.accountLevel = newLevel;
