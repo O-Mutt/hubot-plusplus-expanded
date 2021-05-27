@@ -29,6 +29,9 @@ class DatabaseService {
     return this.db;
   }
 
+  /*
+  * user - the name of the user
+  */
   async getUser(user) {
     this.robot.logger.debug(`trying to find user ${user}`);
     const db = await this.getDb();
@@ -178,6 +181,18 @@ class DatabaseService {
         .drop({ name: [username] });
     }
 
+    return result;
+  }
+
+  async levelUpAccount(user) {
+    const db = await this.getDb();
+    const result = await db.collection(scoresDocumentName).find({ name: user.name }).forEach((loopedUser) => {
+      // we are leveling up from 0 (which is level 1) -> 2 or 2 -> 3
+      const newLevel = !loopedUser.accountLevel ? 2 : 3;
+      loopedUser.accountLevel = newLevel;
+      loopedUser.token = loopedUser.score;
+      db.collection(scoresDocumentName).save(loopedUser);
+    });
     return result;
   }
 }

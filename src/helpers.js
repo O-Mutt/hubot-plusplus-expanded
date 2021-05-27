@@ -109,6 +109,11 @@ function getYearsAsString(dateObj) {
   return `${years}th `;
 }
 
+function isPrivateMessage(message) {
+  const { room, user } = message;
+  return room !== user.id && room !== 'Shell';
+}
+
 const helpers = {
   cleanName,
   cleanAndEncode,
@@ -116,6 +121,7 @@ const helpers = {
   getMessageForNewScore,
   isCakeDay,
   getYearsAsString,
+  isPrivateMessage,
 };
 
 module.exports = helpers;
