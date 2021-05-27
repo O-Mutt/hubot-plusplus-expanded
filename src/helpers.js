@@ -113,7 +113,7 @@ function isNotPrivateMessage(msg) {
   const { room, user } = msg.message;
   msg.robot.logger.debug('checking if the user is in the context of a DM or public message', room, user);
   // "Shell" is the adapter for running in the terminal
-  return room !== user.id && room !== 'Shell';
+  return room[0] === 'D' && room !== 'Shell';
 }
 
 const helpers = {
