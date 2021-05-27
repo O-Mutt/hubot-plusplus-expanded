@@ -1,20 +1,24 @@
 /*
- * scores: []
- * {
- *   name: string
- *   score: int
- *   reasons: ReasonsObject
- *   pointsGiven: PointsGivenObject
- * }
+ * Scores Object
+ * --------------------------------
+ * id: ObjectId
+ * name: string
+ * pointsGiven: PointsGivenObject
+ * score: Int32
+ * token: Int32
+ * accountLevel: Int32
+ * <botName>Day: Date
+ * reasons: ReasonsObject
+ * --------------------------------
  *
  * ReasonsObject:
  * {
- *   [reason]: int
+ *   [string]: int
  * }
  *
  * PointsGivenObject:
  * {
- *   [to]: int
+ *   [encryptedString]: int
  * }
  */
 const scoresDocumentName = 'scores';

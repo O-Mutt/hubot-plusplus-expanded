@@ -115,7 +115,7 @@ class DatabaseService {
       }).count(true);
     this.robot.logger.debug('spam check result', previousScoreExists);
     if (previousScoreExists) {
-      this.robot.logger.debug(`${from.name} is spamming points to ${user}! STOP THEM!!!!`);
+      this.robot.logger.warn(`${from.name} is spamming points to ${user}! STOP THEM!!!!`);
       return true;
     }
 
