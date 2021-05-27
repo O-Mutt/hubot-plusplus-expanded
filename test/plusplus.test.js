@@ -85,7 +85,7 @@ describe('PlusPlus', function plusPlusTest() {
 
       await (new Promise.delay(30)); // wait for the db call in hubot
 
-      const message = JSON.parse(room.messages[1][1]);
+      const message = room.messages[1][1];
       expect(message.blocks.length).to.equal(3);
       expect(message.blocks).to.deep.include({
         type: 'section',

@@ -305,6 +305,6 @@ module.exports = function plusPlus(robot) {
         },
       ],
     };
-    msg.send(JSON.stringify(message));
+    msg.send(message);
   }
 };
