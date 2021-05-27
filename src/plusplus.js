@@ -63,7 +63,7 @@ module.exports = function plusPlus(robot) {
   robot.respond(regexp.getHelp(), respondWithHelpGuidance);
 
   // DM only
-  robot.respond(regexp.createLevelUpAccount(), wallet.levelUpAccount);
+  robot.respond(regexp.createLevelUpAccount(), (msg) => wallet.levelUpAccount(msg, scoreKeeper));
 
   // admin
   robot.respond(regexp.createEraseUserScoreRegExp(), eraseUserScore);
