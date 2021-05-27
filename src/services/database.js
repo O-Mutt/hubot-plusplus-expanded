@@ -191,7 +191,7 @@ class DatabaseService {
       const newLevel = !loopedUser.accountLevel ? 2 : 3;
       loopedUser.accountLevel = newLevel;
       loopedUser.token = loopedUser.score;
-      db.collection(scoresDocumentName).updateOne(loopedUser);
+      db.collection(scoresDocumentName).save(loopedUser);
     });
     return result;
   }
