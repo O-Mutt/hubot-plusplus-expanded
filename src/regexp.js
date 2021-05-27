@@ -70,4 +70,9 @@ regexp.createUpDownVoteRegExp = () => new RegExp(`${votedObject}${allowSpaceAfte
  */
 regexp.createLevelUpAccount = () => new RegExp(`level me up${eol}`, 'i');
 
+/**
+ * @qrafty help
+ */
+regexp.getHelp = () => new RegExp(`help${eol}`, 'i');
+
 regexp.positiveOperators = positiveOperatorsString;

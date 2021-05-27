@@ -78,4 +78,29 @@ describe('PlusPlus', function plusPlusTest() {
       expect(room.messages[1][1]).to.equal('matt.erickson\'s hubotday is 07-09-2020');
     });
   });
+
+  describe('respondWithQraftyGuidance', function () {
+    it('should respond with qrafty usage guidance', async function () {
+      room.user.say('peter.nguyen', '@hubot help');
+
+      await (new Promise.delay(30)); // wait for the db call in hubot
+
+      const message = JSON.parse(room.messages[1][1]);
+      expect(message.blocks.length).to.equal(3);
+      expect(message.blocks).to.deep.include({
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: 'Need help with qrafty?',
+        },
+      });
+      expect(message.blocks).to.deep.include({
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '_Commands_:',
+        },
+      });
+    });
+  });
 });

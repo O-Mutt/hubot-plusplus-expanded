@@ -60,6 +60,7 @@ module.exports = function plusPlus(robot) {
   robot.respond(regexp.createAskForScoreRegExp(), respondWithScore);
   robot.respond(regexp.createTopBottomRegExp(), respondWithLeaderLoserBoard);
   robot.respond(regexp.createBotDayRegExp(robot.name), respondWithUsersBotDay);
+  robot.respond(regexp.getHelp(), respondWithHelpGuidance);
 
   // DM only
   robot.respond(regexp.createLevelUpAccount(), wallet.levelUpAccount);
@@ -265,5 +266,45 @@ module.exports = function plusPlus(robot) {
       const message = (!decodedReason) ? `Erased the following reason from ${name}: ${decodedReason}` : `Erased points for ${name}`;
       msg.send(message);
     }
+  }
+
+  function respondWithHelpGuidance(msg) {
+    const helpMessage = ''.concat('`<name>++ [<reason>]` - Increment score for a name (for a reason)\n')
+      .concat('`<name>-- [<reason>]` - Decrement score for a name (for a reason)\n')
+      .concat('`{name1, name2, name3}++ [<reason>]` - Increment score for all names (for a reason)\n')
+      .concat('`{name1, name2, name3}-- [<reason>]` - Decrement score for all names (for a reason) \n')
+      .concat('`{name1, name2, name3}-- [<reason>]` - Decrement score for all names (for a reason) \n')
+      .concat('`@qrafty score <name>` - Display the score for a name and some of the reasons\n')
+      .concat('`@qrafty top <amount>` - Display the top scoring <amount>\n')
+      .concat('`@qrafty erase <name> [<reason>]` - Remove the score for a name (for a reason) \n')
+      .concat('`@qrafty level me up` - Level up your account for some additional qraftiness \n')
+      .concat('`how much are <point_type> points worth` - Shows how much <point_type> points are worth\n');
+
+    const message = {
+      blocks: [
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: 'Need help with qrafty?',
+          },
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: '_Commands_:',
+          },
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: helpMessage,
+          },
+        },
+      ],
+    };
+    msg.send(JSON.stringify(message));
   }
 };
