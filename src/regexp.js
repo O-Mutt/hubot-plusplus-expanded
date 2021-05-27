@@ -73,6 +73,6 @@ regexp.createLevelUpAccount = () => new RegExp(`level me up${eol}`, 'i');
 /**
  * @qrafty help
  */
-regexp.getHelp = () => new RegExp(`help${eol}`, 'i');
+regexp.getHelp = () => new RegExp(`(help|-h|--help)${eol}`, 'i');
 
 regexp.positiveOperators = positiveOperatorsString;
