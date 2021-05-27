@@ -281,29 +281,31 @@ module.exports = function plusPlus(robot) {
       .concat('`how much are <point_type> points worth` - Shows how much <point_type> points are worth\n');
 
     const message = {
-      blocks: [
-        {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: 'Need help with qrafty?',
+      attachments: [{
+        blocks: [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: 'Need help with qrafty?',
+            },
           },
-        },
-        {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: '_Commands_:',
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: '_Commands_:',
+            },
           },
-        },
-        {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: helpMessage,
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: helpMessage,
+            },
           },
-        },
-      ],
+        ],
+      }],
     };
     msg.send(message);
   }
