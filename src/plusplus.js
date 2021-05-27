@@ -209,8 +209,9 @@ module.exports = function plusPlus(robot) {
   async function respondWithLeaderLoserBoard(msg) {
     const amount = parseInt(msg.match[2], 10) || 10;
     const topOrBottom = msg.match[1].trim();
+    topOrBottom[0] = topOrBottom[0].toUpperCase();
 
-    const tops = await scoreKeeper[topOrBottom](amount);
+    const tops = await scoreKeeper.databaseService[`get${topOrBottom}Scores`](amount);
 
     const message = [];
     if (tops.length > 0) {
