@@ -211,7 +211,7 @@ module.exports = function plusPlus(robot) {
     const topOrBottom = msg.match[1].trim();
     topOrBottom[0] = topOrBottom[0].toUpperCase();
 
-    const tops = await scoreKeeper.databaseService[`get${topOrBottom}Scores`](amount);
+    const tops = await scoreKeeper.databaseService['get' + topOrBottom + 'Scores'](amount);
 
     const message = [];
     if (tops.length > 0) {
