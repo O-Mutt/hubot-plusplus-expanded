@@ -16,7 +16,8 @@ async function levelUpAccount(msg, scoreKeeper) {
   }
 
   const leveledUpUser = await scoreKeeper.databaseService.levelUpAccount(user);
-  msg.reply(`${leveledUpUser.name}, we are going to level up your account to Level ${leveledUpUser.accountLevel}! This means you will start getting ${msg.robot.name} Tokens as well as points!`);
+  msg.robot.logger.debug('DB results', leveledUpUser);
+  msg.reply(`${user.name}, we are going to level up your account to Level 2! This means you will start getting ${msg.robot.name} Tokens as well as points!`);
   return true;
 }
 
