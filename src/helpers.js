@@ -111,7 +111,7 @@ function getYearsAsString(dateObj) {
 
 function isNotPrivateMessage(msg) {
   const { room, user } = msg.message;
-  msg.robot.logger.debug('checking if the user is in the context of a DM or public message', room, user);
+  msg.robot.logger.debug('checking if the user is in the context of a DM or public message', room, user.room);
   // "Shell" is the adapter for running in the terminal
   return room[0] !== 'D' && room !== 'Shell';
 }

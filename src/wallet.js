@@ -9,7 +9,7 @@ async function levelUpAccount(msg, scoreKeeper) {
     return msg.reply(`You should only execute a level up from within the context of a DM with ${msg.robot.name}`);
   }
 
-  const user = await scoreKeeper.databaseService.getUser();
+  const user = await scoreKeeper.databaseService.getUser(msg.message.user.name);
   if (user.accountLevel === 2) {
     // do the level 3 step up, get their info for deposit withdrawal
     return false;
