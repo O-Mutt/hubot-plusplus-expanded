@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 const { MongoClient } = require('mongodb');
 const scoresDocumentName = require('../data/scores');
-const logDocumentName = require('../data/scores');
+const logDocumentName = require('../data/scoreLog');
 const botTokenDocumentName = require('../data/botToken');
 const helpers = require('../helpers');
 
