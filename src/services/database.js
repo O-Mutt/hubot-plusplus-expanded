@@ -183,7 +183,7 @@ class DatabaseService {
     let tokensAdded = 0;
     await db.collection(scoresDocumentName).find({ name: user.name }).forEach((mappedUser) => {
       // we are leveling up from 0 (which is level 1) -> 2 or 2 -> 3
-      const newLevel = !mappedUser.accountLevel ? 2 : 3;
+      const newLevel = (!mappedUser.accountLevel || mappedUser.accountLevel === 1) ? 2 : 3;
       mappedUser.accountLevel = newLevel;
       mappedUser.token = mappedUser.score;
       tokensAdded += mappedUser.score;
