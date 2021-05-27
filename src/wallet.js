@@ -5,8 +5,7 @@ async function levelUpAccount(msg, scoreKeeper) {
   const switchBoard = new Conversation(msg.robot);
   const dialog = switchBoard.startDialog(msg);
 
-  // "Shell" is the adapter for running in the terminal
-  if (helpers.isPrivateMessage(msg.message)) {
+  if (helpers.isNotPrivateMessage(msg)) {
     return msg.reply(`You should only execute a level up from within the context of a DM with ${msg.robot.name}`);
   }
 
