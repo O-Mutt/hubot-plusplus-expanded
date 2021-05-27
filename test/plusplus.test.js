@@ -86,15 +86,16 @@ describe('PlusPlus', function plusPlusTest() {
       await (new Promise.delay(30)); // wait for the db call in hubot
 
       const message = room.messages[1][1];
-      expect(message.blocks.length).to.equal(3);
-      expect(message.blocks).to.deep.include({
+      const { blocks } = message.attachments[0];
+      expect(blocks.length).to.equal(3);
+      expect(blocks).to.deep.include({
         type: 'section',
         text: {
           type: 'mrkdwn',
           text: 'Need help with qrafty?',
         },
       });
-      expect(message.blocks).to.deep.include({
+      expect(blocks).to.deep.include({
         type: 'section',
         text: {
           type: 'mrkdwn',
