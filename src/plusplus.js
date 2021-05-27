@@ -82,10 +82,10 @@ module.exports = function plusPlus(robot) {
     const from = msg.message.user;
 
     let newScore; let reasonScore; let userObject;
-    robot.logger.debug(`${operator === helper.positiveOperators ? 'add' : 'remove'} score for [${name}] from [${name}]`);
-    if (helper.positiveOperators === operator) {
+    robot.logger.debug(`${operator === regexp.positiveOperatorsString ? 'add' : 'remove'} score for [${name}] from [${name}]`);
+    if (regexp.positiveOperatorsString === operator) {
       [newScore, reasonScore, userObject] = await scoreKeeper.add(name, from, room, reason);
-    } else if (`(${helper.negativeOperators})`.match(operator)) {
+    } else if (`(${regexp.negativeOperators})`.match(operator)) {
       [newScore, reasonScore, userObject] = await scoreKeeper.subtract(name, from, room, reason);
     }
 
@@ -121,7 +121,7 @@ module.exports = function plusPlus(robot) {
 
     const cleanNames = namesArray
       // Parse names
-      .map((name) => helper.cleanName(name).match(new RegExp(helper.votedObject, 'i'))[1])
+      .map((name) => helper.cleanName(name).match(new RegExp(regexp.votedObject, 'i'))[1])
       // Remove empty ones: {,,,}++
       .filter((name) => !!name.length)
       // Remove duplicates: {user1,user1}++
@@ -133,13 +133,13 @@ module.exports = function plusPlus(robot) {
 
     let messages;
     let results;
-    if (helper.positiveOperators === operator) {
+    if (regexp.positiveOperatorsString === operator) {
       results = cleanNames.map(async (name) => {
         const [newScore, reasonScore, userObject] = await scoreKeeper.add(name, from, room, encodedReason);
         robot.logger.debug(`clean names map [${name}]: ${newScore}, the reason ${reasonScore}`);
         return helper.getMessageForNewScore(newScore, name, operator, encodedReason, reasonScore, userObject[`${robot.name}Day`], robot.name);
       });
-    } else if (`(${helper.negativeOperators})`.match(operator)) {
+    } else if (`(${regexp.negativeOperators})`.match(operator)) {
       results = cleanNames.map(async (name) => {
         const [newScore, reasonScore, userObject] = await scoreKeeper.subtract(name, from, room, encodedReason);
         return helper.getMessageForNewScore(newScore, name, operator, encodedReason, reasonScore, userObject[`${robot.name}Day`], robot.name);
@@ -274,10 +274,10 @@ module.exports = function plusPlus(robot) {
       .concat('`{name1, name2, name3}++ [<reason>]` - Increment score for all names (for a reason)\n')
       .concat('`{name1, name2, name3}-- [<reason>]` - Decrement score for all names (for a reason) \n')
       .concat('`{name1, name2, name3}-- [<reason>]` - Decrement score for all names (for a reason) \n')
-      .concat('`@${msg.robot.name} score <name>` - Display the score for a name and some of the reasons\n')
-      .concat('`@${msg.robot.name} top <amount>` - Display the top scoring <amount>\n')
-      .concat('`@${msg.robot.name} erase <name> [<reason>]` - Remove the score for a name (for a reason) \n')
-      .concat('`@${msg.robot.name} level me up` - Level up your account for some additional qraftiness \n')
+      .concat(`\`@${msg.robot.name} score <name>\` - Display the score for a name and some of the reasons\n`)
+      .concat(`\`@${msg.robot.name} top <amount>\` - Display the top scoring <amount>\n`)
+      .concat(`\`@${msg.robot.name} erase <name> [<reason>]\` - Remove the score for a name (for a reason) \n`)
+      .concat(`\`@${msg.robot.name} level me up\` - Level up your account for some additional ${msg.robot.name}iness \n`)
       .concat('`how much are <point_type> points worth` - Shows how much <point_type> points are worth\n');
 
     const message = {
@@ -287,7 +287,7 @@ module.exports = function plusPlus(robot) {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: 'Need help with qrafty?',
+              text: `Need help with ${msg.robot.name}?`,
             },
           },
           {
