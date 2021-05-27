@@ -74,7 +74,10 @@ class DatabaseService {
         },
       );
     const updatedUser = result.value;
-    await this.updateBotWallet(incrementObject.score);
+    if (updatedUser.accountLevel > 1) {
+      await this.addBotTokenForUser(user.name, incrementObject.score);
+      await this.updateBotWallet(-incrementObject.score);
+    }
 
     try {
       this.saveSpamLog(user.name, from.name, room, reason);
@@ -178,21 +181,26 @@ class DatabaseService {
   async levelUpAccount(user) {
     const db = await this.getDb();
     let tokensAdded = 0;
-    await db.collection(scoresDocumentName).find({ name: user.name }).map(async (mappedUser) => {
+    await db.collection(scoresDocumentName).find({ name: user.name }).foreach((mappedUser) => {
       // we are leveling up from 0 (which is level 1) -> 2 or 2 -> 3
       const newLevel = !mappedUser.accountLevel ? 2 : 3;
       mappedUser.accountLevel = newLevel;
       mappedUser.token = mappedUser.score;
       tokensAdded += mappedUser.score;
-      await db.collection(scoresDocumentName).save(mappedUser);
+      db.collection(scoresDocumentName).save(mappedUser);
     });
 
     await this.updateBotWallet(-tokensAdded);
     return true;
   }
 
+  async addBotTokenForUser(userName, scoreChange) {
+    const updateUser = await this.db.collection(scoresDocumentName).updateOne({ name: userName }, { $inc: { token: scoreChange } });
+    return updateUser;
+  }
+
   async updateBotWallet(scoreChange) {
-    const updatedBotToken = await this.db.collection(botTokenDocumentName).updateOne({ name: this.robot.name }, { $inc: { tokens: scoreChange } });
+    const updatedBotToken = await this.db.collection(botTokenDocumentName).updateOne({ name: this.robot.name }, { $inc: { token: scoreChange } });
     return updatedBotToken;
   }
 }
