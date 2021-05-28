@@ -23,4 +23,12 @@
  */
 const scoresDocumentName = 'scores';
 
-module.exports = scoresDocumentName;
+const createNewLevelOneUser = (name, robotName) => ({
+  name,
+  score: 0,
+  reasons: { },
+  pointsGiven: { },
+  [`${robotName}Day`]: new Date(),
+  accountLevel: 1,
+});
+module.exports = { scoresDocumentName, createNewLevelOneUser };

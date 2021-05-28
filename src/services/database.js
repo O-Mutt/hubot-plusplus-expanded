@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 const { MongoClient } = require('mongodb');
-const scoresDocumentName = require('../data/scores');
+const { scoresDocumentName, createNewLevelOneUser } = require('../data/scores');
 const logDocumentName = require('../data/scoreLog');
 const botTokenDocumentName = require('../data/botToken');
 const helpers = require('../helpers');
@@ -37,25 +37,16 @@ class DatabaseService {
   async getUser(user) {
     this.robot.logger.debug(`trying to find user ${user}`);
     const db = await this.getDb();
-    const dbUser = await db.collection(scoresDocumentName).findOneAndUpdate(
+    const dbUser = await db.collection(scoresDocumentName).findOne(
       { name: user },
-      {
-        $setOnInsert: {
-          name: user,
-          score: 0,
-          reasons: { },
-          pointsGiven: { },
-          [`${this.robot.name}Day`]: new Date(),
-        },
-      },
-      {
-        returnOriginal: false,
-        upsert: true,
-        sort: { score: -1 },
-      },
+      { sort: { score: -1 } },
     );
 
-    return dbUser.value;
+    if (!dbUser) {
+      const newUser = createNewLevelOneUser(user, this.robot.name);
+      return newUser;
+    }
+    return dbUser;
   }
 
   async saveUser(user, from, room, reason, incrementObject) {
@@ -65,7 +56,7 @@ class DatabaseService {
       .findOneAndUpdate(
         { name: user.name },
         {
-          $inc: incrementObject,
+          $set: user,
         },
         {
           returnOriginal: false,
@@ -73,10 +64,10 @@ class DatabaseService {
           sort: { score: -1 },
         },
       );
+
     const updatedUser = result.value;
     if (updatedUser.accountLevel > 1) {
-      await this.addBotTokenForUser(user.name, incrementObject.score);
-      await this.updateBotWallet(-incrementObject.score);
+      await this.transferScoreFromBotToUser(user.name, incrementObject.score);
     }
 
     try {
@@ -178,30 +169,31 @@ class DatabaseService {
     return result;
   }
 
-  async levelUpAccount(user) {
+  async updateAccountLevelToTwo(user) {
     const db = await this.getDb();
     let tokensAdded = 0;
     await db.collection(scoresDocumentName).find({ name: user.name }).forEach((mappedUser) => {
       // we are leveling up from 0 (which is level 1) -> 2 or 2 -> 3
-      const newLevel = (!mappedUser.accountLevel || mappedUser.accountLevel === 1) ? 2 : 3;
-      mappedUser.accountLevel = newLevel;
-      mappedUser.token = mappedUser.score;
-      tokensAdded += mappedUser.score;
+      if (mappedUser.accountLevel && mappedUser.accountLevel === 2) {
+        // this is a weird case and shouldn't really happen... not sure about this...
+        this.robot.logger.debug(`Somehow FoundUser[${mappedUser.name}] SearchedUser[${user.name}] was trying to upgrade their account to level 2.`);
+        return;
+      }
+      mappedUser.accountLevel = 2;
+      mappedUser.token = 0;
+      tokensAdded = mappedUser.score;
       db.collection(scoresDocumentName).save(mappedUser);
     });
 
-    await this.updateBotWallet(-tokensAdded);
+    await this.transferScoreFromBotToUser(tokensAdded);
     return true;
   }
 
-  async addBotTokenForUser(userName, scoreChange) {
+  async transferScoreFromBotToUser(userName, scoreChange) {
+    this.robot.logger.info(`We are transferring ${scoreChange} ${helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName}`);
     const updateUser = await this.db.collection(scoresDocumentName).updateOne({ name: userName }, { $inc: { token: scoreChange } });
+    const updateBotWallet = await this.db.collection(botTokenDocumentName).updateOne({ name: userName }, { $inc: { token: -scoreChange } });
     return updateUser;
-  }
-
-  async updateBotWallet(scoreChange) {
-    const updatedBotToken = await this.db.collection(botTokenDocumentName).updateOne({ name: this.robot.name }, { $inc: { token: scoreChange } });
-    return updatedBotToken;
   }
 }
 

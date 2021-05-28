@@ -116,6 +116,13 @@ function isNotPrivateMessage(msg) {
   return room[0] !== 'D' && room !== 'Shell';
 }
 
+function capitalizeFirstLetter(str) {
+  if (typeof str !== 'string') {
+    return '';
+  }
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 const helpers = {
   cleanName,
   cleanAndEncode,
@@ -124,6 +131,7 @@ const helpers = {
   isCakeDay,
   getYearsAsString,
   isNotPrivateMessage,
+  capitalizeFirstLetter,
 };
 
 module.exports = helpers;
