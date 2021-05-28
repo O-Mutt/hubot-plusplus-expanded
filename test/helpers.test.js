@@ -113,6 +113,20 @@ describe('Helpers', function () {
       });
   });
 
+  describe('createTopBottomTokenRegExp', function () {
+    forEach([
+      ['top tokens 10', 'top', 'tokens', '10'],
+      ['bottom tokens 5', 'bottom', 'tokens', '5'],
+    ])
+      .it('should match %j', (requestForScores, topOrBottom, token, numberOfUsers) => {
+        const topBottomTokenRegExp = regexp.createTopBottomTokenRegExp();
+        expect(topBottomTokenRegExp).to.be.a('RegExp');
+        expect(requestForScores.match(topBottomTokenRegExp)).to.be.an('array');
+        expect(requestForScores.match(topBottomTokenRegExp).length).to.equal(3);
+        expect(requestForScores.match(topBottomTokenRegExp)).to.deep.equal([requestForScores, topOrBottom, numberOfUsers]);
+      });
+  });
+
   describe('createUpDownVoteRegExp', function () {
     forEach([
       ['@matt++', '@matt++', '@matt', '++', undefined],
