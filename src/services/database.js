@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 const { MongoClient } = require('mongodb');
+const moment = require('moment');
 const { scoresDocumentName, createNewLevelOneUser } = require('../data/scores');
 const logDocumentName = require('../data/scoreLog');
 const botTokenDocumentName = require('../data/botToken');
@@ -12,6 +13,7 @@ class DatabaseService {
     this.uri = params.mongoUri;
     this.furtherFeedbackScore = params.furtherFeedbackSuggestedScore;
     this.peerFeedbackUrl = params.peerFeedbackUrl;
+    this.spamTimeLimit = params.spamTimeLimit;
   }
 
   async init() {
@@ -86,20 +88,23 @@ class DatabaseService {
     await db.collection(logDocumentName).insertOne({
       from: fromUser,
       to: user,
-      date: new Date(),
+      date: moment().toISOString(),
     });
   }
 
   async isSpam(user, from) {
     this.robot.logger.debug('spam check');
     const db = await this.getDb();
+    let fiveMinutesAgo = moment();
+    fiveMinutesAgo = fiveMinutesAgo.subtract(this.spamTimeLimit, 'minutes').toISOString();
     const previousScoreExists = await db.collection(logDocumentName)
-      .find({
+      .countDocuments({
         from: from.name,
         to: user,
-      }).count(true);
+        date: { $gte: fiveMinutesAgo },
+      });
     this.robot.logger.debug('spam check result', previousScoreExists);
-    if (previousScoreExists) {
+    if (previousScoreExists !== 0) {
       this.robot.logger.warn(`${from.name} is spamming points to ${user}! STOP THEM!!!!`);
       return true;
     }

@@ -13,6 +13,7 @@ class ScoreKeeper {
     this.peerFeedbackUrl = params.peerFeedbackUrl;
     this.furtherFeedbackScore = parseInt(params.furtherFeedbackSuggestedScore, 10);
     this.spamMessage = params.spamMessage;
+    this.spamTimeLimit = params.spamTimeLimit;
     this.databaseService = new DatabaseService(params);
     this.databaseService.init(); // this is async but it is just initializing the db connection, we let it run
   }
@@ -97,7 +98,9 @@ class ScoreKeeper {
   }
 
   async validate(user, from) {
-    return (user.name !== from.name) && !await this.databaseService.isSpam(user.name, from);
+    const isSpam = await this.databaseService.isSpam(user.name, from);
+    const fromSelf = user.name === from.name;
+    return !fromSelf && !isSpam;
   }
 
   // eslint-disable-next-line

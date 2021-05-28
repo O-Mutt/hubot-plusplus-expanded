@@ -38,6 +38,7 @@ const helper = require('./helpers');
 
 const reasonsKeyword = process.env.HUBOT_PLUSPLUS_REASONS || 'reasons';
 const spamMessage = process.env.HUBOT_SPAM_MESSAGE || 'Looks like you hit the spam filter. Please slow your roll.';
+const spamTimeLimit = parseInt(process.env.SPAM_TIME_LIMIT, 10) || 5;
 const companyName = process.env.HUBOT_COMPANY_NAME || 'Company Name';
 const peerFeedbackUrl = process.env.HUBOT_PEER_FEEDBACK_URL || `praise in Lattice (https://${companyName}.latticehq.com/)`;
 const furtherFeedbackSuggestedScore = process.env.HUBOT_FURTHER_FEEDBACK_SCORE || 10;
@@ -46,7 +47,7 @@ const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env
 module.exports = function plusPlus(robot) {
   const scoreKeeper = new ScoreKeeper(
     {
-      robot, spamMessage, companyName, peerFeedbackUrl, furtherFeedbackSuggestedScore, mongoUri,
+      robot, spamMessage, companyName, peerFeedbackUrl, furtherFeedbackSuggestedScore, mongoUri, spamTimeLimit,
     },
   );
 
