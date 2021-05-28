@@ -78,11 +78,11 @@ class ScoreKeeper {
 
   async erase(user, from, room, reason) {
     if (reason) {
-      this.robot.logger.warn(`Erasing score for reason ${reason} for ${user} by ${from}`);
+      this.robot.logger.error(`Erasing score for reason ${reason} for ${user} by ${from}`);
       this.databaseService.erase(user, reason);
       return true;
     }
-    this.robot.logger.warn(`Erasing all scores for ${user} by ${from}`);
+    this.robot.logger.error(`Erasing all scores for ${user} by ${from}`);
     this.databaseService.erase(user);
 
     return true;

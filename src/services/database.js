@@ -75,7 +75,7 @@ class DatabaseService {
     try {
       this.saveSpamLog(user.name, from.name, room, reason);
     } catch (e) {
-      this.robot.logger.warn(`failed saving spam log for user ${user.name} from ${from.name} in room ${room} because ${reason}`, e);
+      this.robot.logger.error(`failed saving spam log for user ${user.name} from ${from.name} in room ${room} because ${reason}`, e);
     }
 
     this.robot.logger.debug(`Saving user original: [${user.name}: ${user.score} ${user.reasons[reason] || 'none'}], new [${updatedUser.name}: ${updatedUser.score} ${updatedUser.reasons[reason] || 'none'}]`);
@@ -105,7 +105,7 @@ class DatabaseService {
       });
     this.robot.logger.debug('spam check result', previousScoreExists);
     if (previousScoreExists !== 0) {
-      this.robot.logger.warn(`${from.name} is spamming points to ${user}! STOP THEM!!!!`);
+      this.robot.logger.error(`${from.name} is spamming points to ${user}! STOP THEM!!!!`);
       return true;
     }
 
