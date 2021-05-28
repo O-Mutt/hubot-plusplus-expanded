@@ -38,6 +38,7 @@ const ScoreKeeper = require('./scorekeeper');
 const helper = require('./helpers');
 const token = require('./token.json');
 const decrypt = require('./services/decrypt');
+const DatabaseService = require('./services/database');
 
 const procVars = {};
 procVars.reasonsKeyword = process.env.HUBOT_PLUSPLUS_REASONS || 'reasons';
@@ -259,9 +260,8 @@ module.exports = function plusPlus(robot) {
 
   async function respondWithLeaderLoserTokenBoard(msg) {
     const amount = parseInt(msg.match[2], 10) || 10;
-    const topOrBottom = msg.match[1].trim();
-    topOrBottom[0] = topOrBottom[0].toUpperCase();
-    const methodName = `get${topOrBottom.substring(0, 1).toUpperCase()}${topOrBottom.substring(1, topOrBottom.length)}Tokens`;
+    const topOrBottom = helper.capitalizeFirstLetter(msg.match[1].trim());
+    const methodName = `get${topOrBottom}Tokens`;
 
     const tops = await scoreKeeper.databaseService[methodName](amount);
 
@@ -269,7 +269,7 @@ module.exports = function plusPlus(robot) {
     if (tops.length > 0) {
       // eslint-disable-next-line
       for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
-          message.push(`${i + 1}. ${tops[i].name} : ${tops[i].token} tokens (${tops[i].score} points)`);
+        message.push(`${i + 1}. ${tops[i].name} : ${tops[i].token} Tokens (${tops[i].score} points)`);
       }
     } else {
       message.push('No scores to keep track of yet!');

@@ -1,3 +1,5 @@
+/* eslint-disable guard-for-in */
+/* eslint-disable no-restricted-syntax */
 const DatabaseService = require('./services/database');
 
 class ScoreKeeper {
@@ -9,10 +11,11 @@ class ScoreKeeper {
   * params.mongoUri
   */
   constructor(params) {
-    let self = this;
-    self = { ...self, ...params };
-    self.databaseService = new DatabaseService(params);
-    self.databaseService.init(); // this is async but it is just initializing the db connection, we let it run
+    for (const key in params) {
+      this[key] = params[key];
+    }
+    this.databaseService = new DatabaseService(params);
+    this.databaseService.init(); // this is async but it is just initializing the db connection, we let it run
   }
 
   async add(user, from, room, reason) {
