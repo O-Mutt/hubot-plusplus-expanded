@@ -79,7 +79,7 @@ describe('PlusPlus', function plusPlusTest() {
     });
   });
 
-  describe('respondWithQraftyGuidance', function () {
+  describe('respondWithHubotGuidance', function () {
     it('should respond with hubot usage guidance', async function () {
       room.user.say('peter.nguyen', '@hubot help');
 

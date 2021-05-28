@@ -65,11 +65,11 @@ regexp.createTopBottomRegExp = () => {
 regexp.createUpDownVoteRegExp = () => new RegExp(`${regexp.votedObject}${regexp.allowSpaceAfterObject}${regexp.operator}${regexp.reasonForVote}${regexp.eol}`, 'i');
 
 /**
- * @qrafty level me up
+ * @hubot level me up
  */
 regexp.createLevelUpAccount = () => new RegExp(/(level (me )?up|upgrade (my account|me)|me\+\+)/, 'i');
 
 /**
- * @qrafty help
+ * @hubot help
  */
 regexp.getHelp = () => new RegExp(`(help|-h|--help)${regexp.eol}`, 'i');
