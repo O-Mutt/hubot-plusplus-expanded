@@ -15,11 +15,11 @@ async function levelUpAccount(msg, scoreKeeper) {
   const user = await scoreKeeper.databaseService.getUser(msg.message.user.name);
   if (user.accountLevel === 2) {
     msg.reply(`You are already Level 2, ${user.name}. It looks as if you are ready for Level 3 where you can deposit/withdraw ${helpers.capitalizeFirstLetter(msg.robot.name)} Tokens! Is that correct? [Yes/No]`);
-    dialog.addChoice(/(yes|y)/i, (msg2) => {
+    dialog.addChoice(/yes/i, (msg2) => {
       // do the level 3 step up, get their info for deposit withdrawal
-      msg2.reply(`I'm sorry. I can't do that (right now) ${user.name}`);
+      msg2.reply(`Hey ${user.name}, looks like you are ready for Level 3 but I'm not :sob:. Level 3 is still WIP and will be available very soon!`);
     });
-    dialog.addChoice(/(no|n)/i, (msg2) => {
+    dialog.addChoice(/no/i, (msg2) => {
       msg2.reply('Woops. My mistake. Carry on++');
     });
     return false;
