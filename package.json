@@ -47,7 +47,8 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "mongodb": "^3.6.8",
-    "snyk": "^1.611.0"
+    "snyk": "^1.611.0",
+    "token-buddy": "^1.0.0"
   },
   "devDependencies": {
     "bluebird": "^3.7.2",

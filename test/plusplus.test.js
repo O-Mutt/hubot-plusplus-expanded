@@ -39,7 +39,7 @@ describe('PlusPlus', function plusPlusTest() {
     it('should respond with 5 reasons if the user has 5', async function respondWithScore() {
       room.user.say('matt.erickson', '@hubot score for matt.erickson');
       // eslint-disable-next-line new-cap
-      await (new Promise.delay(20)); // wait for the db call in hubot
+      await (new Promise.delay(30)); // wait for the db call in hubot
       expect(room.messages[1][1]).to.match(/matt\.erickson has 227 points\.\n\n:star: Here are some reasons :star:(\n.*:.*){5}/);
     });
 
@@ -125,7 +125,7 @@ describe('PlusPlus', function plusPlusTest() {
       room.user.say('matt.erickson', '@hubot top 2');
       // eslint-disable-next-line new-cap
       await (new Promise.delay(20)); // wait for the db call in hubot
-      expect(room.messages[1][1]).to.include("\n1. matt.erickson : 227\n2. peter.parker : 200 (200 tokens)");
+      expect(room.messages[1][1]).to.include("\n1. matt.erickson : 227\n2. peter.parker : 200 (200 Tokens)");
     });
   });
 
@@ -142,14 +142,14 @@ describe('PlusPlus', function plusPlusTest() {
       room.user.say('matt.erickson', '@hubot top tokens 2');
       // eslint-disable-next-line new-cap
       await (new Promise.delay(20)); // wait for the db call in hubot
-      expect(room.messages[1][1]).to.include("\n1. peter.parker : 200 tokens (200 points)\n2. peter.parker.min : 8 tokens (8 points)");
+      expect(room.messages[1][1]).to.include("\n1. peter.parker : 200 Tokens (200 points)\n2. peter.parker.min : 8 Tokens (8 points)");
     });
 
     it('should respond with bottom 2 leaders on the scoreboard', async function respondWithLeaderLoserTokenBoard() {
       room.user.say('matt.erickson', '@hubot bottom tokens 2');
       // eslint-disable-next-line new-cap
       await (new Promise.delay(20)); // wait for the db call in hubot
-      expect(room.messages[1][1]).to.include("\n1. peter.parker.min : 8 tokens (8 points)\n2. peter.parker : 200 tokens (200 points)");
+      expect(room.messages[1][1]).to.include("\n1. peter.parker.min : 8 Tokens (8 points)\n2. peter.parker : 200 Tokens (200 points)");
     });
   });
 });

@@ -31,4 +31,5 @@ const createNewLevelOneUser = (name, robotName) => ({
   [`${robotName}Day`]: new Date(),
   accountLevel: 1,
 });
+
 module.exports = { scoresDocumentName, createNewLevelOneUser };

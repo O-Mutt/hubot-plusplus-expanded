@@ -1,5 +1,9 @@
 const Conversation = require('hubot-conversation');
+const tokenBuddy = require('token-buddy');
 const helpers = require('./helpers');
+// this may need to move or be generic...er
+const token = require('./token');
+const decrypt = require('./services/decrypt');
 
 async function levelUpAccount(msg, scoreKeeper) {
   const switchBoard = new Conversation(msg.robot);
@@ -31,6 +35,51 @@ async function levelUpAccount(msg, scoreKeeper) {
   return true;
 }
 
+async function botWalletCount(msg, scoreKeeper) {
+  const botWallet = await scoreKeeper.databaseService.getBotWallet();
+  const gas = await tokenBuddy.getBalance(botWallet.publicWalletAddress);
+  msg.robot.logger.debug(`Get the bot wallet by user ${msg.message.user.name}`);
+
+  const message = {
+    attachments: [{
+      color: '#FEA500',
+      blocks: [
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `${helpers.capitalizeFirstLetter(msg.robot.name)} Token Wallet Info:`,
+          },
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `Public Wallet Address: ${botWallet.publicWalletAddress}\n`,
+          },
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `Tokens In Wallet: ${botWallet.token.toLocaleString()}\n`,
+          },
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `Gas Available: ${gas.toLocaleString()}\n`,
+          },
+        },
+      ],
+    }],
+  };
+
+  return msg.send(message);
+}
+
 module.exports = {
   levelUpAccount,
+  botWalletCount,
 };

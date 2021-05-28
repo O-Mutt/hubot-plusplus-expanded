@@ -73,9 +73,14 @@ regexp.createUpDownVoteRegExp = () => new RegExp(`${regexp.votedObject}${regexp.
 /**
  * @hubot level me up
  */
-regexp.createLevelUpAccount = () => new RegExp(/(level (me )?up|upgrade (my account|me)|me\+\+)/, 'i');
+regexp.createLevelUpAccount = () => new RegExp(/(level (me )?up|upgrade (my account|me))/, 'i');
 
 /**
  * @hubot help
  */
 regexp.getHelp = () => new RegExp(`(help|-h|--help)${regexp.eol}`, 'i');
+
+/**
+ * @hubot hot-wallet or hot wallet or hotwallet
+ */
+regexp.getBotWallet = () => new RegExp(/hot( |-)?wallet/, 'i');

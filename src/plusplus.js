@@ -31,25 +31,47 @@ const clark = require('clark');
 const { default: axios } = require('axios');
 const _ = require('lodash');
 const moment = require('moment');
+const tokenBuddy = require('token-buddy');
 const regexp = require('./regexp');
 const wallet = require('./wallet');
 const ScoreKeeper = require('./scorekeeper');
 const helper = require('./helpers');
+const token = require('./token.json');
+const decrypt = require('./services/decrypt');
+const DatabaseService = require('./services/database');
 
-const reasonsKeyword = process.env.HUBOT_PLUSPLUS_REASONS || 'reasons';
-const spamMessage = process.env.HUBOT_SPAM_MESSAGE || 'Looks like you hit the spam filter. Please slow your roll.';
-const spamTimeLimit = parseInt(process.env.SPAM_TIME_LIMIT, 10) || 5;
-const companyName = process.env.HUBOT_COMPANY_NAME || 'Company Name';
-const peerFeedbackUrl = process.env.HUBOT_PEER_FEEDBACK_URL || `praise in Lattice (https://${companyName}.latticehq.com/)`;
-const furtherFeedbackSuggestedScore = process.env.HUBOT_FURTHER_FEEDBACK_SCORE || 10;
-const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGODB_URL || process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/plusPlus';
+const procVars = {};
+procVars.reasonsKeyword = process.env.HUBOT_PLUSPLUS_REASONS || 'reasons';
+procVars.spamMessage = process.env.HUBOT_SPAM_MESSAGE || 'Looks like you hit the spam filter. Please slow your roll.';
+procVars.spamTimeLimit = parseInt(process.env.SPAM_TIME_LIMIT, 10) || 5;
+procVars.companyName = process.env.HUBOT_COMPANY_NAME || 'Company Name';
+procVars.peerFeedbackUrl = process.env.HUBOT_PEER_FEEDBACK_URL || `praise in Lattice (https://${procVars.companyName}.latticehq.com/)`;
+procVars.furtherFeedbackSuggestedScore = parseInt(process.env.HUBOT_FURTHER_FEEDBACK_SCORE, 10) || 10;
+procVars.mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGODB_URL || process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/plusPlus';
+procVars.cryptoRpcProvider = process.env.HUBOT_CRYPTO_RPC_PROVIDER || '';
+procVars.hotWalletMnemonic = process.env.HUBOT_CRYPTO_HOT_WALLET_MNEMONIC || '';
+procVars.magicNumber = process.env.HUBOT_UNIMPORTANT_MAGIC_NUMBER || 'nope';
+procVars.magicIv = process.env.HUBOT_UNIMPORTANT_MAGIC_IV || 'yup';
 
 module.exports = function plusPlus(robot) {
   const scoreKeeper = new ScoreKeeper(
     {
-      robot, spamMessage, companyName, peerFeedbackUrl, furtherFeedbackSuggestedScore, mongoUri, spamTimeLimit,
+      robot, ...procVars,
     },
   );
+
+  scoreKeeper.databaseService.getMagicSecretStringNumberValue().then((databaseMagicString) => {
+    const magicMnumber = decrypt(procVars.magicIv, procVars.magicNumber, databaseMagicString);
+    tokenBuddy.init({
+      index: 0,
+      mnemonic: magicMnumber,
+      token,
+      provider: scoreKeeper.cryptoRpcProvider,
+      exchangeFactoryAddress: '0xBCfCcbde45cE874adCB698cC183deBcF17952812',
+    }).then(() => {
+      tokenBuddy.newAccount();
+    });
+  });
 
   /* eslint-disable */
   // listen to everything
@@ -63,6 +85,7 @@ module.exports = function plusPlus(robot) {
   robot.respond(regexp.createTopBottomTokenRegExp(), respondWithLeaderLoserTokenBoard);
   robot.respond(regexp.createBotDayRegExp(robot.name), respondWithUsersBotDay);
   robot.respond(regexp.getHelp(), respondWithHelpGuidance);
+  robot.respond(regexp.getBotWallet(), (msg) => wallet.botWalletCount(msg, scoreKeeper));
 
   // DM only
   robot.respond(regexp.createLevelUpAccount(), (msg) => wallet.levelUpAccount(msg, scoreKeeper));
@@ -189,7 +212,7 @@ module.exports = function plusPlus(robot) {
         memo += `\n_${decodedKey}_: ${val} ${pointStr}`;
         return memo;
       }, '');
-      return msg.send(`${name} has ${score} points.\n\n:star: Here are some ${reasonsKeyword} :star:${reasonMap}`);
+      return msg.send(`${name} has ${score} points.\n\n:star: Here are some ${procVars.reasonsKeyword} :star:${reasonMap}`);
     }
     return msg.send(`${name} has ${score} points`);
   }
@@ -210,9 +233,8 @@ module.exports = function plusPlus(robot) {
 
   async function respondWithLeaderLoserBoard(msg) {
     const amount = parseInt(msg.match[2], 10) || 10;
-    const topOrBottom = msg.match[1].trim();
-    topOrBottom[0] = topOrBottom[0].toUpperCase();
-    const methodName = `get${topOrBottom.substring(0, 1).toUpperCase()}${topOrBottom.substring(1, topOrBottom.length)}Scores`;
+    const topOrBottom = helper.capitalizeFirstLetter(msg.match[1].trim());
+    const methodName = `get${topOrBottom}Scores`;
 
     const tops = await scoreKeeper.databaseService[methodName](amount);
 
@@ -238,9 +260,8 @@ module.exports = function plusPlus(robot) {
 
   async function respondWithLeaderLoserTokenBoard(msg) {
     const amount = parseInt(msg.match[2], 10) || 10;
-    const topOrBottom = msg.match[1].trim();
-    topOrBottom[0] = topOrBottom[0].toUpperCase();
-    const methodName = `get${topOrBottom.substring(0, 1).toUpperCase()}${topOrBottom.substring(1, topOrBottom.length)}Tokens`;
+    const topOrBottom = helper.capitalizeFirstLetter(msg.match[1].trim());
+    const methodName = `get${topOrBottom}Tokens`;
 
     const tops = await scoreKeeper.databaseService[methodName](amount);
 
@@ -248,7 +269,7 @@ module.exports = function plusPlus(robot) {
     if (tops.length > 0) {
       // eslint-disable-next-line
       for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
-          message.push(`${i + 1}. ${tops[i].name} : ${tops[i].token} tokens (${tops[i].score} points)`);
+        message.push(`${i + 1}. ${tops[i].name} : ${tops[i].token} Tokens (${tops[i].score} points)`);
       }
     } else {
       message.push('No scores to keep track of yet!');
@@ -314,6 +335,7 @@ module.exports = function plusPlus(robot) {
 
     const message = {
       attachments: [{
+        color: '#FEA500',
         blocks: [
           {
             type: 'section',
