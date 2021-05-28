@@ -34,7 +34,7 @@ async function levelUpAccount(msg, scoreKeeper) {
 
 async function botWalletCount(msg, scoreKeeper) {
   const botWallet = await scoreKeeper.databaseService.getBotWallet();
-  const gas = await tokenBuddy.getBalance(botWallet.publicWalletAddress);
+  //const gas = await tokenBuddy.getBalance(botWallet.publicWalletAddress);
   msg.robot.logger.debug(`Get the bot wallet by user ${msg.message.user.name}`);
 
   const message = {
@@ -62,13 +62,13 @@ async function botWalletCount(msg, scoreKeeper) {
             text: `Tokens In Wallet: ${botWallet.token.toLocaleString()}\n`,
           },
         },
-        {
+        /*{
           type: 'section',
           text: {
             type: 'mrkdwn',
             text: `Gas Available: ${gas.toLocaleString()}\n`,
           },
-        },
+        },*/
       ],
     }],
   };
