@@ -23,7 +23,6 @@ const robotStub = {
   logger: {
     debug() {},
     info() {},
-    warn() {},
     error() {},
   },
   name: 'testBot',
