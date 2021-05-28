@@ -80,7 +80,7 @@ describe('PlusPlus', function plusPlusTest() {
   });
 
   describe('respondWithQraftyGuidance', function () {
-    it('should respond with qrafty usage guidance', async function () {
+    it('should respond with hubot usage guidance', async function () {
       room.user.say('peter.nguyen', '@hubot help');
 
       await (new Promise.delay(30)); // wait for the db call in hubot
@@ -92,7 +92,7 @@ describe('PlusPlus', function plusPlusTest() {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: 'Need help with qrafty?',
+          text: 'Need help with hubot?',
         },
       });
       expect(blocks).to.deep.include({

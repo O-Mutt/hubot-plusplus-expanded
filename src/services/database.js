@@ -1,6 +1,8 @@
+/* eslint-disable no-restricted-syntax */
 const { MongoClient } = require('mongodb');
 const scoresDocumentName = require('../data/scores');
-const logDocumentName = require('../data/scores');
+const logDocumentName = require('../data/scoreLog');
+const botTokenDocumentName = require('../data/botToken');
 const helpers = require('../helpers');
 
 class DatabaseService {
@@ -58,18 +60,6 @@ class DatabaseService {
 
   async saveUser(user, from, room, reason, incrementObject) {
     const db = await this.getDb();
-    await db.collection(scoresDocumentName)
-      .updateOne(
-        {
-          name: user.name,
-          [`${this.robot.name}Day`]: { $exists: false },
-        },
-        {
-          $set: {
-            [`${this.robot.name}Day`]: new Date(),
-          },
-        },
-      );
 
     const result = await db.collection(scoresDocumentName)
       .findOneAndUpdate(
@@ -84,6 +74,10 @@ class DatabaseService {
         },
       );
     const updatedUser = result.value;
+    if (updatedUser.accountLevel > 1) {
+      await this.addBotTokenForUser(user.name, incrementObject.score);
+      await this.updateBotWallet(-incrementObject.score);
+    }
 
     try {
       this.saveSpamLog(user.name, from.name, room, reason);
@@ -144,7 +138,7 @@ class DatabaseService {
     }
   }
 
-  async topScores(amount) {
+  async getTopScores(amount) {
     const db = await this.getDb();
     const results = await db.collection(scoresDocumentName)
       .find()
@@ -157,7 +151,7 @@ class DatabaseService {
     return results;
   }
 
-  async bottomScores(amount) {
+  async getBottomScores(amount) {
     const db = await this.getDb();
     const results = await db.collection(scoresDocumentName)
       .find({ score: { $gt: Number.MIN_SAFE_INTEGER } })
@@ -186,14 +180,28 @@ class DatabaseService {
 
   async levelUpAccount(user) {
     const db = await this.getDb();
-    const result = await db.collection(scoresDocumentName).find({ name: user.name }).forEach((loopedUser) => {
+    let tokensAdded = 0;
+    await db.collection(scoresDocumentName).find({ name: user.name }).forEach((mappedUser) => {
       // we are leveling up from 0 (which is level 1) -> 2 or 2 -> 3
-      const newLevel = !loopedUser.accountLevel ? 2 : 3;
-      loopedUser.accountLevel = newLevel;
-      loopedUser.token = loopedUser.score;
-      db.collection(scoresDocumentName).save(loopedUser);
+      const newLevel = (!mappedUser.accountLevel || mappedUser.accountLevel === 1) ? 2 : 3;
+      mappedUser.accountLevel = newLevel;
+      mappedUser.token = mappedUser.score;
+      tokensAdded += mappedUser.score;
+      db.collection(scoresDocumentName).save(mappedUser);
     });
-    return result;
+
+    await this.updateBotWallet(-tokensAdded);
+    return true;
+  }
+
+  async addBotTokenForUser(userName, scoreChange) {
+    const updateUser = await this.db.collection(scoresDocumentName).updateOne({ name: userName }, { $inc: { token: scoreChange } });
+    return updateUser;
+  }
+
+  async updateBotWallet(scoreChange) {
+    const updatedBotToken = await this.db.collection(botTokenDocumentName).updateOne({ name: this.robot.name }, { $inc: { token: scoreChange } });
+    return updatedBotToken;
   }
 }
 

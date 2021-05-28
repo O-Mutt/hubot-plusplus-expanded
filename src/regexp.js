@@ -73,7 +73,7 @@ regexp.createUpDownVoteRegExp = () => new RegExp(`${regexp.votedObject}${regexp.
 /**
  * @qrafty level me up
  */
-regexp.createLevelUpAccount = () => new RegExp(`level me up${regexp.eol}`, 'i');
+regexp.createLevelUpAccount = () => new RegExp(/(level (me )?up|upgrade (my account|me)|me\+\+)/, 'i');
 
 /**
  * @qrafty help
