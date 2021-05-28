@@ -49,7 +49,7 @@ class DatabaseService {
     return dbUser;
   }
 
-  async saveUser(user, from, room, reason, incrementObject) {
+  async saveUser(user, from, room, reason) {
     const db = await this.getDb();
 
     const result = await db.collection(scoresDocumentName)
@@ -67,7 +67,7 @@ class DatabaseService {
 
     const updatedUser = result.value;
     if (updatedUser.accountLevel > 1) {
-      await this.transferScoreFromBotToUser(user.name, incrementObject.score);
+      await this.transferScoreFromBotToUser(user.name);
     }
 
     try {
@@ -185,11 +185,11 @@ class DatabaseService {
       db.collection(scoresDocumentName).save(mappedUser);
     });
 
-    await this.transferScoreFromBotToUser(tokensAdded);
+    await this.transferScoreFromBotToUser(user.name, tokensAdded);
     return true;
   }
 
-  async transferScoreFromBotToUser(userName, scoreChange) {
+  async transferScoreFromBotToUser(userName, scoreChange = 1) {
     this.robot.logger.info(`We are transferring ${scoreChange} ${helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName}`);
     const updateUser = await this.db.collection(scoresDocumentName).updateOne({ name: userName }, { $inc: { token: scoreChange } });
     const updateBotWallet = await this.db.collection(botTokenDocumentName).updateOne({ name: userName }, { $inc: { token: -scoreChange } });
