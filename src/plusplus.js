@@ -36,9 +36,9 @@ const regexp = require('./regexp');
 const wallet = require('./wallet');
 const ScoreKeeper = require('./scorekeeper');
 const helper = require('./helpers');
-const token = require('./token.json');
+// this may need to move or be generic...er
+const token = require('./token');
 const decrypt = require('./services/decrypt');
-const DatabaseService = require('./services/database');
 
 const procVars = {};
 procVars.reasonsKeyword = process.env.HUBOT_PLUSPLUS_REASONS || 'reasons';

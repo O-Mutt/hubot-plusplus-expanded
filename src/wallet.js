@@ -1,9 +1,6 @@
 const Conversation = require('hubot-conversation');
 const tokenBuddy = require('token-buddy');
 const helpers = require('./helpers');
-// this may need to move or be generic...er
-const token = require('./token');
-const decrypt = require('./services/decrypt');
 
 async function levelUpAccount(msg, scoreKeeper) {
   const switchBoard = new Conversation(msg.robot);
