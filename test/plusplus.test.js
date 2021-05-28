@@ -10,6 +10,8 @@ const Helper = require('hubot-test-helper');
 
 const mockMinUser = require('./mock_minimal_user.json');
 const mockFullUser = require('./mock_full_user.json');
+const mockFullUserLevelTwo = require('./mock_full_user_level_2.json')
+const mockMinUserLevelTwo = require('./mock_minimal_user_level_2.json')
 
 describe('PlusPlus', function plusPlusTest() {
   let room; let db; let plusPlusHelper;
@@ -102,6 +104,52 @@ describe('PlusPlus', function plusPlusTest() {
           text: '_Commands_:',
         },
       });
+    });
+  });
+
+  describe('respondWithLeaderLoserBoard', function respondWithLeaderLoserBoard() {
+    it('should respond with top 2 leaders on the scoreboard', async function respondWithLeaderLoserBoard() {
+      room.user.say('matt.erickson', '@hubot top 2');
+      // eslint-disable-next-line new-cap
+      await (new Promise.delay(20)); // wait for the db call in hubot
+      expect(room.messages[1][1]).to.match(/\n1. matt.erickson : 227\n2. matt.erickson.min : 8/);
+    });
+    it('should respond with bottom 2 losers on the scoreboard', async function respondWithLeaderLoserBoard() {
+      room.user.say('matt.erickson', '@hubot bottom 2');
+      // eslint-disable-next-line new-cap
+      await (new Promise.delay(20)); // wait for the db call in hubot
+      expect(room.messages[1][1]).to.match(/\n1. matt.erickson.min : 8\n2. matt.erickson : 227/);
+    })
+    it('should respond with top 2 leaders on the scoreboard if account level if one user is level 2', async function respondWithLeaderLoserBoard() {
+      await db.collection('scores').insertMany([mockFullUserLevelTwo]);
+      room.user.say('matt.erickson', '@hubot top 2');
+      // eslint-disable-next-line new-cap
+      await (new Promise.delay(20)); // wait for the db call in hubot
+      expect(room.messages[1][1]).to.include("\n1. matt.erickson : 227\n2. peter.parker : 200 (200 tokens)");
+    });
+  });
+
+  describe('respondWithLeaderLoserTokenBoard', function respondWithLeaderLoserTokenBoard() {
+    beforeEach(async function () {
+      await db.collection('scores').insertMany([mockFullUserLevelTwo, mockMinUserLevelTwo]);
+    });
+  
+    afterEach(async function () {
+      await db.collection('scores').deleteMany({});
+    });
+
+    it('should respond with top 2 leaders on the scoreboard', async function respondWithLeaderLoserTokenBoard() {
+      room.user.say('matt.erickson', '@hubot top tokens 2');
+      // eslint-disable-next-line new-cap
+      await (new Promise.delay(20)); // wait for the db call in hubot
+      expect(room.messages[1][1]).to.include("\n1. peter.parker : 200 tokens (200 points)\n2. peter.parker.min : 8 tokens (8 points)");
+    });
+
+    it('should respond with bottom 2 leaders on the scoreboard', async function respondWithLeaderLoserTokenBoard() {
+      room.user.say('matt.erickson', '@hubot bottom tokens 2');
+      // eslint-disable-next-line new-cap
+      await (new Promise.delay(20)); // wait for the db call in hubot
+      expect(room.messages[1][1]).to.include("\n1. peter.parker.min : 8 tokens (8 points)\n2. peter.parker : 200 tokens (200 points)");
     });
   });
 });

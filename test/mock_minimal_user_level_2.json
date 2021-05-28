@@ -1,6 +1,6 @@
 {
-	"_id" : "5dsdfeec7ef94a17a032da2fe",
-	"name" : "matt.erickson.min",
+	"_id" : "60b0ff4ecc190e145a8f5826",
+	"name" : "peter.parker.min",
 	"score" : 8,
 	"reasons" : {
 		"eWVzPw==" : -1,
@@ -14,5 +14,6 @@
 		"cHNhYXMtYXBwbGljYXRpb25z" : 1
 	},
 	"hubotDay" : "2020-07-09T16:55:04.374Z",
-	"accountLevel": 1
+	"accountLevel": 2,
+    "token": 8
 }

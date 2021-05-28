@@ -1,7 +1,7 @@
 {
-	"_id" : "5d52eec7ef94a17a032da2fe",
-	"name" : "matt.erickson",
-	"score" : 227,
+	"_id" : "60b0fd155ba9f987627d0102",
+	"name" : "peter.parker",
+	"score" : 200,
 	"reasons" : {
 		"eWVzPw==" : -1,
 		"aGUgaXMgYW4gZXZpbCB3YXJsb2NrIHdobyBlYXRzIGthbGU=" : -1,
@@ -84,5 +84,6 @@
 		"bWF0dC5jb3JsZXk=" : 2
 	},
 	"hubotDay" : "2020-07-09T16:55:04.374Z",
-	"accountLevel": 1
+	"accountLevel": 2,
+    "token": 200
 }

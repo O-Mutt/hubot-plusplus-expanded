@@ -164,6 +164,36 @@ class DatabaseService {
     return results;
   }
 
+  async getTopTokens(amount) {
+    const db = await this.getDb();
+    const results = await db.collection(scoresDocumentName)
+      .find({
+        accountLevel: 2
+      })
+      .sort({ token: -1 })
+      .limit(amount)
+      .toArray();
+
+    this.robot.logger.debug('Trying to find top scores');
+
+    return results;
+  }
+
+  async getBottomTokens(amount) {
+    const db = await this.getDb();
+    const results = await db.collection(scoresDocumentName)
+      .find({
+        accountLevel: 2
+      })
+      .sort({ token: 1 })
+      .limit(amount)
+      .toArray();
+
+    this.robot.logger.debug('Trying to find top scores');
+
+    return results;
+  }
+
   async erase(username, reason) {
     const db = await this.getDb();
     let result;

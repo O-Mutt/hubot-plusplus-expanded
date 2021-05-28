@@ -220,7 +220,7 @@ module.exports = function plusPlus(robot) {
       // eslint-disable-next-line
       for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
         if (tops[i].accountLevel === 2) {
-          message.push(`${i + 1}. ${tops[i].name} : ${tops[i].score} (${tops[i].token})`);
+          message.push(`${i + 1}. ${tops[i].name} : ${tops[i].score} (${tops[i].token} tokens)`);
         } else {
           message.push(`${i + 1}. ${tops[i].name} : ${tops[i].score}`);
         }
@@ -236,27 +236,25 @@ module.exports = function plusPlus(robot) {
   }
 
   async function respondWithLeaderLoserTokenBoard(msg) {
-    const amount = parseInt(msg.match[3], 10) || 10;
+    const amount = parseInt(msg.match[2], 10) || 10;
     const topOrBottom = msg.match[1].trim();
+    topOrBottom[0] = topOrBottom[0].toUpperCase();
+    const methodName = `get${topOrBottom.substring(0, 1).toUpperCase()}${topOrBottom.substring(1, topOrBottom.length)}Tokens`;
 
-    const tops = await scoreKeeper[topOrBottom](amount);
+    const tops = await scoreKeeper.databaseService[methodName](amount);
 
     const message = [];
     if (tops.length > 0) {
       // eslint-disable-next-line
       for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
-        if (tops[i].accountLevel === 2) {
-          message.push(`${i + 1}. ${tops[i].name.italics()} : ${tops[i].token} tokens (${tops[i].score} points)`);
-        } else {
-          message.push(`${i + 1}. ${tops[i].name} : ${tops[i].token} tokens`);
-        }
+          message.push(`${i + 1}. ${tops[i].name} : ${tops[i].token} tokens (${tops[i].score} points)`);
       }
     } else {
       message.push('No scores to keep track of yet!');
     }
 
     const graphSize = Math.min(tops.length, Math.min(amount, 20));
-    message.splice(0, 0, clark(_.take(_.map(tops, 'score'), graphSize)));
+    message.splice(0, 0, clark(_.take(_.map(tops, 'token'), graphSize)));
 
     return msg.send(message.join('\n'));
   }
