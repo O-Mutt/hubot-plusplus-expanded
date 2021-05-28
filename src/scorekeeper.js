@@ -18,51 +18,49 @@ class ScoreKeeper {
   }
 
   async add(user, from, room, reason) {
-    let incScoreObj = { score: 1 };
+    let toUser;
     try {
-      const toUser = await this.databaseService.getUser(user);
+      toUser = await this.databaseService.getUser(user);
       if (await this.validate(toUser, from)) {
+        toUser.score += 1;
         if (reason) {
-          incScoreObj = {
-            score: 1,
-            [`reasons.${reason}`]: 1,
-          };
+          const oldReasonScore = toUser.reasons[`${reason}`] ? toUser.reasons[`${reason}`] : 0;
+          toUser.reasons[`${reason}`] = oldReasonScore + 1;
         }
 
         await this.databaseService.savePointsGiven(from, toUser.name, 1);
-        const saveResponse = await this.databaseService.saveUser(toUser, from, room, reason, incScoreObj);
+        const saveResponse = await this.databaseService.saveUser(toUser, from, room, reason);
         return saveResponse;
       }
 
       // this add is invalid
       this.robot.messageRoom(from.id, this.spamMessage);
     } catch (e) {
-      this.robot.logger.error(`failed to add point to [${user || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(incScoreObj)}]`, e);
+      this.robot.logger.error(`failed to add point to [${user || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(toUser)}]`, e);
     }
     return [null, null, null];
   }
 
   async subtract(user, from, room, reason) {
-    let decScoreObj = { score: -1 };
+    let toUser;
     try {
-      const toUser = await this.databaseService.getUser(user);
+      toUser = await this.databaseService.getUser(user);
       if (await this.validate(toUser, from)) {
+        toUser.score -= 1;
         if (reason) {
-          decScoreObj = {
-            score: -1,
-            [`reasons.${reason}`]: -1,
-          };
+          const oldReasonScore = toUser.reasons[`${reason}`] ? toUser.reasons[`${reason}`] : 0;
+          toUser.reasons[`${reason}`] = oldReasonScore - 1;
         }
 
-        await this.databaseService.savePointsGiven(from, toUser.name, -1);
-        const saveResponse = await this.databaseService.saveUser(toUser, from, room, reason, decScoreObj);
+        await this.databaseService.savePointsGiven(from, toUser.name, -11);
+        const saveResponse = await this.databaseService.saveUser(toUser, from, room, reason);
         return saveResponse;
       }
 
       // this subtraction is invalid
       this.robot.messageRoom(from.id, this.spamMessage);
     } catch (e) {
-      this.robot.logger.error(`failed to subtract point to [${user || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(decScoreObj)}]`, e);
+      this.robot.logger.error(`failed to subtract point to [${user || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(toUser)}]`, e);
     }
     return [null, null, null];
   }
