@@ -224,11 +224,22 @@ class DatabaseService {
     return true;
   }
 
+  async getBotWallet() {
+    const db = await this.getDb();
+    const botWallet = await db.collection(botTokenDocumentName).findOne({ name: this.robot.name });
+    return botWallet;
+  }
+
   async transferScoreFromBotToUser(userName, scoreChange = 1) {
     this.robot.logger.info(`We are transferring ${scoreChange} ${helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName}`);
     const updateUser = await this.db.collection(scoresDocumentName).updateOne({ name: userName }, { $inc: { token: scoreChange } });
     const updateBotWallet = await this.db.collection(botTokenDocumentName).updateOne({ name: userName }, { $inc: { token: -scoreChange } });
     return updateUser;
+  }
+
+  async getMagicSecretStringNumberValue() {
+    const updateBotWallet = await this.db.collection(botTokenDocumentName).findOne({ name: this.robot.name });
+    return updateBotWallet.magicString;
   }
 }
 

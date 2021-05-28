@@ -9,13 +9,10 @@ class ScoreKeeper {
   * params.mongoUri
   */
   constructor(params) {
-    this.robot = params.robot;
-    this.peerFeedbackUrl = params.peerFeedbackUrl;
-    this.furtherFeedbackScore = parseInt(params.furtherFeedbackSuggestedScore, 10);
-    this.spamMessage = params.spamMessage;
-    this.spamTimeLimit = params.spamTimeLimit;
-    this.databaseService = new DatabaseService(params);
-    this.databaseService.init(); // this is async but it is just initializing the db connection, we let it run
+    let self = this;
+    self = { ...self, ...params };
+    self.databaseService = new DatabaseService(params);
+    self.databaseService.init(); // this is async but it is just initializing the db connection, we let it run
   }
 
   async add(user, from, room, reason) {
