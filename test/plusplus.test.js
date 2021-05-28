@@ -39,7 +39,7 @@ describe('PlusPlus', function plusPlusTest() {
     it('should respond with 5 reasons if the user has 5', async function respondWithScore() {
       room.user.say('matt.erickson', '@hubot score for matt.erickson');
       // eslint-disable-next-line new-cap
-      await (new Promise.delay(20)); // wait for the db call in hubot
+      await (new Promise.delay(30)); // wait for the db call in hubot
       expect(room.messages[1][1]).to.match(/matt\.erickson has 227 points\.\n\n:star: Here are some reasons :star:(\n.*:.*){5}/);
     });
 

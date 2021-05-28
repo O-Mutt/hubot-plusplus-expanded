@@ -45,7 +45,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
     await mongoUnit.start();
     const url = mongoUnit.getUrl();
     scoreKeeper = new ScoreKeeper({
-      robot: robotStub, mongoUri: url, peerFeedbackUrl, spamMessage, furtherFeedbackSuggestedScore: 10, spamTimeLimit: 5,
+      robot: robotStub, mongoUri: url, peerFeedbackUrl, spamMessage, furtherFeedbackSuggestedScore: 10, spamTimeLimit: 1,
     });
     return true;
   });
