@@ -168,13 +168,13 @@ class DatabaseService {
     const db = await this.getDb();
     const results = await db.collection(scoresDocumentName)
       .find({
-        accountLevel: 2
+        accountLevel: { $gte: 2 }
       })
       .sort({ token: -1 })
       .limit(amount)
       .toArray();
 
-    this.robot.logger.debug('Trying to find top scores');
+    this.robot.logger.debug('Trying to find top tokens');
 
     return results;
   }
@@ -183,13 +183,13 @@ class DatabaseService {
     const db = await this.getDb();
     const results = await db.collection(scoresDocumentName)
       .find({
-        accountLevel: 2
+        accountLevel: { $gte: 2 }
       })
       .sort({ token: 1 })
       .limit(amount)
       .toArray();
 
-    this.robot.logger.debug('Trying to find top scores');
+    this.robot.logger.debug('Trying to find top tokens');
 
     return results;
   }

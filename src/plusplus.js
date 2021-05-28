@@ -219,8 +219,8 @@ module.exports = function plusPlus(robot) {
     if (tops.length > 0) {
       // eslint-disable-next-line
       for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
-        if (tops[i].accountLevel === 2) {
-          message.push(`${i + 1}. ${tops[i].name} : ${tops[i].score} (${tops[i].token} tokens)`);
+        if (tops[i].accountLevel && tops[i].accountLevel > 1) {
+          message.push(`${i + 1}. ${tops[i].name} : ${tops[i].score} (${tops[i].token} Tokens)`);
         } else {
           message.push(`${i + 1}. ${tops[i].name} : ${tops[i].score}`);
         }
