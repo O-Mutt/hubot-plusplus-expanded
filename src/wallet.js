@@ -47,32 +47,27 @@ async function botWalletCount(msg, scoreKeeper) {
             type: 'mrkdwn',
             text: `${helpers.capitalizeFirstLetter(msg.robot.name)} Token Wallet Info:`,
           },
-          accessory: {
-            type: 'image',
-            image_url: 'https://snollygolly.github.io/qrafty-web/images/qrafty-logo.svg',
-            alt_text: `${helpers.capitalizeFirstLetter(msg.robot.name)} Token`,
-          },
         },
         { type: 'divider' },
         {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `Public Wallet Address: ${botWallet.publicWalletAddress}\n`,
+            text: `Public Wallet Address: ${botWallet.publicWalletAddress}`,
           },
         },
         {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `Tokens In Wallet: ${botWallet.token.toLocaleString()}\n`,
+            text: `Tokens In Wallet: ${botWallet.token.toLocaleString()}`,
           },
         },
         {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `Gas Available: ${gas.toLocaleString()}\n`,
+            text: `Gas Available: ${gas.toLocaleString()}`,
           },
         },
       ],
