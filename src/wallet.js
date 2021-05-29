@@ -47,7 +47,13 @@ async function botWalletCount(msg, scoreKeeper) {
             type: 'mrkdwn',
             text: `${helpers.capitalizeFirstLetter(msg.robot.name)} Token Wallet Info:`,
           },
+          accessory: {
+            type: 'image',
+            image_url: 'https://snollygolly.github.io/qrafty-web/images/qrafty-logo.svg',
+            alt_text: `${helpers.capitalizeFirstLetter(msg.robot.name)} Token`,
+          },
         },
+        { type: 'divider' },
         {
           type: 'section',
           text: {
