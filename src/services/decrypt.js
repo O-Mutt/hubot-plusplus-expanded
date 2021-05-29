@@ -1,15 +1,11 @@
 const crypto = require('crypto');
 
-const algorithm = 'aes-256-cbc';
-
-function decrypt(inputIv, magicNumber, magicString) {
-  const magicIv = Buffer.from(inputIv, 'hex');
-  const magicKey = Buffer.from(magicNumber, 'hex');
-  const encryptedText = Buffer.from(magicString, 'hex');
-  const decipher = crypto.createDecipheriv(algorithm, magicKey, magicIv);
-  let decrypted = decipher.update(encryptedText);
-  decrypted = Buffer.concat([decrypted, decipher.final()]);
-  return decrypted.toString();
+function decrypt(magicIv, magicNumber, magicString) {
+  const bufferedMagicIv = Buffer.from(magicIv, 'hex');
+  const bufferedMagicNumber = Buffer.from(magicNumber, 'hex');
+  const decipher = crypto.createDecipheriv('aes-256-cbc', bufferedMagicNumber, bufferedMagicIv);
+  const decrypted = decipher.update(magicString, 'hex', 'utf8') + decipher.final('utf8');
+  return decrypted;
 }
 
 module.exports = decrypt;
