@@ -25,14 +25,17 @@ describe('PlusPlus', function plusPlusTest() {
     plusPlusHelper = new Helper('../src/plusplus.js');
   });
 
-  beforeEach(async function () {
-    const insertMany = await db.collection('scores').insertMany(testUsers);
+  beforeEach(function (done) {
     room = plusPlusHelper.createRoom();
+    db.collection('scores').insertMany(testUsers);
+    done();
   });
 
-  afterEach(async function () {
-    const deleteMany = await db.collection('scores').deleteMany({});
+  afterEach(function (done) {
     room.destroy();
+    db.collection('scores').deleteMany({});
+    db.collection('scoreLog').deleteMany({});
+    done();
   });
 
   describe('plusplus', function () {
@@ -48,8 +51,13 @@ describe('PlusPlus', function plusPlusTest() {
       (room.user.say('derp', '@matt.erickson++')).then(async (res) => {
         expect(room.messages[1][1]).to.match(/matt.erickson has 228 point\./);
         const user = await db.collection('scores').findOne({ name: 'matt.erickson' });
-        console.log(user);
         expect(user.score).to.equal(228);
+      });
+    });
+
+    it('should add a point to each user in the multi-user plus plus', async function() {
+      (room.user.say('derp', '{ @darf, @greg, @tank } ++')).then(async (res) => {
+        expect(room.messages[1][1]).to.match(/darf has 1 point\.\ngreg has 1 point\.\ntank has 1 point\./);
       });
     });
   });
