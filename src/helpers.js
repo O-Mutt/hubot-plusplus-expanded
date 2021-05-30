@@ -61,7 +61,7 @@ function getMessageForNewScore(user, reason, robot) {
     if (user.token === 1) {
       tokenStr = `(*${user.token} ${this.capitalizeFirstLetter(robot.name)} Token*)}`;
     }
-    scoreStr.concat(` ${tokenStr}`);
+    scoreStr = scoreStr.concat(` ${tokenStr}`);
   }
 
   if (reason) {
