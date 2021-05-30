@@ -109,7 +109,7 @@ module.exports = function plusPlus(robot) {
     robot.logger.debug(`${methodName} score for [${cleanName}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
     const user = await scoreKeeper[methodName](cleanName, from, room, reason);
 
-    if (user.score === null && user.reasons[reason] === null) {
+    if (!user) {
       return;
     }
 
@@ -156,7 +156,9 @@ module.exports = function plusPlus(robot) {
     cleanNames.map(async (cleanName) => {
       const user = await scoreKeeper[methodName](cleanName, from, room, cleanReason);
       robot.logger.debug(`clean names map [${cleanName}]: ${user.score}, the reason ${user.reasons[cleanReason]}`);
-      messages.push(helpers.getMessageForNewScore(user, reason, robot));
+      if (user) {
+        messages.push(helpers.getMessageForNewScore(user, reason, robot));
+      }
     });
     messages = messages.filter((message) => !!message); // de-dupe
 

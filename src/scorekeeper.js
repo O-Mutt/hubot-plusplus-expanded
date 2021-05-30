@@ -36,7 +36,6 @@ class ScoreKeeper {
 
       // this add is invalid
       this.robot.messageRoom(from.id, this.spamMessage);
-      return toUser;
     } catch (e) {
       this.robot.logger.error(`failed to add point to [${userName || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(toUser)}]`, e);
     }
