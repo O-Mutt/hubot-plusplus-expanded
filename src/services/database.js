@@ -70,7 +70,6 @@ class DatabaseService {
     let updatedUser = result.value;
     if (updatedUser.accountLevel > 1) {
       updatedUser = await this.transferScoreFromBotToUser(user.name);
-      console.log("$$$ updatedUser", updatedUser);
     }
 
     try {
@@ -79,7 +78,7 @@ class DatabaseService {
       this.robot.logger.error(`failed saving spam log for user ${user.name} from ${from.name} in room ${room} because ${reason}`, e);
     }
 
-    //this.robot.logger.debug(`Saving user original: [${user.name}: ${user.score} ${user.reasons[reason] || 'none'}], new [${updatedUser.name}: ${updatedUser.score} ${updatedUser.reasons[reason] || 'none'}]`);
+    this.robot.logger.debug(`Saving user original: [${user.name}: ${user.score} ${user.reasons[reason] || 'none'}], new [${updatedUser.name}: ${updatedUser.score} ${updatedUser.reasons[reason] || 'none'}]`);
 
     return updatedUser;
   }
@@ -236,7 +235,7 @@ class DatabaseService {
   async transferScoreFromBotToUser(userName, scoreChange = 1) {
     const db = await this.getDb();
     this.robot.logger.info(`We are transferring ${scoreChange} ${helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName}`);
-    const updateUser = await db.collection(scoresDocumentName).updateOne({ name: userName }, { $inc: { token: scoreChange } });
+    const updateUser = await db.collection(scoresDocumentName).findOneAndUpdate({ name: userName }, { $inc: { token: scoreChange } }, { returnOriginal: false });
     const updateBotWallet = await db.collection(botTokenDocumentName).updateOne({ name: userName }, { $inc: { token: -scoreChange } });
     return updateUser;
   }
