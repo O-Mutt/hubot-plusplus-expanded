@@ -152,11 +152,11 @@ module.exports = function plusPlus(robot) {
     // {user1}++
     if (cleanNames.length === 1) return;
 
-    let messages;
+    let messages = [];
     cleanNames.map(async (cleanName) => {
       const user = await scoreKeeper[methodName](cleanName, from, room, cleanReason);
       robot.logger.debug(`clean names map [${cleanName}]: ${user.score}, the reason ${user.reasons[cleanReason]}`);
-      messages.concat(helpers.getMessageForNewScore(user, reason, robot));
+      messages.push(helpers.getMessageForNewScore(user, reason, robot));
     });
     messages = messages.filter((message) => !!message); // de-dupe
 
