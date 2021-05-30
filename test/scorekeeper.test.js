@@ -91,7 +91,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
 
       // Try to spam
       const r2 = await scoreKeeper.add(to, { name: 'from', id: '123' }, 'room', 'because points');
-      expect(r2).to.be.an('object');
+      expect(r2).to.be.an('undefined');
       const spamScore = await scoreKeeper.getUser(to);
       expect(spamScore).to.not.equal(2);
 

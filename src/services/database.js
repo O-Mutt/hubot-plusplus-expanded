@@ -67,9 +67,9 @@ class DatabaseService {
         },
       );
 
-    const updatedUser = result.value;
+    let updatedUser = result.value;
     if (updatedUser.accountLevel > 1) {
-      await this.transferScoreFromBotToUser(user.name);
+      updatedUser = await this.transferScoreFromBotToUser(user.name);
     }
 
     try {
