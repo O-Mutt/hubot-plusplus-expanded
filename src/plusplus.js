@@ -236,7 +236,8 @@ module.exports = function plusPlus(robot) {
       // eslint-disable-next-line
       for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
         if (tops[i].accountLevel && tops[i].accountLevel > 1) {
-          message.push(`${i + 1}. ${tops[i].name} : ${tops[i].score} (${tops[i].token} Tokens)`);
+          const tokenStr = tops[i].token > 1 ? 'tokens' : 'token'
+          message.push(`${i + 1}. ${tops[i].name} : ${tops[i].score} (${tops[i].token} ${tokenStr})`);
         } else {
           message.push(`${i + 1}. ${tops[i].name} : ${tops[i].score}`);
         }
@@ -262,7 +263,9 @@ module.exports = function plusPlus(robot) {
     if (tops.length > 0) {
       // eslint-disable-next-line
       for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
-        message.push(`${i + 1}. ${tops[i].name} : ${tops[i].token} Tokens (${tops[i].score} points)`);
+        const tokenStr = tops[i].token > 1 ? 'tokens' : 'token'
+        const pointStr = tops[i].score > 1 ? 'points' : 'point'
+        message.push(`${i + 1}. ${tops[i].name} : ${tops[i].token} ${tokenStr} (${tops[i].score} ${pointStr})`);
       }
     } else {
       message.push('No scores to keep track of yet!');
