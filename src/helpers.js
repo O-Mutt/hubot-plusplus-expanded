@@ -56,6 +56,13 @@ function getMessageForNewScore(user, reason, robot) {
     scoreStr = `${extraFlare} ${scoreStr} ${extraFlare}`;
     reasonStr = '';
   }
+  if (user.accountLevel && user.accountLevel > 1) {
+    let tokenStr = `(*${user.token} ${this.capitalizeFirstLetter(robot.name)} Tokens*)}`;
+    if (user.token === 1) {
+      tokenStr = `(*${user.token} ${this.capitalizeFirstLetter(robot.name)} Token*)}`;
+    }
+    scoreStr.concat(` ${tokenStr}`);
+  }
 
   if (reason) {
     const decodedReason = this.decode(reason);
