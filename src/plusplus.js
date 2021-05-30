@@ -107,7 +107,7 @@ module.exports = function plusPlus(robot) {
     const from = msg.message.user;
 
     robot.logger.debug(`${methodName} score for [${cleanName}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
-    const user = await scoreKeeper[methodName](name, from, room, reason);
+    const user = await scoreKeeper[methodName](cleanName, from, room, reason);
 
     if (user.score === null && user.reasons[reason] === null) {
       return;
@@ -153,9 +153,9 @@ module.exports = function plusPlus(robot) {
     if (cleanNames.length === 1) return;
 
     let messages;
-    cleanNames.map(async (name) => {
-      const user = await scoreKeeper[methodName](name, from, room, cleanReason);
-      robot.logger.debug(`clean names map [${name}]: ${user.score}, the reason ${user.reasons[cleanReason]}`);
+    cleanNames.map(async (cleanName) => {
+      const user = await scoreKeeper[methodName](cleanName, from, room, cleanReason);
+      robot.logger.debug(`clean names map [${cleanName}]: ${user.score}, the reason ${user.reasons[cleanReason]}`);
       messages.concat(helpers.getMessageForNewScore(user, reason, robot));
     });
     messages = messages.filter((message) => !!message); // de-dupe
