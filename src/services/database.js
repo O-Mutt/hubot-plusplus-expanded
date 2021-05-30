@@ -70,6 +70,7 @@ class DatabaseService {
     let updatedUser = result.value;
     if (updatedUser.accountLevel > 1) {
       updatedUser = await this.transferScoreFromBotToUser(user.name);
+      console.log("$$$ updatedUser", updatedUser);
     }
 
     try {
@@ -78,7 +79,7 @@ class DatabaseService {
       this.robot.logger.error(`failed saving spam log for user ${user.name} from ${from.name} in room ${room} because ${reason}`, e);
     }
 
-    this.robot.logger.debug(`Saving user original: [${user.name}: ${user.score} ${user.reasons[reason] || 'none'}], new [${updatedUser.name}: ${updatedUser.score} ${updatedUser.reasons[reason] || 'none'}]`);
+    //this.robot.logger.debug(`Saving user original: [${user.name}: ${user.score} ${user.reasons[reason] || 'none'}], new [${updatedUser.name}: ${updatedUser.score} ${updatedUser.reasons[reason] || 'none'}]`);
 
     return updatedUser;
   }
