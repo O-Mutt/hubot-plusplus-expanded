@@ -25,17 +25,15 @@ describe('PlusPlus', function plusPlusTest() {
     plusPlusHelper = new Helper('../src/plusplus.js');
   });
 
-  beforeEach(function (done) {
+  beforeEach(async function () {
     room = plusPlusHelper.createRoom();
-    db.collection('scores').insertMany(testUsers);
-    done();
+    await db.collection('scores').insertMany(testUsers);
   });
 
-  afterEach(function (done) {
+  afterEach(async function () {
     room.destroy();
-    db.collection('scores').deleteMany({});
-    db.collection('scoreLog').deleteMany({});
-    done();
+    await db.collection('scores').remove({});
+    await db.collection('scoreLog').remove({});
   });
 
   describe('plusplus', function () {
@@ -58,6 +56,16 @@ describe('PlusPlus', function plusPlusTest() {
     it('should add a point to each user in the multi-user plus plus', async function() {
       (room.user.say('derp', '{ @darf, @greg, @tank } ++')).then(async (res) => {
         expect(room.messages[1][1]).to.match(/darf has 1 point\.\ngreg has 1 point\.\ntank has 1 point\./);
+      });
+    });
+
+    it('should subtract a point when a user that is already in the db is --\'d', async function () {
+      let user = await db.collection('scores').findOne({ name: 'matt.erickson.min' });
+      expect(user.score).to.equal(8);
+      (room.user.say('derp', '@matt.erickson.min--')).then(async (res) => {
+        expect(room.messages[1][1]).to.match(/matt.erickson has 8 point\./);
+        user = await db.collection('scores').findOne({ name: 'matt.erickson' });
+        expect(user.score).to.equal(227);
       });
     });
   });
