@@ -1,3 +1,5 @@
+const moment = require('moment');
+
 function cleanName(name) {
   if (name) {
     let trimmedName = name.trim().toLowerCase();
@@ -35,52 +37,53 @@ function decode(str) {
   return text;
 }
 
-function getMessageForNewScore(score, name, messageOperator, reason, reasonScore, cakeDay, robotName = '') {
-  // if we got a score, then display all the things and fire off events!
-  if (typeof score !== 'undefined' && score !== null) {
-    let scoreStr = `${name} has ${score} points`;
-    let reasonStr = '.';
-    let cakeDayStr = '';
-    if (score === 1) {
-      scoreStr = `${name} has ${score} point`;
-    }
-    if (score % 100 === 0) {
-      let scoreFlareStr = (score).toString();
-      if (score === 0) {
-        scoreFlareStr = 'zero';
-      }
-      const extraFlare = `:${scoreFlareStr}:`;
-      scoreStr = `${extraFlare} ${scoreStr} ${extraFlare}`;
-      reasonStr = '';
-    }
-
-    if (reason) {
-      const decodedReason = this.decode(reason);
-      if (reasonScore === 1 || reasonScore === -1) {
-        if (score === 1 || score === -1) {
-          reasonStr = ` for ${decodedReason}.`;
-        } else {
-          reasonStr = `, ${reasonScore} of which is for ${decodedReason}.`;
-        }
-      } else {
-        reasonStr = `, ${reasonScore} of which are for ${decodedReason}.`;
-      }
-    }
-
-    if (this.isCakeDay(cakeDay)) {
-      const yearsAsString = this.getYearsAsString(cakeDay);
-      cakeDayStr = `\n:birthday: Today is ${name}'s ${yearsAsString}${robotName}day! :birthday:`;
-    }
-    return `${scoreStr}${reasonStr}${cakeDayStr}`;
+function getMessageForNewScore(user, reason, robot) {
+  if (!user) {
+    return '';
   }
-  return '';
+  let scoreStr = `${user.name} has ${user.score} points`;
+  let reasonStr = '.';
+  let cakeDayStr = '';
+  if (user.score === 1) {
+    scoreStr = `${user.name} has ${user.score} point`;
+  }
+  if (user.score % 100 === 0) {
+    let scoreFlareStr = (user.score).toString();
+    if (user.score === 0) {
+      scoreFlareStr = 'zero';
+    }
+    const extraFlare = `:${scoreFlareStr}:`;
+    scoreStr = `${extraFlare} ${scoreStr} ${extraFlare}`;
+    reasonStr = '';
+  }
+
+  if (reason) {
+    const decodedReason = this.decode(reason);
+    if (user.reasons[reason] === 1 || user.reasons[reason] === -1) {
+      if (user.score === 1 || user.score === -1) {
+        reasonStr = ` for ${decodedReason}.`;
+      } else {
+        reasonStr = `, ${user.reasons[reason]} of which is for ${decodedReason}.`;
+      }
+    } else if (user.reasons[reason] === 0) {
+      reasonStr = `, none of which are for ${decodedReason}.`;
+    } else {
+      reasonStr = `, ${user.reasons[reason]} of which are for ${decodedReason}.`;
+    }
+  }
+
+  if (this.isCakeDay(user[`${robot.name}Day`])) {
+    const yearsAsString = this.getYearsAsString(user[`${robot.name}Day`]);
+    cakeDayStr = `\n:birthday: Today is ${user.name}'s ${yearsAsString}${robot.name}day! :birthday:`;
+  }
+  return `${scoreStr}${reasonStr}${cakeDayStr}`;
 }
 
 function isCakeDay(dateObject) {
   try {
-    const robotDay = new Date(dateObject);
-    const today = new Date();
-    if (robotDay.getDate() === today.getDate() && robotDay.getMonth() === today.getMonth()) {
+    const robotDay = moment(dateObject);
+    const today = moment();
+    if (robotDay.date() === today.date() && robotDay.month() === today.month()) {
       return true;
     }
   // eslint-disable-next-line no-empty

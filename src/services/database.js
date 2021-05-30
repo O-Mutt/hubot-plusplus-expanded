@@ -73,22 +73,24 @@ class DatabaseService {
     }
 
     try {
-      this.saveSpamLog(user.name, from.name, room, reason);
+      this.savePlusPlusLog(user.name, from.name, room, reason);
     } catch (e) {
       this.robot.logger.error(`failed saving spam log for user ${user.name} from ${from.name} in room ${room} because ${reason}`, e);
     }
 
     this.robot.logger.debug(`Saving user original: [${user.name}: ${user.score} ${user.reasons[reason] || 'none'}], new [${updatedUser.name}: ${updatedUser.score} ${updatedUser.reasons[reason] || 'none'}]`);
 
-    return [updatedUser.score, updatedUser.reasons[reason] || 'none', updatedUser];
+    return updatedUser;
   }
 
-  async saveSpamLog(user, fromUser) {
+  async savePlusPlusLog(user, fromUser, room, reason) {
     const db = await this.getDb();
     await db.collection(logDocumentName).insertOne({
       from: fromUser,
       to: user,
       date: moment().toISOString(),
+      room,
+      reason,
     });
   }
 
@@ -164,7 +166,7 @@ class DatabaseService {
     const db = await this.getDb();
     const results = await db.collection(scoresDocumentName)
       .find({
-        accountLevel: { $gte: 2 }
+        accountLevel: { $gte: 2 },
       })
       .sort({ token: -1 })
       .limit(amount)
@@ -179,7 +181,7 @@ class DatabaseService {
     const db = await this.getDb();
     const results = await db.collection(scoresDocumentName)
       .find({
-        accountLevel: { $gte: 2 }
+        accountLevel: { $gte: 2 },
       })
       .sort({ token: 1 })
       .limit(amount)

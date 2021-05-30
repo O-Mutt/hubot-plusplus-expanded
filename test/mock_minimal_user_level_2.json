@@ -1,19 +1,18 @@
 {
-	"_id" : "60b0ff4ecc190e145a8f5826",
-	"name" : "peter.parker.min",
-	"score" : 8,
-	"reasons" : {
-		"eWVzPw==" : -1,
-		"aGUgaXMgYW4gZXZpbCB3YXJsb2NrIHdobyBlYXRzIGthbGU=" : -1,
-		"bWFraW5nIHFyYWZ0eSBncmVhdCBhZ2Fpbg==" : 1,
-		"c2hvd2luZyB0aGUgd29ybGQgaG93IGF3ZXNvbWUgcXJhZnR5IGNhbiBiZSE=" : 1
-	},
-	"pointsGiven" : {
-		"ZGFuLmFyaWFz" : 1,
-		"c2ViYQ==" : -4,
-		"cHNhYXMtYXBwbGljYXRpb25z" : 1
-	},
-	"hubotDay" : "2020-07-09T16:55:04.374Z",
-	"accountLevel": 2,
-    "token": 8
+  "name" : "peter.parker.min",
+  "score" : 8,
+  "reasons" : {
+    "eWVzPw==" : -1,
+    "aGUgaXMgYW4gZXZpbCB3YXJsb2NrIHdobyBlYXRzIGthbGU=" : -1,
+    "bWFraW5nIHFyYWZ0eSBncmVhdCBhZ2Fpbg==" : 1,
+    "c2hvd2luZyB0aGUgd29ybGQgaG93IGF3ZXNvbWUgcXJhZnR5IGNhbiBiZSE=" : 1
+  },
+  "pointsGiven" : {
+    "ZGFuLmFyaWFz" : 1,
+    "c2ViYQ==" : -4,
+    "cHNhYXMtYXBwbGljYXRpb25z" : 1
+  },
+  "hubotDay" : "2020-07-09T16:55:04.374Z",
+  "accountLevel": 2,
+  "token": 8
 }

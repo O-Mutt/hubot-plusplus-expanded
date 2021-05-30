@@ -4,6 +4,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 chai.use(require('sinon-chai'));
 const forEach = require('mocha-each');
+const moment = require('moment');
 
 const { expect } = chai;
 
@@ -158,28 +159,79 @@ describe('Helpers', function () {
       const mockHelpers = sinon.stub(helpers, 'decode');
       mockHelpers.returnsArg(0);
     });
+    const notBotDay = moment().subtract(1, 'year').add(5, 'days');
+    const botDay = moment().subtract(1, 'year');
     forEach([
-      [undefined, undefined, undefined, undefined, undefined, undefined, ''],
-      [1, 'matt', undefined, undefined, undefined, undefined, 'matt has 1 point.'],
-      [2, 'matt', undefined, undefined, undefined, undefined, 'matt has 2 points.'],
-      [100, 'matt', undefined, undefined, undefined, undefined, ':100: matt has 100 points :100:'],
-      [1000, 'matt', undefined, undefined, undefined, undefined, ':1000: matt has 1000 points :1000:'],
-      [300, 'matt', undefined, undefined, undefined, undefined, ':300: matt has 300 points :300:'],
-      [45, 'matt', '++', 'winning', 1, undefined, 'matt has 45 points, 1 of which is for winning.'],
-      [1, 'matt', '++', 'cool runnings!', 1, undefined, 'matt has 1 point for cool runnings!.'],
-      [1, 'matt', '++', 'cool runnings!', 1, new Date(), 'matt has 1 point for cool runnings!.\n:birthday: Today is matt\'s 1st testBotday! :birthday:'],
-      [99, 'matt', '++', 'cool runnings!', 'none', undefined, 'matt has 99 points, none of which are for cool runnings!.'],
-      [1, 'matt', '++', 'cool runnings!', 99, undefined, 'matt has 1 point, 99 of which are for cool runnings!.'], // this doesn't make sense but the message doesn't care
-      [145, 'matt', '++', 'cool runnings!', 99, undefined, 'matt has 145 points, 99 of which are for cool runnings!.'],
-      [200, 'matt', '++', 'cool runnings!', 99, undefined, ':200: matt has 200 points :200:, 99 of which are for cool runnings!.'],
-      [0, 'matt', '++', undefined, 0, undefined, ':zero: matt has 0 points :zero:'],
+      [undefined, undefined, ''],
+      [
+        {
+          name: 'matt', score: 1, reasons: {}, testBotDay: notBotDay,
+        }, undefined, 'matt has 1 point.',
+      ],
+      [
+        {
+          name: 'matt', score: 2, reasons: {}, testBotDay: notBotDay,
+        }, undefined, 'matt has 2 points.',
+      ],
+      [
+        {
+          name: 'matt', score: 100, reasons: {}, testBotDay: notBotDay,
+        }, undefined, ':100: matt has 100 points :100:',
+      ],
+      [
+        {
+          name: 'matt', score: 1000, reasons: {}, testBotDay: notBotDay,
+        }, undefined, ':1000: matt has 1000 points :1000:',
+      ],
+      [
+        {
+          name: 'matt', score: 300, reasons: {}, testBotDay: notBotDay,
+        }, undefined, ':300: matt has 300 points :300:',
+      ],
+      [
+        {
+          name: 'matt', score: 45, reasons: { winning: 1 }, testBotDay: notBotDay,
+        }, 'winning', 'matt has 45 points, 1 of which is for winning.',
+      ],
+      [
+        {
+          name: 'matt', score: 1, reasons: { 'cool runnings!': 1 }, testBotDay: notBotDay,
+        }, 'cool runnings!', 'matt has 1 point for cool runnings!.',
+      ],
+      [
+        {
+          name: 'matt', score: 1, reasons: { 'cool runnings!': 1 }, testBotDay: botDay,
+        }, 'cool runnings!', 'matt has 1 point for cool runnings!.\n:birthday: Today is matt\'s 1st testBotday! :birthday:',
+      ],
+      [
+        {
+          name: 'matt', score: 99, reasons: { 'cool runnings!': 0 }, testBotDay: notBotDay,
+        }, 'cool runnings!', 'matt has 99 points, none of which are for cool runnings!.',
+      ],
+      [
+        {
+          name: 'matt', score: 1, reasons: { 'cool runnings!': 99 }, testBotDay: notBotDay,
+        }, 'cool runnings!', 'matt has 1 point, 99 of which are for cool runnings!.',
+      ],
+      [
+        {
+          name: 'matt', score: 145, reasons: { 'cool runnings!': 99 }, testBotDay: notBotDay,
+        }, 'cool runnings!', 'matt has 145 points, 99 of which are for cool runnings!.',
+      ],
+      [
+        {
+          name: 'matt', score: 200, reasons: { 'cool runnings!': 99 }, testBotDay: notBotDay,
+        }, 'cool runnings!', ':200: matt has 200 points :200:, 99 of which are for cool runnings!.',
+      ],
+      [
+        {
+          name: 'matt', score: 0, reasons: { }, testBotDay: notBotDay,
+        }, undefined, ':zero: matt has 0 points :zero:',
+      ],
     ])
-      .it('should take the score %j, name %j, operator %j, reason %j, reason score %j with cake day %j and print %j',
-        (score, name, messageOperator, reason, reasonScore, cakeDay, expectedMessage) => {
-          if (cakeDay !== undefined) {
-            cakeDay.setFullYear((new Date().getFullYear() - 1));
-          }
-          const message = helpers.getMessageForNewScore(score, name, messageOperator, reason, reasonScore, cakeDay, 'testBot');
+      .it('should take the user object %j, reason %j and print %j',
+        (user, reason, expectedMessage) => {
+          const message = helpers.getMessageForNewScore(user, reason, { name: 'testBot' });
           expect(message).to.equal(expectedMessage);
         });
   });

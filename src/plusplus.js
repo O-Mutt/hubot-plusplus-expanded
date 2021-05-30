@@ -35,7 +35,7 @@ const tokenBuddy = require('token-buddy');
 const regexp = require('./regexp');
 const wallet = require('./wallet');
 const ScoreKeeper = require('./scorekeeper');
-const helper = require('./helpers');
+const helpers = require('./helpers');
 // this may need to move or be generic...er
 const token = require('./token');
 const decrypt = require('./services/decrypt');
@@ -49,7 +49,6 @@ procVars.peerFeedbackUrl = process.env.HUBOT_PEER_FEEDBACK_URL || `praise in Lat
 procVars.furtherFeedbackSuggestedScore = parseInt(process.env.HUBOT_FURTHER_FEEDBACK_SCORE, 10) || 10;
 procVars.mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGODB_URL || process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/plusPlus';
 procVars.cryptoRpcProvider = process.env.HUBOT_CRYPTO_RPC_PROVIDER || '';
-procVars.hotWalletMnemonic = process.env.HUBOT_CRYPTO_HOT_WALLET_MNEMONIC || '';
 procVars.magicNumber = process.env.HUBOT_UNIMPORTANT_MAGIC_NUMBER || 'nope';
 procVars.magicIv = process.env.HUBOT_UNIMPORTANT_MAGIC_IV || 'yup';
 
@@ -66,7 +65,7 @@ module.exports = function plusPlus(robot) {
       index: 0,
       mnemonic: magicMnumber,
       token,
-      provider: scoreKeeper.cryptoRpcProvider,
+      provider: procVars.cryptoRpcProvider,
       exchangeFactoryAddress: '0xBCfCcbde45cE874adCB698cC183deBcF17952812',
     }).then(() => {
       tokenBuddy.newAccount();
@@ -100,25 +99,21 @@ module.exports = function plusPlus(robot) {
   async function upOrDownVote(msg) {
     // eslint-disable-next-line
     let [fullMatch, name, operator, reason] = msg.match;
+    const methodName = operator === regexp.positiveOperatorsString ? 'add' : 'subtract';
     const { room } = msg.message;
     // eslint-disable-next-line
-    name = helper.cleanName(name);
-    reason = helper.cleanAndEncode(reason);
+    const cleanName = helpers.cleanName(name);
+    const cleanReason = helpers.cleanAndEncode(reason);
     const from = msg.message.user;
 
-    let newScore; let reasonScore; let userObject;
-    robot.logger.debug(`${operator === regexp.positiveOperatorsString ? 'add' : 'remove'} score for [${name}] from [${name}]`);
-    if (regexp.positiveOperatorsString === operator) {
-      [newScore, reasonScore, userObject] = await scoreKeeper.add(name, from, room, reason);
-    } else if (`(${regexp.negativeOperators})`.match(operator)) {
-      [newScore, reasonScore, userObject] = await scoreKeeper.subtract(name, from, room, reason);
-    }
+    robot.logger.debug(`${methodName} score for [${cleanName}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
+    const user = await scoreKeeper[methodName](name, from, room, reason);
 
-    if (newScore === null && reasonScore === null) {
+    if (user.score === null && user.reasons[reason] === null) {
       return;
     }
 
-    const message = helper.getMessageForNewScore(newScore, name, operator, reason, reasonScore, userObject[`${robot.name}Day`], robot.name);
+    const message = helpers.getMessageForNewScore(user, reason, robot);
 
     if (message) {
       msg.send(message);
@@ -142,11 +137,12 @@ module.exports = function plusPlus(robot) {
     const namesArray = names.trim().toLowerCase().split(',');
     const from = msg.message.user;
     const { room } = msg.message;
-    const encodedReason = helper.cleanAndEncode(reason);
+    const cleanReason = helpers.cleanAndEncode(reason);
+    const methodName = operator === regexp.positiveOperatorsString ? 'add' : 'subtract';
 
     const cleanNames = namesArray
       // Parse names
-      .map((name) => helper.cleanName(name).match(new RegExp(regexp.votedObject, 'i'))[1])
+      .map((name) => helpers.cleanName(name).match(new RegExp(regexp.votedObject, 'i'))[1])
       // Remove empty ones: {,,,}++
       .filter((name) => !!name.length)
       // Remove duplicates: {user1,user1}++
@@ -157,83 +153,80 @@ module.exports = function plusPlus(robot) {
     if (cleanNames.length === 1) return;
 
     let messages;
-    let results;
-    if (regexp.positiveOperatorsString === operator) {
-      results = cleanNames.map(async (name) => {
-        const [newScore, reasonScore, userObject] = await scoreKeeper.add(name, from, room, encodedReason);
-        robot.logger.debug(`clean names map [${name}]: ${newScore}, the reason ${reasonScore}`);
-        return helper.getMessageForNewScore(newScore, name, operator, encodedReason, reasonScore, userObject[`${robot.name}Day`], robot.name);
-      });
-    } else if (`(${regexp.negativeOperators})`.match(operator)) {
-      results = cleanNames.map(async (name) => {
-        const [newScore, reasonScore, userObject] = await scoreKeeper.subtract(name, from, room, encodedReason);
-        return helper.getMessageForNewScore(newScore, name, operator, encodedReason, reasonScore, userObject[`${robot.name}Day`], robot.name);
-      });
-    }
-    messages = await Promise.all(results);
-    messages = messages.filter((message) => !!message);
+    cleanNames.map(async (name) => {
+      const user = await scoreKeeper[methodName](name, from, room, cleanReason);
+      robot.logger.debug(`clean names map [${name}]: ${user.score}, the reason ${user.reasons[cleanReason]}`);
+      messages.concat(helpers.getMessageForNewScore(user, reason, robot));
+    });
+    messages = messages.filter((message) => !!message); // de-dupe
 
-    if (messages.length) {
-      robot.logger.debug(`These are the messages \n ${messages.join('\n')}`);
-      msg.send(messages.join('\n'));
-      cleanNames.map((name) => robot.emit('plus-one', {
-        name,
-        direction: operator,
-        room,
-        encodedReason,
-        from,
-      }));
-    } else {
-      msg.reply('please slow your roll.');
-    }
+    robot.logger.debug(`These are the messages \n ${messages.join('\n')}`);
+    msg.send(messages.join('\n'));
+    cleanNames.map((name) => robot.emit('plus-one', {
+      name,
+      direction: operator,
+      room,
+      cleanReason,
+      from,
+    }));
   }
 
   async function respondWithScore(msg) {
-    const name = helper.cleanName(msg.match[2]);
+    const name = helpers.cleanName(msg.match[2]);
 
-    const score = await scoreKeeper.scoreForUser(name);
-    const reasons = await scoreKeeper.reasonsForUser(name);
+    const user = await scoreKeeper.getUser(name);
+    let tokenString = '.';
+    if (user.accountLevel > 1) {
+      tokenString = ` (*${user.token} ${helpers.capitalizeFirstLetter(this.robot.name)} `;
+      tokenString = tokenString.concat(user.token > 1 ? 'Tokens*).' : 'Token*).');
+    }
+    const scoreStr = user.score > 1 ? 'points' : 'point';
+    const baseString = `${user.name} has ${user.score} ${scoreStr}${tokenString}`;
 
-    if (typeof reasons === 'object' && Object.keys(reasons).length > 0) {
+    const keys = Object.keys(user.reasons);
+    if (keys.length > 1) {
       const sampleReasons = {};
-      const keys = Object.keys(reasons);
       const maxReasons = keys.length >= 5 ? 5 : keys.length - 1;
       do {
         const randomNumber = _.random(0, keys.length - 1);
         const reason = keys[randomNumber];
-        const value = reasons[keys[randomNumber]];
+        const value = user.reasons[keys[randomNumber]];
         sampleReasons[reason] = value;
       } while (Object.keys(sampleReasons).length < maxReasons);
 
       const reasonMap = _.reduce(sampleReasons, (memo, val, key) => {
-        const decodedKey = helper.decode(key);
+        const decodedKey = helpers.decode(key);
         const pointStr = val > 1 ? 'points' : 'point';
         // eslint-disable-next-line
         memo += `\n_${decodedKey}_: ${val} ${pointStr}`;
         return memo;
       }, '');
-      return msg.send(`${name} has ${score} points.\n\n:star: Here are some ${procVars.reasonsKeyword} :star:${reasonMap}`);
+
+      return msg.send(`${baseString}\n\n:star: Here are some ${procVars.reasonsKeyword} :star:${reasonMap}`);
     }
-    return msg.send(`${name} has ${score} points`);
+    return msg.send(`${baseString}`);
   }
 
-  function tellHowMuchPointsAreWorth(msg) {
-    axios({
-      url: 'https://api.coindesk.com/v1/bpi/currentprice/ARS.json',
-    }).then((resp) => {
+  async function tellHowMuchPointsAreWorth(msg) {
+    try {
+      const resp = await axios({
+        url: 'https://api.coindesk.com/v1/bpi/currentprice/ARS.json',
+      });
+
       const bitcoin = resp.data.bpi.USD.rate_float;
       const ars = resp.data.bpi.ARS.rate_float;
       const satoshi = bitcoin / 1e8;
       // eslint-disable-next-line no-underscore-dangle
-      return msg.send(`A bitcoin is worth ${bitcoin} USD right now (${ars} ARS), a satoshi is about ${satoshi}, and ${msg.message._robot_name} points are worth nothing!`);
-    })
+      return msg.send(`A bitcoin is worth ${bitcoin} USD right now (${ars} ARS), a satoshi is about ${satoshi}, and ${msg.robot.name} points are worth nothing!`);
+    } catch (e) {
       // eslint-disable-next-line no-underscore-dangle
-      .catch(() => msg.send(`Seems like we are having trouble getting some data... Don't worry, though, your ${msg.message._robot_name} points are still worth nothing!`));
+      return msg.send(`Seems like we are having trouble getting some data... Don't worry, though, your ${msg.robot.name} points are still worth nothing!`);
+    }
   }
 
   async function respondWithLeaderLoserBoard(msg) {
     const amount = parseInt(msg.match[2], 10) || 10;
-    const topOrBottom = helper.capitalizeFirstLetter(msg.match[1].trim());
+    const topOrBottom = helpers.capitalizeFirstLetter(msg.match[1].trim());
     const methodName = `get${topOrBottom}Scores`;
 
     const tops = await scoreKeeper.databaseService[methodName](amount);
@@ -260,7 +253,7 @@ module.exports = function plusPlus(robot) {
 
   async function respondWithLeaderLoserTokenBoard(msg) {
     const amount = parseInt(msg.match[2], 10) || 10;
-    const topOrBottom = helper.capitalizeFirstLetter(msg.match[1].trim());
+    const topOrBottom = helpers.capitalizeFirstLetter(msg.match[1].trim());
     const methodName = `get${topOrBottom}Tokens`;
 
     const tops = await scoreKeeper.databaseService[methodName](amount);
@@ -286,7 +279,7 @@ module.exports = function plusPlus(robot) {
     let messageName = 'Your';
     robot.logger.debug(`respond with users bot day ${msg.match}`);
     if (msg.match[2].toLowerCase() !== 'my') {
-      userToLookup = helper.cleanName(msg.match[2]);
+      userToLookup = helpers.cleanName(msg.match[2]);
       messageName = `${userToLookup}'s`;
     }
     const user = await scoreKeeper.databaseService.getUser(userToLookup);
@@ -301,9 +294,9 @@ module.exports = function plusPlus(robot) {
     const from = msg.message.user;
     const { user } = msg.envelope;
     const { room } = msg.message;
-    reason = helper.cleanAndEncode(reason);
+    reason = helpers.cleanAndEncode(reason);
 
-    name = helper.cleanName(name);
+    name = helpers.cleanName(name);
 
     const isAdmin = (this.robot.auth ? this.robot.auth.hasRole(user, 'plusplus-admin') : undefined) || (this.robot.auth ? this.robot.auth.hasRole(user, 'admin') : undefined);
 
@@ -315,8 +308,8 @@ module.exports = function plusPlus(robot) {
     }
 
     if (erased) {
-      const decodedReason = helper.decode(reason);
-      const message = (!decodedReason) ? `Erased the following reason from ${name}: ${decodedReason}` : `Erased points for ${name}`;
+      const decodedReason = helpers.decode(reason);
+      const message = !decodedReason ? `Erased the following reason from ${name}: ${decodedReason}` : `Erased points for ${name}`;
       msg.send(message);
     }
   }
