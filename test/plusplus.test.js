@@ -7,8 +7,8 @@ const { MongoClient } = require('mongodb');
 const mongoUnit = require('mongo-unit');
 const Helper = require('hubot-test-helper');
 
-const testUsers = [];
-testUsers.push(require('./mock_minimal_user.json'),
+const testData = { scores: [] };
+testData.scores.push(require('./mock_minimal_user.json'),
   require('./mock_full_user.json'),
   require('./mock_full_user_level_2.json'),
   require('./mock_minimal_user_level_2.json'));
@@ -27,12 +27,12 @@ describe('PlusPlus', function plusPlusTest() {
 
   beforeEach(async function () {
     room = plusPlusHelper.createRoom();
-    await db.collection('scores').insertMany(testUsers);
+    return mongoUnit.load(testData);
   });
 
   afterEach(async function () {
     room.destroy();
-    await mongoUnit.drop();
+    return mongoUnit.drop();
   });
 
   describe('plusplus', function () {
