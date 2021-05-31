@@ -50,9 +50,9 @@ describe('ScoreKeeper', function scorekeeperTest() {
     return true;
   });
 
-  beforeEach(async function () { return mongoUnit.load(defaultData); });
+  beforeEach(async function () { await mongoUnit.load(defaultData); });
 
-  afterEach(async function () { msgSpy.resetHistory(); return mongoUnit.drop(); });
+  afterEach(async function () { msgSpy.resetHistory(); await mongoUnit.drop(); });
 
   describe('adding', function () {
     // eslint-disable-next-line mocha/no-setup-in-describe

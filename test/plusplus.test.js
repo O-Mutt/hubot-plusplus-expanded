@@ -32,8 +32,7 @@ describe('PlusPlus', function plusPlusTest() {
 
   afterEach(async function () {
     room.destroy();
-    await db.collection('scores').remove({});
-    await db.collection('scoreLog').remove({});
+    await mongoUnit.drop();
   });
 
   describe('plusplus', function () {
