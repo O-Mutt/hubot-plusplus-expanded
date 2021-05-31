@@ -18,50 +18,40 @@ class ScoreKeeper {
     this.databaseService.init(); // this is async but it is just initializing the db connection, we let it run
   }
 
-  async add(userName, from, room, reason) {
+  /*
+  * Method to allow up or down vote of a user
+  *
+  * userName - the user who is receiving the score change
+  * from - the user object that is sending the score change
+  * reason - the reason for score change
+  * incrementValue - [number] the value to change the score by
+  * return scoreObject - the new document for the user who received the score
+  */
+  async incrementScore(userName, from, room, reason, incrementValue) {
+    from = typeof from === 'string' ? { name: from, id: from } : from;
     let toUser;
+    let fromUser;
     try {
-      toUser = await this.databaseService.getUser(userName);
-      if (await this.isNotSpam(toUser, from) && this.isNotSendingToSelf(toUser, from)) {
-        toUser.score += 1;
+      toUser = await this.getUser(userName);
+      fromUser = await this.getUser(from.name);
+      if (await this.isNotSpam(toUser, fromUser) && this.isNotSendingToSelf(toUser, fromUser)) {
+        toUser.score = parseInt(toUser.score, 10) + parseInt(incrementValue, 10);
         if (reason) {
           const oldReasonScore = toUser.reasons[`${reason}`] ? toUser.reasons[`${reason}`] : 0;
-          toUser.reasons[`${reason}`] = oldReasonScore + 1;
+          toUser.reasons[`${reason}`] = oldReasonScore + incrementValue;
         }
 
-        await this.databaseService.savePointsGiven(from, toUser.name, 1);
-        const saveResponse = await this.databaseService.saveUser(toUser, from, room, reason);
+        await this.databaseService.savePointsGiven(from, toUser, incrementValue);
+        const saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason);
         return saveResponse;
       }
 
       // this add is invalid
-      this.robot.messageRoom(from.id, this.spamMessage);
-    } catch (e) {
-      this.robot.logger.error(`failed to add point to [${userName || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(toUser)}]`, e);
-    }
-    return undefined;
-  }
-
-  async subtract(userName, from, room, reason) {
-    let toUser;
-    try {
-      toUser = await this.databaseService.getUser(userName);
-      if (await this.isNotSpam(toUser, from) && this.isNotSendingToSelf(toUser, from)) {
-        toUser.score -= 1;
-        if (reason) {
-          const oldReasonScore = toUser.reasons[`${reason}`] ? toUser.reasons[`${reason}`] : 0;
-          toUser.reasons[`${reason}`] = oldReasonScore - 1;
-        }
-
-        await this.databaseService.savePointsGiven(from, toUser.name, -11);
-        const saveResponse = await this.databaseService.saveUser(toUser, from, room, reason);
-        return saveResponse;
+      if (!await this.isNotSpam(toUser, fromUser)) {
+        this.robot.messageRoom(from.id, this.spamMessage);
       }
-
-      // this subtraction is invalid
-      this.robot.messageRoom(from.id, this.spamMessage);
     } catch (e) {
-      this.robot.logger.error(`failed to subtract point to [${userName || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(toUser)}]`, e);
+      this.robot.logger.error(`failed to ${incrementValue > 0 ? 'add' : 'subtract'} point to [${userName || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(toUser)}]`, e);
     }
     return undefined;
   }
@@ -74,11 +64,11 @@ class ScoreKeeper {
   async erase(user, from, room, reason) {
     if (reason) {
       this.robot.logger.error(`Erasing score for reason ${reason} for ${user} by ${from}`);
-      this.databaseService.erase(user, reason);
+      await this.databaseService.erase(user, reason);
       return true;
     }
     this.robot.logger.error(`Erasing all scores for ${user} by ${from}`);
-    this.databaseService.erase(user);
+    await this.databaseService.erase(user);
 
     return true;
   }
@@ -97,10 +87,10 @@ class ScoreKeeper {
     this.robot.logger.debug(`Checking if is to self. To [${to.name}] From [${from.name}], Valid: ${to.name !== from.name}`);
     return to.name !== from.name;
   }
-  
+
   async isNotSpam(to, from) {
-    this.robot.logger.debug(`Checking spam to [${to.name}] from [${from.name}], ${to.name === from.name}`);
-    const isSpam = await this.databaseService.isSpam(to.name, from);
+    this.robot.logger.debug(`Checking spam to [${to.name}] from [${from.name}]`);
+    const isSpam = await this.databaseService.isSpam(to.name, from.name);
     return !isSpam;
   }
 

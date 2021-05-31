@@ -99,15 +99,14 @@ module.exports = function plusPlus(robot) {
   async function upOrDownVote(msg) {
     // eslint-disable-next-line
     let [fullMatch, name, operator, reason] = msg.match;
-    const methodName = operator === regexp.positiveOperatorsString ? 'add' : 'subtract';
+    const increment = operator === regexp.positiveOperatorsString ? 1 : -1;
     const { room } = msg.message;
     // eslint-disable-next-line
     const cleanName = helpers.cleanName(name);
-    const cleanReason = helpers.cleanAndEncode(reason);
     const from = msg.message.user;
 
-    robot.logger.debug(`${methodName} score for [${cleanName}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
-    const user = await scoreKeeper[methodName](cleanName, from, room, reason);
+    robot.logger.debug(`${increment} score for [${cleanName}] from [${from}]${helpers.cleanAndEncode(reason) ? ` because ${helpers.cleanAndEncode(reason)}` : ''} in [${room}]`);
+    const user = await scoreKeeper.incrementScore(cleanName, from, room, reason, increment);
 
     if (!user) {
       return;

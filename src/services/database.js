@@ -73,7 +73,7 @@ class DatabaseService {
     }
 
     try {
-      this.savePlusPlusLog(user.name, from.name, room, reason);
+      this.savePlusPlusLog(user, from, room, reason);
     } catch (e) {
       this.robot.logger.error(`failed saving spam log for user ${user.name} from ${from.name} in room ${room} because ${reason}`, e);
     }
@@ -83,46 +83,53 @@ class DatabaseService {
     return updatedUser;
   }
 
-  async savePlusPlusLog(user, fromUser, room, reason) {
+  async savePlusPlusLog(user, from, room, reason) {
     const db = await this.getDb();
     await db.collection(logDocumentName).insertOne({
-      from: fromUser,
-      to: user,
+      from: from.name,
+      to: user.name,
       date: moment().toISOString(),
       room,
       reason,
     });
   }
 
-  async isSpam(user, from) {
+  async isSpam(to, from) {
     this.robot.logger.debug('spam check');
     const db = await this.getDb();
     let fiveMinutesAgo = moment();
     fiveMinutesAgo = fiveMinutesAgo.subtract(this.spamTimeLimit, 'minutes').toISOString();
     const previousScoreExists = await db.collection(logDocumentName)
       .countDocuments({
-        from: from.name,
-        to: user,
+        from,
+        to,
         date: { $gte: fiveMinutesAgo },
       });
     this.robot.logger.debug('spam check result', previousScoreExists);
     if (previousScoreExists !== 0) {
-      this.robot.logger.error(`${from.name} is spamming points to ${user}! STOP THEM!!!!`);
+      this.robot.logger.error(`${from.name} is spamming points to ${to}! STOP THEM!!!!`);
       return true;
     }
 
     return false;
   }
 
+  /*
+  * from - database user who is sending the score
+  * to - database user who is receiving the score
+  * score - the number of score that is being sent
+  */
   async savePointsGiven(from, to, score) {
     const db = await this.getDb();
-    const cleanName = helpers.cleanAndEncode(to);
+    const cleanName = helpers.cleanAndEncode(to.name);
+    const fromUser = await this.getUser(from.name);
 
-    const incObject = { [`pointsGiven.${cleanName}`]: score };
+    const oldScore = fromUser.pointsGiven[cleanName] ? fromUser.pointsGiven[cleanName] : 0;
+    fromUser.pointsGiven[cleanName] = (oldScore + score);
     const result = await db.collection(scoresDocumentName)
       .findOneAndUpdate(
-        { name: from.name },
-        { $inc: incObject },
+        { name: fromUser.name },
+        { $set: fromUser },
         {
           returnOriginal: false,
           upsert: true,
@@ -130,9 +137,10 @@ class DatabaseService {
         },
       );
     const updatedUser = result.value;
+
     if (updatedUser.pointsGiven[cleanName] % this.furtherFeedbackScore === 0 && score === 1) {
-      this.robot.logger.debug(`${from.name} has sent a lot of points to ${to} suggesting further feedback`);
-      this.robot.messageRoom(from.id, `Looks like you've given ${to} quite a few points, maybe you should look at submitting ${this.peerFeedbackUrl}`);
+      this.robot.logger.debug(`${from.name} has sent a lot of points to ${to.name} suggesting further feedback`);
+      this.robot.messageRoom(from.id, `Looks like you've given ${to.name} quite a few points, maybe you should look at submitting ${this.peerFeedbackUrl}`);
     }
   }
 
@@ -196,11 +204,13 @@ class DatabaseService {
     const db = await this.getDb();
     let result;
     if (reason) {
+      const oldUser = await db.collection(scoresDocumentName).findOne({ name: username });
+      const newScore = oldUser.score - oldUser.reasons[reason];
       result = await db.collection(scoresDocumentName)
-        .drop({ name: [username], reasons: [reason] }, { justOne: true });
+        .updateOne({ name: username }, { $set: { score: newScore, reasons: { [`${reason}`]: 0 } } });
     } else {
       result = await db.collection(scoresDocumentName)
-        .drop({ name: [username] });
+        .deleteOne({ name: username }, { $set: { score: 0 } });
     }
 
     return result;
@@ -235,9 +245,9 @@ class DatabaseService {
   async transferScoreFromBotToUser(userName, scoreChange = 1) {
     const db = await this.getDb();
     this.robot.logger.info(`We are transferring ${scoreChange} ${helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName}`);
-    const updateUser = await db.collection(scoresDocumentName).findOneAndUpdate({ name: userName }, { $inc: { token: scoreChange } }, { returnOriginal: false });
+    const result = await db.collection(scoresDocumentName).findOneAndUpdate({ name: userName }, { $inc: { token: scoreChange } }, { returnOriginal: false });
     const updateBotWallet = await db.collection(botTokenDocumentName).updateOne({ name: userName }, { $inc: { token: -scoreChange } });
-    return updateUser;
+    return result.value;
   }
 
   async getMagicSecretStringNumberValue() {
