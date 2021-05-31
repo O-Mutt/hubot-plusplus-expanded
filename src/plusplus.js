@@ -27,6 +27,7 @@
 //
 // Author: O-Mutt
 
+const pjson = require('../package.json')
 const clark = require('clark');
 const { default: axios } = require('axios');
 const _ = require('lodash');
@@ -85,6 +86,7 @@ module.exports = function plusPlus(robot) {
   robot.respond(regexp.createBotDayRegExp(robot.name), respondWithUsersBotDay);
   robot.respond(regexp.getHelp(), respondWithHelpGuidance);
   robot.respond(regexp.getBotWallet(), (msg) => wallet.botWalletCount(msg, scoreKeeper));
+  robot.respond(new RegExp(/(plusplus version|-v|--version)/, 'i'), (msg) => msg.send(`${helpers.capitalizeFirstLetter(msg.robot.name)} ${pjson.name}, version: ${pjson.version}`));
 
   // DM only
   robot.respond(regexp.createLevelUpAccount(), (msg) => wallet.levelUpAccount(msg, scoreKeeper));
@@ -137,7 +139,7 @@ module.exports = function plusPlus(robot) {
     const from = msg.message.user;
     const { room } = msg.message;
     const cleanReason = helpers.cleanAndEncode(reason);
-    const methodName = operator === regexp.positiveOperatorsString ? 'add' : 'subtract';
+    const increment = operator === regexp.positiveOperatorsString ? 1 : -1;
 
     const cleanNames = namesArray
       // Parse names
@@ -152,13 +154,15 @@ module.exports = function plusPlus(robot) {
     if (cleanNames.length === 1) return;
 
     let messages = [];
-    cleanNames.map(async (cleanName) => {
-      const user = await scoreKeeper[methodName](cleanName, from, room, cleanReason);
+    // eslint-disable-next-line no-restricted-syntax
+    for (const cleanName of cleanNames) {
+      // eslint-disable-next-line no-await-in-loop
+      const user = await scoreKeeper.incrementScore(cleanName, from, room, cleanReason, increment);
       robot.logger.debug(`clean names map [${cleanName}]: ${user.score}, the reason ${user.reasons[cleanReason]}`);
       if (user) {
         messages.push(helpers.getMessageForNewScore(user, reason, robot));
       }
-    });
+    }
     messages = messages.filter((message) => !!message); // de-dupe
 
     robot.logger.debug(`These are the messages \n ${messages.join('\n')}`);
