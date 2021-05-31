@@ -246,7 +246,7 @@ class DatabaseService {
     const db = await this.getDb();
     this.robot.logger.info(`We are transferring ${scoreChange} ${helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName}`);
     const result = await db.collection(scoresDocumentName).findOneAndUpdate({ name: userName }, { $inc: { token: scoreChange } }, { returnOriginal: false });
-    const updateBotWallet = await db.collection(botTokenDocumentName).updateOne({ name: userName }, { $inc: { token: -scoreChange } });
+    const updateBotWallet = await db.collection(botTokenDocumentName).updateOne({ name: this.robot.name }, { $inc: { token: -scoreChange } });
     return result.value;
   }
 
