@@ -109,7 +109,7 @@ module.exports = function plusPlus(robot) {
     const from = msg.message.user;
 
     robot.logger.debug(`${increment} score for [${cleanName}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
-    const user = await scoreKeeper.incrementScore(cleanName, from, room, reason, increment);
+    const user = await scoreKeeper.incrementScore(cleanName, from, room, cleanReason, increment);
 
     if (!user) {
       return;

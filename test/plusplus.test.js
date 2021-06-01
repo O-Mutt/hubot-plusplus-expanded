@@ -76,7 +76,7 @@ describe('PlusPlus', function () {
       room.user.say('derp', '@matt.erickson++ for being awesome');
       await new Promise((resolve) => setTimeout(resolve, 100));
       expect(room.messages[1][1]).to.match(
-        /matt\.erickson has 228 points, 1 of which is for being awesome./,
+        /matt\.erickson has 228 points, 2 of which are for being awesome./,
       );
     });
 
