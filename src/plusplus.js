@@ -159,8 +159,8 @@ module.exports = function plusPlus(robot) {
     for (const cleanName of cleanNames) {
       // eslint-disable-next-line no-await-in-loop
       const user = await scoreKeeper.incrementScore(cleanName, from, room, cleanReason, increment);
-      robot.logger.debug(`clean names map [${cleanName}]: ${user.score}, the reason ${user.reasons[cleanReason]}`);
       if (user) {
+        robot.logger.debug(`clean names map [${cleanName}]: ${user.score}, the reason ${user.reasons[cleanReason]}`);
         messages.push(helpers.getMessageForNewScore(user, cleanReason, robot));
       }
     }
