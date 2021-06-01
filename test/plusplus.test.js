@@ -48,7 +48,7 @@ describe('PlusPlus', function () {
   describe('plusplus', function () {
     it('should add a point when a user is ++\'d', async function () {
       room.user.say('matt.erickson', '@derp++');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 50));
       expect(room.messages[1][1]).to.match(/derp has 1 point\./);
       const user = await db.collection('scores').findOne({ name: 'derp' });
       expect(user.score).to.equal(1);
@@ -56,7 +56,7 @@ describe('PlusPlus', function () {
 
     it('should add a point when a user that is already in the db is ++\'d', async function () {
       room.user.say('derp', '@matt.erickson++');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.match(/matt.erickson has 228 points\./);
       const user = await db
         .collection('scores')
@@ -66,7 +66,7 @@ describe('PlusPlus', function () {
 
     it('should add a point to each user in the multi-user plus plus', async function () {
       room.user.say('derp', '{ @darf, @greg, @tank } ++');
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       expect(room.messages[1][1]).to.match(
         /darf has 1 point\.\n:birthday: Today is darf\'s hubotday! :birthday:\ngreg has 1 point\.\n:birthday: Today is greg\'s hubotday! :birthday:\ntank has 1 point\.\n:birthday: Today is tank\'s hubotday! :birthday:/,
       );
@@ -78,7 +78,7 @@ describe('PlusPlus', function () {
         .findOne({ name: 'matt.erickson.min' });
       expect(user.score).to.equal(8);
       room.user.say('derp', '@matt.erickson.min--');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.match(/matt.erickson.min has 7 points\./);
       user = await db.collection('scores').findOne({ name: 'matt.erickson' });
       expect(user.score).to.equal(227);
@@ -88,7 +88,7 @@ describe('PlusPlus', function () {
   describe('getScore', function getScoreTest() {
     it('should respond with 5 reasons if the user has 5', async function () {
       room.user.say('matt.erickson', '@hubot score for matt.erickson');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.match(
         /matt\.erickson has 227 points\.\n\n:star: Here are some reasons :star:(\n.*:.*){5}/,
       );
@@ -96,7 +96,7 @@ describe('PlusPlus', function () {
 
     it('should respond with 3 reasons if the user has 3', async function () {
       room.user.say('matt.erickson.min', '@hubot score for matt.erickson.min');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.match(
         /matt\.erickson\.min has 8 points\.\n\n:star: Here are some reasons :star:(\n.*:.*){3}/,
       );
@@ -104,7 +104,7 @@ describe('PlusPlus', function () {
 
     it('should respond with 3 reasons if the user has 3 and token count', async function () {
       room.user.say('peter.parker.min', '@hubot score for peter.parker.min');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.match(
         /peter\.parker\.min has 8 points \(\*8 Hubot Tokens\*\)\.\n\n:star: Here are some reasons :star:(\n.*:.*){3}/
       );
@@ -114,13 +114,13 @@ describe('PlusPlus', function () {
   describe('respondWithUsersBotDay', function respondWithUsersBotDay() {
     it('should respond with the hubot day when asked', async function () {
       room.user.say('matt.erickson', 'hubot when is my hubotday?');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.equal('Your hubotday is 07-09-2020');
     });
 
     it('should respond with the hubot day when asked about a different persons hubot day', async function () {
       room.user.say('phil.bob', 'hubot what day is matt.erickson hubot day?');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.equal(
         'matt.erickson\'s hubotday is 07-09-2020',
       );
@@ -128,7 +128,7 @@ describe('PlusPlus', function () {
 
     it('should respond with the hubot day when asked about a different persons (with \') hubot day', async function () {
       room.user.say('phil.bob', 'hubot what day is matt.erickson\'s hubot day?');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.equal(
         'matt.erickson\'s hubotday is 07-09-2020',
       );
@@ -139,7 +139,7 @@ describe('PlusPlus', function () {
         'phil.bob',
         'hubot what day is matt.erickson \'s hubot day?',
       );
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.equal(
         'matt.erickson\'s hubotday is 07-09-2020',
       );
@@ -149,7 +149,7 @@ describe('PlusPlus', function () {
   describe('respondWithHubotGuidance', function () {
     it('should respond with hubot usage guidance', async function () {
       room.user.say('peter.nguyen', '@hubot help');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       const message = room.messages[1][1];
       const { blocks } = message.attachments[0];
       expect(blocks.length).to.equal(3);
@@ -173,7 +173,7 @@ describe('PlusPlus', function () {
   describe('respondWithLeaderLoserBoard', function () {
     it('should respond with top 2 leaders on the scoreboard', async function () {
       room.user.say('matt.erickson', '@hubot top 2');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.include(
         '\n1. matt.erickson: 227\n2. peter.parker: 200 (*200 Hubot Tokens*)',
       );
@@ -181,7 +181,7 @@ describe('PlusPlus', function () {
 
     it('should respond with bottom 2 losers on the scoreboard', async function () {
       room.user.say('matt.erickson', '@hubot bottom 2');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.include(
         '\n1. peter.parker.min: 8 (*8 Hubot Tokens*)\n2. matt.erickson.min: 8',
       );
@@ -189,7 +189,7 @@ describe('PlusPlus', function () {
 
     it('should respond with top 2 leaders on the scoreboard if account level of one user is level 2', async function () {
       room.user.say('matt.erickson', '@hubot top 2');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.include(
         '\n1. matt.erickson: 227\n2. peter.parker: 200 (*200 Hubot Tokens*)',
       );
@@ -199,7 +199,7 @@ describe('PlusPlus', function () {
   describe('respondWithLeaderLoserTokenBoard', function () {
     it('should respond with top 2 leaders on the scoreboard', async function () {
       room.user.say('matt.erickson', '@hubot top tokens 2');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.include(
         '\n1. peter.parker: *200 Hubot Tokens* (200 points)\n2. peter.parker.min: *8 Hubot Tokens* (8 points)',
       );
@@ -207,7 +207,7 @@ describe('PlusPlus', function () {
 
     it('should respond with bottom 2 leaders on the scoreboard', async function () {
       room.user.say('matt.erickson', '@hubot bottom tokens 2');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.include(
         '\n1. peter.parker.min: *8 Hubot Tokens* (8 points)\n2. peter.parker: *200 Hubot Tokens* (200 points)',
       );
@@ -217,7 +217,7 @@ describe('PlusPlus', function () {
   describe('version', function () {
     it('should respond with the name and version of the package when asked --version', async function () {
       await room.user.say('matt.erickson', '@hubot --version');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
         `${helpers.capitalizeFirstLetter(room.robot.name)} ${pjson.name}, version: ${pjson.version}`,
@@ -226,7 +226,7 @@ describe('PlusPlus', function () {
 
     it('should respond with the name and version of the package when asked -v', async function () {
       await room.user.say('matt.erickson', '@hubot -v');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
         `${helpers.capitalizeFirstLetter(room.robot.name)} ${pjson.name}, version: ${pjson.version}`,
@@ -235,7 +235,7 @@ describe('PlusPlus', function () {
 
     it('should respond with the name and version of the package when asked `plusplus version`', async function () {
       await room.user.say('matt.erickson', '@hubot plusplus version');
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
         `${helpers.capitalizeFirstLetter(room.robot.name)} ${pjson.name}, version: ${pjson.version}`,
