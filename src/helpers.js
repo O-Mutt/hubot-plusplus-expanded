@@ -65,7 +65,7 @@ function getMessageForNewScore(user, reason, robot) {
   }
 
   if (reason) {
-    const decodedReason = this.decode(reason);
+    const decodedReason = decode(reason);
     if (user.reasons[reason] === 1 || user.reasons[reason] === -1) {
       if (user.score === 1 || user.score === -1) {
         reasonStr = ` for ${decodedReason}.`;

@@ -72,6 +72,14 @@ describe('PlusPlus', function () {
       );
     });
 
+    it('should add a point to user with reason', async function () {
+      room.user.say('derp', '@matt.erickson++ for being awesome');
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(room.messages[1][1]).to.match(
+        /matt\.erickson has 228 points, 1 of which is for being awesome./,
+      );
+    });
+
     it('should subtract a point when a user that is already in the db is --\'d', async function () {
       let user = await db
         .collection('scores')

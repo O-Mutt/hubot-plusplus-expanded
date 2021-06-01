@@ -105,16 +105,17 @@ module.exports = function plusPlus(robot) {
     const { room } = msg.message;
     // eslint-disable-next-line
     const cleanName = helpers.cleanName(name);
+    const cleanReason = helpers.cleanAndEncode(reason);
     const from = msg.message.user;
 
-    robot.logger.debug(`${increment} score for [${cleanName}] from [${from}]${helpers.cleanAndEncode(reason) ? ` because ${helpers.cleanAndEncode(reason)}` : ''} in [${room}]`);
+    robot.logger.debug(`${increment} score for [${cleanName}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
     const user = await scoreKeeper.incrementScore(cleanName, from, room, reason, increment);
 
     if (!user) {
       return;
     }
 
-    const message = helpers.getMessageForNewScore(user, reason, robot);
+    const message = helpers.getMessageForNewScore(user, cleanReason, robot);
 
     if (message) {
       msg.send(message);
@@ -160,7 +161,7 @@ module.exports = function plusPlus(robot) {
       const user = await scoreKeeper.incrementScore(cleanName, from, room, cleanReason, increment);
       robot.logger.debug(`clean names map [${cleanName}]: ${user.score}, the reason ${user.reasons[cleanReason]}`);
       if (user) {
-        messages.push(helpers.getMessageForNewScore(user, reason, robot));
+        messages.push(helpers.getMessageForNewScore(user, cleanReason, robot));
       }
     }
     messages = messages.filter((message) => !!message); // de-dupe

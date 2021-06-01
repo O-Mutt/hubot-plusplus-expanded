@@ -190,37 +190,37 @@ describe('Helpers', function () {
       ],
       [
         {
-          name: 'matt', score: 45, reasons: { winning: 1 }, testBotDay: notBotDay,
+          name: 'matt', score: 45, reasons: { [helpers.cleanAndEncode('winning')]: 1 }, testBotDay: notBotDay,
         }, 'winning', 'matt has 45 points, 1 of which is for winning.',
       ],
       [
         {
-          name: 'matt', score: 1, reasons: { 'cool runnings!': 1 }, testBotDay: notBotDay,
+          name: 'matt', score: 1, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 1 }, testBotDay: notBotDay,
         }, 'cool runnings!', 'matt has 1 point for cool runnings!.',
       ],
       [
         {
-          name: 'matt', score: 1, reasons: { 'cool runnings!': 1 }, testBotDay: botDay,
+          name: 'matt', score: 1, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 1 }, testBotDay: botDay,
         }, 'cool runnings!', 'matt has 1 point for cool runnings!.\n:birthday: Today is matt\'s 1st testBotday! :birthday:',
       ],
       [
         {
-          name: 'matt', score: 99, reasons: { 'cool runnings!': 0 }, testBotDay: notBotDay,
+          name: 'matt', score: 99, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 0 }, testBotDay: notBotDay,
         }, 'cool runnings!', 'matt has 99 points, none of which are for cool runnings!.',
       ],
       [
         {
-          name: 'matt', score: 1, reasons: { 'cool runnings!': 99 }, testBotDay: notBotDay,
+          name: 'matt', score: 1, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 99 }, testBotDay: notBotDay,
         }, 'cool runnings!', 'matt has 1 point, 99 of which are for cool runnings!.',
       ],
       [
         {
-          name: 'matt', score: 145, reasons: { 'cool runnings!': 99 }, testBotDay: notBotDay,
+          name: 'matt', score: 145, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 99 }, testBotDay: notBotDay,
         }, 'cool runnings!', 'matt has 145 points, 99 of which are for cool runnings!.',
       ],
       [
         {
-          name: 'matt', score: 200, reasons: { 'cool runnings!': 99 }, testBotDay: notBotDay,
+          name: 'matt', score: 200, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 99 }, testBotDay: notBotDay,
         }, 'cool runnings!', ':200: matt has 200 points :200:, 99 of which are for cool runnings!.',
       ],
       [
@@ -231,7 +231,7 @@ describe('Helpers', function () {
     ])
       .it('should take the user object %j, reason %j and print %j',
         (user, reason, expectedMessage) => {
-          const message = helpers.getMessageForNewScore(user, reason, { name: 'testBot' });
+          const message = helpers.getMessageForNewScore(user, helpers.cleanAndEncode(reason), { name: 'testBot' });
           expect(message).to.equal(expectedMessage);
         });
   });
