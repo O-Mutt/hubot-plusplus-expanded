@@ -7,6 +7,9 @@ const { MongoClient } = require('mongodb');
 const mongoUnit = require('mongo-unit');
 const Helper = require('hubot-test-helper');
 
+const helpers = require('../src/helpers');
+const pjson = require('../package.json');
+
 const testData = { scores: [], scoreLog: [{}] };
 testData.scores.push(
   require('./mock_minimal_user.json'),
@@ -217,7 +220,7 @@ describe('PlusPlus', function () {
       await new Promise((resolve) => setTimeout(resolve, 30));
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
-        'Hubot hubot-plusplus-expanded, version: 2.1.2',
+        `${helpers.capitalizeFirstLetter(room.robot.name)} ${pjson.name}, version: ${pjson.version}`,
       );
     });
 
@@ -226,7 +229,7 @@ describe('PlusPlus', function () {
       await new Promise((resolve) => setTimeout(resolve, 30));
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
-        'Hubot hubot-plusplus-expanded, version: 2.1.2',
+        `${helpers.capitalizeFirstLetter(room.robot.name)} ${pjson.name}, version: ${pjson.version}`,
       );
     });
 
@@ -235,7 +238,7 @@ describe('PlusPlus', function () {
       await new Promise((resolve) => setTimeout(resolve, 30));
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
-        'Hubot hubot-plusplus-expanded, version: 2.1.2',
+        `${helpers.capitalizeFirstLetter(room.robot.name)} ${pjson.name}, version: ${pjson.version}`,
       );
     });
   });
