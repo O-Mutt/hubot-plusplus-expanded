@@ -147,8 +147,8 @@ class DatabaseService {
   async getTopScores(amount) {
     const db = await this.getDb();
     const results = await db.collection(scoresDocumentName)
-      .find()
-      .sort({ score: -1 })
+      .find({})
+      .sort({ score: -1, accountLevel: 1 })
       .limit(amount)
       .toArray();
 
@@ -160,8 +160,8 @@ class DatabaseService {
   async getBottomScores(amount) {
     const db = await this.getDb();
     const results = await db.collection(scoresDocumentName)
-      .find({ score: { $gt: Number.MIN_SAFE_INTEGER } })
-      .sort({ score: 1 })
+      .find({})
+      .sort({ score: 1, accountLevel: -1 })
       .limit(amount)
       .toArray();
 
@@ -176,7 +176,7 @@ class DatabaseService {
       .find({
         accountLevel: { $gte: 2 },
       })
-      .sort({ token: -1 })
+      .sort({ token: -1, score: -1 })
       .limit(amount)
       .toArray();
 
@@ -191,7 +191,7 @@ class DatabaseService {
       .find({
         accountLevel: { $gte: 2 },
       })
-      .sort({ token: 1 })
+      .sort({ token: 1, score: 1 })
       .limit(amount)
       .toArray();
 

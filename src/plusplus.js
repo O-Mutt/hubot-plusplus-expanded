@@ -235,7 +235,6 @@ module.exports = function plusPlus(robot) {
     const methodName = `get${topOrBottom}Scores`;
 
     const tops = await scoreKeeper.databaseService[methodName](amount);
-
     const message = [];
     if (tops.length > 0) {
       // eslint-disable-next-line
