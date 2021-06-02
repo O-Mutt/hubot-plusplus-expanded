@@ -39,7 +39,6 @@ const defaultData = {
 const msgSpy = sinon.spy(robotStub, 'messageRoom');
 
 describe('ScoreKeeper', function scorekeeperTest() {
-  this.timeout('25s');
   let scoreKeeper;
   before(async function () {
     await mongoUnit.start();
@@ -135,7 +134,6 @@ describe('ScoreKeeper', function scorekeeperTest() {
   });
 
   describe('subtracting', function () {
-    this.timeout('5s');
     it('adds points to a user', async function () {
       const r = await scoreKeeper.incrementScore('to', { name: 'from', id: '123' }, 'room', undefined, -1);
       expect(r.score).to.equal(-1);
@@ -143,7 +141,6 @@ describe('ScoreKeeper', function scorekeeperTest() {
 
     it('subtracts points from a user for a reason', async function () {
       const r = await scoreKeeper.incrementScore('to', { name: 'from', id: '123' }, 'room', 'because points', -1);
-      this.timeout('15s');
       expect(r).to.be.an('object');
       expect(r.score).to.equal(-1);
       expect(r.reasons['because points']).to.equal(-1);

@@ -16,7 +16,6 @@ describe('PlusPlus', function () {
   let room;
   let db;
   let plusPlusHelper;
-  this.timeout('25s');
   before(async function () {
     const url = await mongoUnit.start();
     const client = new MongoClient(url, {
