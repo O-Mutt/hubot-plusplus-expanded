@@ -119,11 +119,13 @@ function getYearsAsString(dateObj) {
   return `${years}th `;
 }
 
-function isNotPrivateMessage(msg) {
-  const { room, user } = msg.message;
-  msg.robot.logger.debug('checking if the user is in the context of a DM or public message', room, user.room);
+/*
+* checks if the message is in DM
+* room - {string} name of the room
+*/
+function isPrivateMessage(room) {
   // "Shell" is the adapter for running in the terminal
-  return room[0] !== 'D' && room !== 'Shell';
+  return room[0] === 'D' || room === 'Shell';
 }
 
 function capitalizeFirstLetter(str) {
@@ -140,7 +142,7 @@ const helpers = {
   getMessageForNewScore,
   isCakeDay,
   getYearsAsString,
-  isNotPrivateMessage,
+  isPrivateMessage,
   capitalizeFirstLetter,
 };
 

@@ -9,7 +9,7 @@ async function levelUpAccount(msg, scoreKeeper) {
     timeoutMsg.reply('You didn\'t answer the question prompted in a timely fashion, this message will now self destruct. :boom:');
   };
 
-  if (helpers.isNotPrivateMessage(msg)) {
+  if (!helpers.isPrivateMessage(msg.message.room)) {
     return msg.reply(`You should only execute a level up from within the context of a DM with ${msg.robot.name}`);
   }
 

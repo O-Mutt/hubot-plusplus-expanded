@@ -1,5 +1,6 @@
 /* eslint-disable guard-for-in */
 /* eslint-disable no-restricted-syntax */
+const helpers = require('./helpers');
 const DatabaseService = require('./services/database');
 
 class ScoreKeeper {
@@ -34,7 +35,7 @@ class ScoreKeeper {
     try {
       toUser = await this.getUser(userName);
       fromUser = await this.getUser(from.name);
-      if (await this.isNotSpam(toUser, fromUser) && this.isNotSendingToSelf(toUser, fromUser)) {
+      if (!(await this.isSpam(toUser, fromUser)) && !this.isSendingToSelf(toUser, fromUser) && !this.isBotInDm(from, room)) {
         toUser.score = parseInt(toUser.score, 10) + parseInt(incrementValue, 10);
         if (reason) {
           const oldReasonScore = toUser.reasons[`${reason}`] ? toUser.reasons[`${reason}`] : 0;
@@ -47,7 +48,7 @@ class ScoreKeeper {
       }
 
       // this add is invalid
-      if (!await this.isNotSpam(toUser, fromUser)) {
+      if (await this.isSpam(toUser, fromUser)) {
         this.robot.messageRoom(from.id, this.spamMessage);
       }
     } catch (e) {
@@ -83,15 +84,29 @@ class ScoreKeeper {
     } */
   }
 
-  isNotSendingToSelf(to, from) {
+  isSendingToSelf(to, from) {
     this.robot.logger.debug(`Checking if is to self. To [${to.name}] From [${from.name}], Valid: ${to.name !== from.name}`);
-    return to.name !== from.name;
+    return to.name === from.name;
   }
 
-  async isNotSpam(to, from) {
+  async isSpam(to, from) {
     this.robot.logger.debug(`Checking spam to [${to.name}] from [${from.name}]`);
     const isSpam = await this.databaseService.isSpam(to.name, from.name);
-    return !isSpam;
+    return isSpam;
+  }
+
+  /*
+  * tries to detect bots
+  * from - object from the msg.message.user
+  * return {boolean} true if it is a bot
+  */
+  isBotInDm(from, room) {
+    let isBot = false;
+    if (from.is_bot && helpers.isPrivateMessage(room)) {
+      isBot = true;
+      this.robot.logger.error('A bot is sending points in DM');
+    }
+    return isBot;
   }
 
   // eslint-disable-next-line
