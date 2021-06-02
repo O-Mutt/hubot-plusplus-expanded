@@ -148,7 +148,7 @@ class DatabaseService {
     const db = await this.getDb();
     const results = await db.collection(scoresDocumentName)
       .find({})
-      .sort({ score: -1, accountLevel: 1 })
+      .sort({ score: -1, accountLevel: -1 })
       .limit(amount)
       .toArray();
 
