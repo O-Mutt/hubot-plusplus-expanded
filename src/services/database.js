@@ -219,21 +219,21 @@ class DatabaseService {
   async updateAccountLevelToTwo(user) {
     const db = await this.getDb();
     let tokensAdded = 0;
-    await db.collection(scoresDocumentName).find({ name: user.name }).forEach((mappedUser) => {
-      // we are leveling up from 0 (which is level 1) -> 2 or 2 -> 3
-      if (mappedUser.accountLevel && mappedUser.accountLevel === 2) {
-        // this is a weird case and shouldn't really happen... not sure about this...
-        this.robot.logger.debug(`Somehow FoundUser[${mappedUser.name}] SearchedUser[${user.name}] was trying to upgrade their account to level 2.`);
-        return;
-      }
-      mappedUser.accountLevel = 2;
-      mappedUser.token = 0;
-      tokensAdded = mappedUser.score;
-      db.collection(scoresDocumentName).save(mappedUser);
-    });
 
-    await this.transferScoreFromBotToUser(user.name, tokensAdded);
-    return true;
+    const foundUser = await db.collection(scoresDocumentName).findOne({ name: user.name });
+    // we are leveling up from 0 (which is level 1) -> 2 or 2 -> 3
+    if (foundUser.accountLevel && foundUser.accountLevel === 2) {
+      // this is a weird case and shouldn't really happen... not sure about this...
+      this.robot.logger.debug(`Somehow FoundUser[${foundUser.name}] SearchedUser[${user.name}] was trying to upgrade their account to level 2.`);
+      return true;
+    }
+    foundUser.accountLevel = 2;
+    foundUser.token = 0;
+    tokensAdded = foundUser.score;
+    await db.collection(scoresDocumentName).updateOne({ name: user.name }, { $set: foundUser });
+
+    const newScore = await this.transferScoreFromBotToUser(user.name, tokensAdded);
+    return newScore;
   }
 
   async getBotWallet() {
@@ -246,7 +246,7 @@ class DatabaseService {
     const db = await this.getDb();
     this.robot.logger.info(`We are transferring ${scoreChange} ${helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName}`);
     const result = await db.collection(scoresDocumentName).findOneAndUpdate({ name: userName }, { $inc: { token: scoreChange } }, { returnOriginal: false });
-    const updateBotWallet = await db.collection(botTokenDocumentName).updateOne({ name: this.robot.name }, { $inc: { token: -scoreChange } });
+    await db.collection(botTokenDocumentName).updateOne({ name: this.robot.name }, { $inc: { token: -scoreChange } });
     return result.value;
   }
 

@@ -25,7 +25,7 @@ const robotStub = {
     info() {},
     error() {},
   },
-  name: 'testBot',
+  name: 'hubot',
   messageRoom: (message) => message,
 };
 const defaultData = {

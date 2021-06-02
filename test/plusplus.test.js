@@ -10,13 +10,7 @@ const Helper = require('hubot-test-helper');
 const helpers = require('../src/helpers');
 const pjson = require('../package.json');
 
-const testData = { scores: [], scoreLog: [{}] };
-testData.scores.push(
-  require('./mock_minimal_user.json'),
-  require('./mock_full_user.json'),
-  require('./mock_full_user_level_2.json'),
-  require('./mock_minimal_user_level_2.json'),
-);
+const testData = require('./mockData');
 
 describe('PlusPlus', function () {
   let room;
@@ -248,6 +242,24 @@ describe('PlusPlus', function () {
       expect(room.messages[1][1]).to.equal(
         `${helpers.capitalizeFirstLetter(room.robot.name)} ${pjson.name}, version: ${pjson.version}`,
       );
+    });
+  });
+
+  describe('upgrade my account', function() {
+    it('should respond with message and level up account', async function () {
+      room.name = 'D123';
+      await room.user.say('matt.erickson', '@hubot upgrade my account');
+      await new Promise((resolve) => setTimeout(resolve, 45));
+      expect(room.messages.length).to.equal(2);
+      expect(room.messages[1][1]).to.equal(
+        `@matt.erickson matt.erickson, we are going to level up your account to Level 2! This means you will start getting ${helpers.capitalizeFirstLetter(room.robot.name)} Tokens as well as points!`,
+      );
+      const user = await db.collection('scores').findOne({ name: 'matt.erickson' });
+      const bot = await db.collection('botToken').findOne({ name: 'hubot' });
+      expect(user.score).to.equal(227, 'score should equal default 227');
+      expect(user.token).to.equal(227, 'tokens should equal 227, the same as the score');
+      expect(user.accountLevel).to.equal(2, 'account level should now be 2');
+      expect(bot.token).to.equal(800000000000 - 227, `${room.robot.name} should have 8T - 227 tokens (799999999773)`);
     });
   });
 });

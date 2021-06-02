@@ -165,73 +165,73 @@ describe('Helpers', function () {
       [undefined, undefined, ''],
       [
         {
-          name: 'matt', score: 1, reasons: {}, testBotDay: notBotDay,
+          name: 'matt', score: 1, reasons: {}, hubotDay: notBotDay,
         }, undefined, 'matt has 1 point.',
       ],
       [
         {
-          name: 'matt', score: 2, reasons: {}, testBotDay: notBotDay,
+          name: 'matt', score: 2, reasons: {}, hubotDay: notBotDay,
         }, undefined, 'matt has 2 points.',
       ],
       [
         {
-          name: 'matt', score: 100, reasons: {}, testBotDay: notBotDay,
+          name: 'matt', score: 100, reasons: {}, hubotDay: notBotDay,
         }, undefined, ':100: matt has 100 points :100:',
       ],
       [
         {
-          name: 'matt', score: 1000, reasons: {}, testBotDay: notBotDay,
+          name: 'matt', score: 1000, reasons: {}, hubotDay: notBotDay,
         }, undefined, ':1000: matt has 1000 points :1000:',
       ],
       [
         {
-          name: 'matt', score: 300, reasons: {}, testBotDay: notBotDay,
+          name: 'matt', score: 300, reasons: {}, hubotDay: notBotDay,
         }, undefined, ':300: matt has 300 points :300:',
       ],
       [
         {
-          name: 'matt', score: 45, reasons: { [helpers.cleanAndEncode('winning')]: 1 }, testBotDay: notBotDay,
+          name: 'matt', score: 45, reasons: { [helpers.cleanAndEncode('winning')]: 1 }, hubotDay: notBotDay,
         }, 'winning', 'matt has 45 points, 1 of which is for winning.',
       ],
       [
         {
-          name: 'matt', score: 1, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 1 }, testBotDay: notBotDay,
+          name: 'matt', score: 1, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 1 }, hubotDay: notBotDay,
         }, 'cool runnings!', 'matt has 1 point for cool runnings!.',
       ],
       [
         {
-          name: 'matt', score: 1, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 1 }, testBotDay: botDay,
-        }, 'cool runnings!', 'matt has 1 point for cool runnings!.\n:birthday: Today is matt\'s 1st testBotday! :birthday:',
+          name: 'matt', score: 1, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 1 }, hubotDay: botDay,
+        }, 'cool runnings!', 'matt has 1 point for cool runnings!.\n:birthday: Today is matt\'s 1st hubotday! :birthday:',
       ],
       [
         {
-          name: 'matt', score: 99, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 0 }, testBotDay: notBotDay,
+          name: 'matt', score: 99, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 0 }, hubotDay: notBotDay,
         }, 'cool runnings!', 'matt has 99 points, none of which are for cool runnings!.',
       ],
       [
         {
-          name: 'matt', score: 1, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 99 }, testBotDay: notBotDay,
+          name: 'matt', score: 1, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 99 }, hubotDay: notBotDay,
         }, 'cool runnings!', 'matt has 1 point, 99 of which are for cool runnings!.',
       ],
       [
         {
-          name: 'matt', score: 145, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 99 }, testBotDay: notBotDay,
+          name: 'matt', score: 145, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 99 }, hubotDay: notBotDay,
         }, 'cool runnings!', 'matt has 145 points, 99 of which are for cool runnings!.',
       ],
       [
         {
-          name: 'matt', score: 200, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 99 }, testBotDay: notBotDay,
+          name: 'matt', score: 200, reasons: { [helpers.cleanAndEncode('cool runnings!')]: 99 }, hubotDay: notBotDay,
         }, 'cool runnings!', ':200: matt has 200 points :200:, 99 of which are for cool runnings!.',
       ],
       [
         {
-          name: 'matt', score: 0, reasons: { }, testBotDay: notBotDay,
+          name: 'matt', score: 0, reasons: { }, hubotDay: notBotDay,
         }, undefined, ':zero: matt has 0 points :zero:',
       ],
     ])
       .it('should take the user object %j, reason %j and print %j',
         (user, reason, expectedMessage) => {
-          const message = helpers.getMessageForNewScore(user, helpers.cleanAndEncode(reason), { name: 'testBot' });
+          const message = helpers.getMessageForNewScore(user, helpers.cleanAndEncode(reason), { name: 'hubot' });
           expect(message).to.equal(expectedMessage);
         });
   });
