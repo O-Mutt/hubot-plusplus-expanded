@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const Conversation = require('hubot-conversation');
 const tokenBuddy = require('token-buddy');
 const helpers = require('./helpers');
@@ -39,9 +40,9 @@ async function botWalletCount(msg, scoreKeeper) {
   try {
     gas = await tokenBuddy.getBalance(botWallet.publicWalletAddress);
   } catch (e) {
-    msg.send(`An error occurred getting ${this.robot.name}'s gas ammount`);
+    msg.send(`An error occurred getting ${msg.robot.name}'s gas ammount`);
   }
-  msg.robot.logger.debug(`Get the bot wallet by user ${msg.message.user.name}, ${botWallet}`);
+  msg.robot.logger.debug(`Get the bot wallet by user ${msg.message.user.name}, ${_.pick(JSON.stringify(botWallet), ['publicWalletAddress', 'name', 'token'])}`);
 
   const message = {
     attachments: [{
