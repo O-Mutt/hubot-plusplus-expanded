@@ -34,8 +34,14 @@ async function levelUpAccount(msg, scoreKeeper) {
 
 async function botWalletCount(msg, scoreKeeper) {
   const botWallet = await scoreKeeper.databaseService.getBotWallet();
-  const gas = await tokenBuddy.getBalance(botWallet.publicWalletAddress);
-  msg.robot.logger.debug(`Get the bot wallet by user ${msg.message.user.name}`);
+  msg.robot.logger.debug(`Get the bot wallet by user ${msg.message.user.name}, ${botWallet}`);
+  let gas;
+  try {
+    gas = await tokenBuddy.getBalance(botWallet.publicWalletAddress);
+  } catch (e) {
+    msg.send(`An error occurred getting ${this.robot.name}'s gas ammount`);
+  }
+  msg.robot.logger.debug(`Get the bot wallet by user ${msg.message.user.name}, ${botWallet}`);
 
   const message = {
     attachments: [{
@@ -63,16 +69,18 @@ async function botWalletCount(msg, scoreKeeper) {
             text: `Tokens In Wallet: ${botWallet.token.toLocaleString()}`,
           },
         },
-        {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: `Gas Available: ${gas.toLocaleString()}`,
-          },
-        },
       ],
     }],
   };
+  if (gas) {
+    message.attachments[0].blocks.push({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `Gas Available: ${gas.toLocaleString()}`,
+      },
+    });
+  }
 
   return msg.send(message);
 }
