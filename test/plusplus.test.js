@@ -1,5 +1,6 @@
 const chai = require('chai');
 chai.use(require('sinon-chai'));
+const sinon = require('sinon');
 
 const { expect } = chai;
 
@@ -16,6 +17,7 @@ describe('PlusPlus', function () {
   let room;
   let db;
   let plusPlusHelper;
+  let sandbox;
   before(async function () {
     const url = await mongoUnit.start();
     const client = new MongoClient(url, {
@@ -25,15 +27,18 @@ describe('PlusPlus', function () {
     const connection = await client.connect();
     db = connection.db();
     process.env.MONGODB_URI = url;
+    process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
     plusPlusHelper = new Helper('../src/plusplus.js');
   });
 
   beforeEach(async function () {
+    sandbox = sinon.createSandbox();
     room = plusPlusHelper.createRoom();
     return mongoUnit.load(testData);
   });
 
   afterEach(async function () {
+    sandbox.restore();
     room.destroy();
     return mongoUnit.drop();
   });
@@ -154,18 +159,50 @@ describe('PlusPlus', function () {
       const message = room.messages[1][1];
       const { blocks } = message.attachments[0];
       expect(blocks.length).to.equal(3);
-      expect(blocks).to.deep.include({
+      expect(blocks[0]).to.deep.include({
         type: 'section',
         text: {
           type: 'mrkdwn',
           text: 'Need help with hubot?',
         },
       });
-      expect(blocks).to.deep.include({
+      expect(blocks[1]).to.deep.include({
         type: 'section',
         text: {
           type: 'mrkdwn',
           text: '_Commands_:',
+        },
+      });
+      expect(blocks[2]).to.be.an('object');
+    });
+
+    it('should respond with hubot usage guidance and further URL if env var is set', async function () {
+      const url = 'https://derp.com';
+      room.destroy();
+      sandbox.stub(process.env, 'HUBOT_CRYPTO_FURTHER_HELP_URL').value(url);
+      room = plusPlusHelper.createRoom();
+      room.user.say('peter.nguyen', '@hubot -h');
+      await new Promise((resolve) => setTimeout(resolve, 45));
+      const message = room.messages[1][1];
+      const { blocks } = message.attachments[0];
+      expect(blocks.length).to.equal(4);
+      expect(blocks[0]).to.deep.include({
+        type: 'section',
+        text: { type: 'mrkdwn', text: 'Need help with hubot?' },
+      });
+      expect(blocks[1]).to.deep.include({
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '_Commands_:',
+        },
+      });
+      expect(blocks[2]).to.be.an('object');
+      expect(blocks[3]).to.deep.include({
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `For further help please visit ${url}`,
         },
       });
     });

@@ -51,7 +51,15 @@ class DatabaseService {
     return dbUser;
   }
 
-  async saveUser(user, from, room, reason) {
+  /**
+   * Saves the user 
+   * @param {object} user the user who is getting a point change
+   * @param {object} from the user sending the point change
+   * @param {string} room the room that the point was sent in
+   * @param {encodedString | undefined} reason
+   * @returns 
+   */
+  async saveUser(user, from, room, reason, incrementValue) {
     const db = await this.getDb();
 
     const result = await db.collection(scoresDocumentName)
@@ -69,7 +77,7 @@ class DatabaseService {
 
     let updatedUser = result.value;
     if (updatedUser.accountLevel > 1) {
-      updatedUser = await this.transferScoreFromBotToUser(user.name);
+      updatedUser = await this.transferScoreFromBotToUser(user.name, incrementValue, from.name);
     }
 
     try {
@@ -242,11 +250,22 @@ class DatabaseService {
     return botWallet;
   }
 
-  async transferScoreFromBotToUser(userName, scoreChange = 1) {
+  /**
+   * 
+   * @param {string} userName the name of the user receiving the points
+   * @param {number} scoreChange the increment in which the user is getting/losing points
+   * @param {string} fromName the name of the user sending the points
+   * @returns {object} the user who received the points updated value
+   */
+  async transferScoreFromBotToUser(userName, scoreChange, fromName) {
     const db = await this.getDb();
-    this.robot.logger.info(`We are transferring ${scoreChange} ${helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName}`);
+    this.robot.logger.info(`We are transferring ${scoreChange} ${helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName} from ${fromName || helpers.capitalizeFirstLetter(this.robot.name)}`);
     const result = await db.collection(scoresDocumentName).findOneAndUpdate({ name: userName }, { $inc: { token: scoreChange } }, { returnOriginal: false });
     await db.collection(botTokenDocumentName).updateOne({ name: this.robot.name }, { $inc: { token: -scoreChange } });
+    // If this isn't a level up and the score is larger than 1 (tipping aka level 3)
+    if (fromName && (scoreChange > 1 || scoreChange < -1)) {
+      await db.collection(scoresDocumentName).updateOne({ name: fromName }, { $inc: { token: -scoreChange } });
+    }
     return result.value;
   }
 

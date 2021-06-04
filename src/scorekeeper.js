@@ -43,7 +43,7 @@ class ScoreKeeper {
         }
 
         await this.databaseService.savePointsGiven(from, toUser, incrementValue);
-        const saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason);
+        const saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason, incrementValue);
         return saveResponse;
       }
 

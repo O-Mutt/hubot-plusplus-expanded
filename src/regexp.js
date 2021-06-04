@@ -61,7 +61,7 @@ regexp.createTopBottomTokenRegExp = () => {
   const topOrBottom = '(top|bottom)';
   const digits = '(\\d+)';
   return new RegExp(`${topOrBottom}${regexp.allowSpaceAfterObject}tokens${regexp.allowSpaceAfterObject}${digits}`, 'i');
-}
+};
 
 /**
  * user1++ for being dope

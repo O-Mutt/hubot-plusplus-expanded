@@ -27,12 +27,13 @@
 //
 // Author: O-Mutt
 
-const pjson = require('../package.json')
+const util = require('util');
 const clark = require('clark');
 const { default: axios } = require('axios');
 const _ = require('lodash');
 const moment = require('moment');
 const tokenBuddy = require('token-buddy');
+const pjson = require('../package.json');
 const regexp = require('./regexp');
 const wallet = require('./wallet');
 const ScoreKeeper = require('./scorekeeper');
@@ -41,19 +42,20 @@ const helpers = require('./helpers');
 const token = require('./token');
 const decrypt = require('./services/decrypt');
 
-const procVars = {};
-procVars.reasonsKeyword = process.env.HUBOT_PLUSPLUS_REASONS || 'reasons';
-procVars.spamMessage = process.env.HUBOT_SPAM_MESSAGE || 'Looks like you hit the spam filter. Please slow your roll.';
-procVars.spamTimeLimit = parseInt(process.env.SPAM_TIME_LIMIT, 10) || 5;
-procVars.companyName = process.env.HUBOT_COMPANY_NAME || 'Company Name';
-procVars.peerFeedbackUrl = process.env.HUBOT_PEER_FEEDBACK_URL || `praise in Lattice (https://${procVars.companyName}.latticehq.com/)`;
-procVars.furtherFeedbackSuggestedScore = parseInt(process.env.HUBOT_FURTHER_FEEDBACK_SCORE, 10) || 10;
-procVars.mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGODB_URL || process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/plusPlus';
-procVars.cryptoRpcProvider = process.env.HUBOT_CRYPTO_RPC_PROVIDER || '';
-procVars.magicNumber = process.env.HUBOT_UNIMPORTANT_MAGIC_NUMBER || 'nope';
-procVars.magicIv = process.env.HUBOT_UNIMPORTANT_MAGIC_IV || 'yup';
-
 module.exports = function plusPlus(robot) {
+  const procVars = {};
+  procVars.reasonsKeyword = process.env.HUBOT_PLUSPLUS_REASONS || 'reasons';
+  procVars.spamMessage = process.env.HUBOT_SPAM_MESSAGE || 'Looks like you hit the spam filter. Please slow your roll.';
+  procVars.spamTimeLimit = parseInt(process.env.SPAM_TIME_LIMIT, 10) || 5;
+  procVars.companyName = process.env.HUBOT_COMPANY_NAME || 'Company Name';
+  procVars.peerFeedbackUrl = process.env.HUBOT_PEER_FEEDBACK_URL || `praise in Lattice (https://${procVars.companyName}.latticehq.com/)`;
+  procVars.furtherFeedbackSuggestedScore = parseInt(process.env.HUBOT_FURTHER_FEEDBACK_SCORE, 10) || 10;
+  procVars.mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGODB_URL || process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/plusPlus';
+  procVars.cryptoRpcProvider = process.env.HUBOT_CRYPTO_RPC_PROVIDER || '';
+  procVars.magicNumber = process.env.HUBOT_UNIMPORTANT_MAGIC_NUMBER || 'nope';
+  procVars.magicIv = process.env.HUBOT_UNIMPORTANT_MAGIC_IV || 'yup';
+  procVars.furtherHelpUrl = process.env.HUBOT_CRYPTO_FURTHER_HELP_URL || undefined;
+
   const scoreKeeper = new ScoreKeeper(
     {
       robot, ...procVars,
@@ -362,6 +364,16 @@ module.exports = function plusPlus(robot) {
         ],
       }],
     };
+
+    if (procVars.furtherHelpUrl !== 'undefined') {
+      message.attachments[0].blocks.push({
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `For further help please visit ${procVars.furtherHelpUrl}`,
+        },
+      });
+    }
     msg.send(message);
   }
 };
