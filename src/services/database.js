@@ -134,7 +134,8 @@ class DatabaseService {
     const fromUser = await this.getUser(from.name);
 
     const oldScore = fromUser.pointsGiven[cleanName] ? fromUser.pointsGiven[cleanName] : 0;
-    fromUser.pointsGiven[cleanName] = (oldScore + score);
+    // even if they are down voting them they should still get a tally as they ++/-- the same person
+    fromUser.pointsGiven[cleanName] = (oldScore + 1);
     const result = await db.collection(scoresDocumentName)
       .findOneAndUpdate(
         { name: fromUser.name },
@@ -147,8 +148,8 @@ class DatabaseService {
       );
     const updatedUser = result.value;
 
-    if (updatedUser.pointsGiven[cleanName] % this.furtherFeedbackScore === 0 && score === 1) {
-      this.robot.logger.debug(`${from.name} has sent a lot of points to ${to.name} suggesting further feedback`);
+    if (updatedUser.pointsGiven[cleanName] % this.furtherFeedbackScore === 0) {
+      this.robot.logger.debug(`${from.name} has sent a lot of points to ${to.name} suggesting further feedback ${score}`);
       this.robot.messageRoom(from.id, `Looks like you've given ${to.name} quite a few points, maybe you should look at submitting ${this.peerFeedbackUrl}`);
     }
   }
