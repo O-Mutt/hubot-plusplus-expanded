@@ -105,6 +105,14 @@ describe('PlusPlus', function () {
       user = await db.collection('scores').findOne({ name: 'matt.erickson' });
       expect(user.score).to.equal(227);
     });
+
+    it('should subtract a point when a user is :thumbsdown:\'d', async function () {
+      room.user.say('matt.erickson', '@derp :thumbsdown: for being the best');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(room.messages[1][1]).to.match(/derp has -1 points for being the best\./);
+      const user = await db.collection('scores').findOne({ name: 'derp' });
+      expect(user.score).to.equal(-1);
+    });
   });
 
   describe('giveTokenBetweenUsers', function () {

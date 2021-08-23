@@ -6,7 +6,7 @@ class RegExpHelper {
   // allow for spaces after the thing being upvoted (@user ++)
   allowSpaceAfterObject = '\\s*';
   positiveOperators = '\\+\\+|:clap:|:thumbsup:|:thumbsup_all:';
-  negativeOperators = '--|—|\u2013|\u2014|:thumbsdown';
+  negativeOperators = '--|—|\u2013|\u2014|:thumbsdown:';
   operator = `(${this.positiveOperators}|${this.negativeOperators})`;
   reasonForVote = `(?:\\s+(?:${reasonConjunctions})\\s+(.+))?`;
   eol = '$';
