@@ -69,16 +69,13 @@ class DatabaseService {
           $set: user,
         },
         {
-          returnOriginal: false,
+          returnDocument: 'after',
           upsert: true,
           sort: { score: -1 },
         },
       );
 
-    let updatedUser = result.value;
-    if (updatedUser.accountLevel > 1) {
-      updatedUser = await this.transferScoreFromBotToUser(user.name, incrementValue, from.name);
-    }
+    const updatedUser = result.value;
 
     try {
       await this.savePlusPlusLog(user, from, room, reason, incrementValue);
@@ -141,7 +138,7 @@ class DatabaseService {
         { name: fromUser.name },
         { $set: fromUser },
         {
-          returnOriginal: false,
+          returnDocument: 'after',
           upsert: true,
           sort: { score: -1 },
         },
@@ -262,7 +259,20 @@ class DatabaseService {
   async transferScoreFromBotToUser(userName, scoreChange, fromName) {
     const db = await this.getDb();
     this.robot.logger.info(`We are transferring ${scoreChange} ${helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName} from ${fromName || helpers.capitalizeFirstLetter(this.robot.name)}`);
-    const result = await db.collection(scoresDocumentName).findOneAndUpdate({ name: userName }, { $inc: { token: scoreChange } }, { returnOriginal: false });
+    const result = await db.collection(scoresDocumentName).findOneAndUpdate(
+      {
+        name: userName,
+      },
+      {
+        $inc:
+        {
+          token: scoreChange,
+        },
+      },
+      {
+        returnDocument: 'after',
+      },
+    );
     await db.collection(botTokenDocumentName).updateOne({ name: this.robot.name }, { $inc: { token: -scoreChange } });
     // If this isn't a level up and the score is larger than 1 (tipping aka level 3)
     if (fromName && (scoreChange > 1 || scoreChange < -1)) {

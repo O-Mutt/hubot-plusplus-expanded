@@ -43,18 +43,67 @@ class ScoreKeeper {
         }
 
         await this.databaseService.savePointsGiven(from, toUser, incrementValue);
-        const saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason, incrementValue);
+        let saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason, incrementValue);
+        if (saveResponse.accountLevel > 1) {
+          saveResponse = await this.databaseService.transferScoreFromBotToUser(toUser.name, incrementValue, fromUser.name);
+        }
         return saveResponse;
       }
 
-      // this add is invalid
+      // is spam
       if (await this.isSpam(toUser, fromUser)) {
         this.robot.messageRoom(from.id, this.spamMessage);
       }
+      throw new Error(`I'm sorry ${fromUser.name}, I can't do that.`);
     } catch (e) {
       this.robot.logger.error(`failed to ${incrementValue > 0 ? 'add' : 'subtract'} point to [${userName || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(toUser)}]`, e);
+      throw e;
     }
-    return undefined;
+  }
+
+  async transferTokens(userName, from, room, reason, numberOfTokens) {
+    from = typeof from === 'string' ? { name: from, id: from } : from;
+    let toUser;
+    let fromUser;
+    try {
+      toUser = await this.getUser(userName);
+      fromUser = await this.getUser(from.name);
+      if (toUser.accountLevel >= 2 && fromUser.accountLevel >= 2) {
+        if (!(await this.isSpam(toUser, fromUser))
+            && !this.isSendingToSelf(toUser, fromUser)
+            && !this.isBotInDm(from, room)) {
+          if (fromUser.token >= parseInt(numberOfTokens, 10)) {
+            fromUser.token = parseInt(fromUser.token, 10) - parseInt(numberOfTokens, 10);
+            toUser.token = parseInt(toUser.token, 10) + parseInt(numberOfTokens, 10);
+            if (reason) {
+              const oldReasonScore = toUser.reasons[`${reason}`] ? toUser.reasons[`${reason}`] : 0;
+              toUser.reasons[`${reason}`] = oldReasonScore + numberOfTokens;
+            }
+
+            await this.databaseService.savePointsGiven(from, toUser, numberOfTokens);
+            const saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason, numberOfTokens);
+            await this.databaseService.saveUser(fromUser, toUser, room, reason, -numberOfTokens);
+            return saveResponse;
+          // eslint-disable-next-line no-else-return
+          } else {
+            // from has too few tokens to send that many
+            throw new Error(`You don't have enough tokens to send ${numberOfTokens} to ${toUser.name}`);
+          }
+        } else {
+          // is spam
+          if (await this.isSpam(toUser, fromUser)) {
+            this.robot.messageRoom(from.id, this.spamMessage);
+          }
+          throw new Error(`I'm sorry ${fromUser.name}, I can't do that.`);
+        }
+      } else {
+        // to or from is not level 2
+        throw new Error(`In order to send tokens to ${toUser.name} you both must be, at least, level 2.`);
+      }
+    } catch (e) {
+      this.robot.logger.error(`failed to transfer tokens to [${userName || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${toUser.name}]`, e);
+      throw e;
+    }
   }
 
   async getUser(user) {

@@ -43,7 +43,7 @@ describe('PlusPlus', function () {
     return mongoUnit.drop();
   });
 
-  describe('plusplus', function () {
+  describe('upOrDownVote', function () {
     it('should add a point when a user is ++\'d', async function () {
       room.user.say('matt.erickson', '@derp++');
       await new Promise((resolve) => setTimeout(resolve, 50));
@@ -88,6 +88,71 @@ describe('PlusPlus', function () {
       expect(room.messages[1][1]).to.match(/matt.erickson.min has 7 points\./);
       user = await db.collection('scores').findOne({ name: 'matt.erickson' });
       expect(user.score).to.equal(227);
+    });
+  });
+
+  describe('giveTokenBetweenUsers', function () {
+    it('should add a X points when a user is + #\'d', async function () {
+      room.user.say('peter.parker', '@hubot @peter.parker.min + 5');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(room.messages[1][1]).to.match(/peter\.parker\.min has 8 points \(\*13 Hubot Tokens\*\)\./);
+      const to = await db.collection('scores').findOne({ name: 'peter.parker.min' });
+      expect(to.score).to.equal(8);
+      expect(to.token).to.equal(13);
+      const from = await db.collection('scores').findOne({ name: 'peter.parker' });
+      expect(from.score).to.equal(200);
+      expect(from.token).to.equal(195);
+    });
+
+    it('should error and message if sender is short on tokens', async function () {
+      room.user.say('peter.parker.min', '@hubot @peter.parker + 55');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(room.messages[1][1]).to.match(/You don\'t have enough tokens to send 55 to peter.parker/);
+      const to = await db.collection('scores').findOne({ name: 'peter.parker' });
+      expect(to.score).to.equal(200);
+      expect(to.token).to.equal(200);
+      const from = await db.collection('scores').findOne({ name: 'peter.parker.min' });
+      expect(from.score).to.equal(8);
+      expect(from.token).to.equal(8);
+    });
+
+    it('should error and message if sender is not level 2', async function () {
+      room.user.say('matt.erickson.min', '@hubot @peter.parker + 55');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(room.messages[1][1]).to.match(/In order to send tokens to peter\.parker you both must be, at least, level 2\./);
+      const to = await db.collection('scores').findOne({ name: 'peter.parker' });
+      expect(to.score).to.equal(200);
+      expect(to.token).to.equal(200);
+      const from = await db.collection('scores').findOne({ name: 'matt.erickson.min' });
+      expect(from.score).to.equal(8);
+      expect(from.token).to.equal(undefined);
+    });
+
+    it('should error and message if recipient is not level 2', async function () {
+      room.user.say('peter.parker', '@hubot @matt.erickson + 55');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(room.messages[1][1]).to.match(/In order to send tokens to matt\.erickson you both must be, at least, level 2\./);
+      const to = await db.collection('scores').findOne({ name: 'matt.erickson' });
+      expect(to.score).to.equal(227);
+      expect(to.token).to.equal(undefined);
+      const from = await db.collection('scores').findOne({ name: 'peter.parker' });
+      expect(from.score).to.equal(200);
+      expect(from.token).to.equal(200);
+    });
+
+    it('should error on second point (for spam check)', async function () {
+      room.user.say('peter.parker', '@hubot @peter.parker.min + 2');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(room.messages[1][1]).to.match(/peter\.parker\.min has 8 points \(\*10 Hubot Tokens\*\)\./);
+      const to = await db.collection('scores').findOne({ name: 'peter.parker.min' });
+      expect(to.score).to.equal(8);
+      expect(to.token).to.equal(10);
+      const from = await db.collection('scores').findOne({ name: 'peter.parker' });
+      expect(from.score).to.equal(200);
+      expect(from.token).to.equal(198);
+      room.user.say('peter.parker', '@hubot @peter.parker.min + 2');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(room.messages[3][1]).to.match(/I'm sorry peter.parker. I can't do that./);
     });
   });
 
@@ -281,7 +346,7 @@ describe('PlusPlus', function () {
     });
   });
 
-  describe('upgrade my account', function() {
+  describe('upgrade my account', function () {
     it('should respond with message and level up account', async function () {
       room.name = 'D123';
       await room.user.say('matt.erickson', '@hubot upgrade my account');

@@ -35,7 +35,7 @@ const moment = require('moment');
 const tokenBuddy = require('token-buddy');
 const pjson = require('../package.json');
 const regexp = require('./regexp');
-const wallet = require('./wallet');
+const wallet = require('./botWallet');
 const ScoreKeeper = require('./scorekeeper');
 const helpers = require('./helpers');
 // this may need to move or be generic...er
@@ -80,8 +80,9 @@ module.exports = function plusPlus(robot) {
   robot.hear(regexp.createUpDownVoteRegExp(), upOrDownVote);
   robot.hear(new RegExp(`how much .*point.*`, 'i'), tellHowMuchPointsAreWorth);
   robot.hear(regexp.createMultiUserVoteRegExp(), multipleUsersVote);
-
+  
   // listen for bot tag/ping
+  robot.respond(regexp.createGiveTokenRegExp(), giveTokenBetweenUsers);
   robot.respond(regexp.createAskForScoreRegExp(), respondWithScore);
   robot.respond(regexp.createTopBottomRegExp(), respondWithLeaderLoserBoard);
   robot.respond(regexp.createTopBottomTokenRegExp(), respondWithLeaderLoserTokenBoard);
@@ -111,9 +112,11 @@ module.exports = function plusPlus(robot) {
     const from = msg.message.user;
 
     robot.logger.debug(`${increment} score for [${cleanName}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
-    const user = await scoreKeeper.incrementScore(cleanName, from, room, cleanReason, increment);
-
-    if (!user) {
+    let user;
+    try {
+      user = await scoreKeeper.incrementScore(cleanName, from, room, cleanReason, increment);
+    } catch (e) {
+      msg.send(e.message);
       return;
     }
 
@@ -127,6 +130,39 @@ module.exports = function plusPlus(robot) {
         room,
         reason,
         from,
+      });
+    }
+  }
+
+  async function giveTokenBetweenUsers(msg) {
+    // eslint-disable-next-line
+    let [fullMatch, name, number, reason] = msg.match;
+    const { room } = msg.message;
+    // eslint-disable-next-line
+    const cleanName = helpers.cleanName(name);
+    const cleanReason = helpers.cleanAndEncode(reason);
+    const from = msg.message.user;
+
+    robot.logger.debug(`${number} score for [${cleanName}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
+    let user;
+    try {
+      user = await scoreKeeper.transferTokens(cleanName, from, room, cleanReason, number);
+    } catch (e) {
+      msg.send(e.message);
+      return;
+    }
+
+    const message = helpers.getMessageForNewScore(user, cleanReason, robot);
+
+    if (message) {
+      msg.send(message);
+      robot.emit('plus-one', {
+        name,
+        direction: '+',
+        room,
+        reason,
+        from,
+        number,
       });
     }
   }
