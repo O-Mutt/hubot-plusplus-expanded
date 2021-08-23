@@ -86,6 +86,55 @@ function getMessageForNewScore(user, reason, robot) {
   return `${scoreStr}${reasonStr}${cakeDayStr}`;
 }
 
+function getMessageForTokenTransfer(robot, to, from, reason) {
+  if (!to) {
+    return '';
+  }
+  let scoreStr = `${to.name} has ${to.score} points`;
+  let reasonStr = '.';
+  let cakeDayStr = '';
+  if (to.score === 1) {
+    scoreStr = `${to.name} has ${to.score} point`;
+  }
+  if (to.score % 100 === 0) {
+    let scoreFlareStr = (to.score).toString();
+    if (to.score === 0) {
+      scoreFlareStr = 'zero';
+    }
+    const extraFlare = `:${scoreFlareStr}:`;
+    scoreStr = `${extraFlare} ${scoreStr} ${extraFlare}`;
+    reasonStr = '';
+  }
+  if (to.accountLevel && to.accountLevel > 1) {
+    let tokenStr = `(*${to.token} ${this.capitalizeFirstLetter(robot.name)} Tokens*)`;
+    if (to.token === 1) {
+      tokenStr = `(*${to.token} ${this.capitalizeFirstLetter(robot.name)} Token*)`;
+    }
+    scoreStr = scoreStr.concat(` ${tokenStr}`);
+  }
+
+  if (reason) {
+    const decodedReason = decode(reason);
+    if (to.reasons[reason] === 1 || to.reasons[reason] === -1) {
+      if (to.score === 1 || to.score === -1) {
+        reasonStr = ` for ${decodedReason}.`;
+      } else {
+        reasonStr = `, ${to.reasons[reason]} of which is for ${decodedReason}.`;
+      }
+    } else if (to.reasons[reason] === 0) {
+      reasonStr = `, none of which are for ${decodedReason}.`;
+    } else {
+      reasonStr = `, ${to.reasons[reason]} of which are for ${decodedReason}.`;
+    }
+  }
+
+  if (this.isCakeDay(to[`${robot.name}Day`])) {
+    const yearsAsString = this.getYearsAsString(to[`${robot.name}Day`]);
+    cakeDayStr = `\n:birthday: Today is ${to.name}'s ${yearsAsString}${robot.name}day! :birthday:`;
+  }
+  return `${scoreStr}${reasonStr}${cakeDayStr}`;
+}
+
 function isCakeDay(dateObject) {
   try {
     const robotDay = moment(dateObject);
@@ -144,6 +193,7 @@ const helpers = {
   getYearsAsString,
   isPrivateMessage,
   capitalizeFirstLetter,
+  getMessageForTokenTransfer,
 };
 
 module.exports = helpers;

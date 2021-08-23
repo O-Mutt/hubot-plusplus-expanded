@@ -5,9 +5,8 @@ class RegExpHelper {
   votedObject = '((?:[\\-\\w@.-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]+(?<![+-]))|(?:[\'"”][^\'"”]*[\'"”]))';
   // allow for spaces after the thing being upvoted (@user ++)
   allowSpaceAfterObject = '\\s*';
-  positiveOperators = '\\+\\+';
-  positiveOperatorsString = '++';
-  negativeOperators = '--|—|\u2013|\u2014';
+  positiveOperators = '\\+\\+|:clap:|:thumbsup:|:thumbsup_all:';
+  negativeOperators = '--|—|\u2013|\u2014|:thumbsdown';
   operator = `(${this.positiveOperators}|${this.negativeOperators})`;
   reasonForVote = `(?:\\s+(?:${reasonConjunctions})\\s+(.+))?`;
   eol = '$';

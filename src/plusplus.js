@@ -27,7 +27,6 @@
 //
 // Author: O-Mutt
 
-const util = require('util');
 const clark = require('clark');
 const { default: axios } = require('axios');
 const _ = require('lodash');
@@ -104,7 +103,7 @@ module.exports = function plusPlus(robot) {
   async function upOrDownVote(msg) {
     // eslint-disable-next-line
     let [fullMatch, name, operator, reason] = msg.match;
-    const increment = operator === regexp.positiveOperatorsString ? 1 : -1;
+    const increment = operator.match(regexp.positiveOperators) ? 1 : -1;
     const { room } = msg.message;
     // eslint-disable-next-line
     const cleanName = helpers.cleanName(name);
@@ -143,16 +142,21 @@ module.exports = function plusPlus(robot) {
     const cleanReason = helpers.cleanAndEncode(reason);
     const from = msg.message.user;
 
+    console.error(`DERP ${number} score for [${cleanName}] from [${from.name}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`)
+
     robot.logger.debug(`${number} score for [${cleanName}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
-    let user;
+    let response;
     try {
-      user = await scoreKeeper.transferTokens(cleanName, from, room, cleanReason, number);
+      response = await scoreKeeper.transferTokens(cleanName, from, room, cleanReason, number);
     } catch (e) {
       msg.send(e.message);
       return;
     }
 
-    const message = helpers.getMessageForNewScore(user, cleanReason, robot);
+    const message = helpers.getMessageForTokenTransfer(robot,
+      response.toUser,
+      response.fromUser,
+      cleanReason);
 
     if (message) {
       msg.send(message);
@@ -178,7 +182,7 @@ module.exports = function plusPlus(robot) {
     const from = msg.message.user;
     const { room } = msg.message;
     const cleanReason = helpers.cleanAndEncode(reason);
-    const increment = operator === regexp.positiveOperatorsString ? 1 : -1;
+    const increment = operator.match(regexp.positiveOperators) ? 1 : -1;
 
     const cleanNames = namesArray
       // Parse names

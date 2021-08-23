@@ -83,7 +83,10 @@ class ScoreKeeper {
             await this.databaseService.savePointsGiven(from, toUser, numberOfTokens);
             const saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason, numberOfTokens);
             await this.databaseService.saveUser(fromUser, toUser, room, reason, -numberOfTokens);
-            return saveResponse;
+            return {
+              toUser: saveResponse,
+              fromUser,
+            };
           // eslint-disable-next-line no-else-return
           } else {
             // from has too few tokens to send that many
