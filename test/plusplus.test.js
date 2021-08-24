@@ -80,7 +80,7 @@ describe('PlusPlus', function () {
 
     it('should add a point to each user in the multi-user plus plus', async function () {
       room.user.say('derp', '{ @darf, @greg, @tank } ++');
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 60));
       expect(room.messages[1][1]).to.match(
         /darf has 1 point\.\n:birthday: Today is darf\'s hubotday! :birthday:\ngreg has 1 point\.\n:birthday: Today is greg\'s hubotday! :birthday:\ntank has 1 point\.\n:birthday: Today is tank\'s hubotday! :birthday:/,
       );
@@ -88,7 +88,7 @@ describe('PlusPlus', function () {
 
     it('should add a point to user with reason', async function () {
       room.user.say('derp', '@matt.erickson++ for being awesome');
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 60));
       expect(room.messages[1][1]).to.match(
         /matt\.erickson has 228 points, 2 of which are for being awesome./,
       );
@@ -118,7 +118,7 @@ describe('PlusPlus', function () {
   describe('giveTokenBetweenUsers', function () {
     it('should add a X points when a user is + #\'d', async function () {
       room.user.say('peter.parker', '@hubot @peter.parker.min + 5');
-      await new Promise((resolve) => setTimeout(resolve, 990));
+      await new Promise((resolve) => setTimeout(resolve, 50));
       expect(room.messages[1][1]).to.match(/peter\.parker\.min has 8 points \(\*13 Hubot Tokens\*\)\./);
       const to = await db.collection('scores').findOne({ name: 'peter.parker.min' });
       expect(to.score).to.equal(8);
@@ -131,7 +131,7 @@ describe('PlusPlus', function () {
     it('should error and message if sender is short on tokens', async function () {
       room.user.say('peter.parker.min', '@hubot @peter.parker + 55');
       await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(room.messages[1][1]).to.match(/You don\'t have enough tokens to send 55 to peter.parker/);
+      expect(room.messages[1][1]).to.match(/You don't have enough tokens to send 55 to peter.parker/);
       const to = await db.collection('scores').findOne({ name: 'peter.parker' });
       expect(to.score).to.equal(200);
       expect(to.token).to.equal(200);

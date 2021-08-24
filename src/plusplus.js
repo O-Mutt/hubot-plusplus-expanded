@@ -102,7 +102,7 @@ module.exports = function plusPlus(robot) {
    */
   async function upOrDownVote(msg) {
     // eslint-disable-next-line
-    let [fullMatch, name, operator, reason] = msg.match;
+    const [fullMatch, name, operator, null1, null2, null3, reason] = msg.match;
     const increment = operator.match(regexp.positiveOperators) ? 1 : -1;
     const { room } = msg.message;
     // eslint-disable-next-line
