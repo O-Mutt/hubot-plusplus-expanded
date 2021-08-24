@@ -102,7 +102,7 @@ module.exports = function plusPlus(robot) {
    */
   async function upOrDownVote(msg) {
     // eslint-disable-next-line
-    const [fullMatch, name, operator, null1, null2, null3, reason] = msg.match;
+    const [fullMatch, name, operator, reason] = msg.match;
     const increment = operator.match(regexp.positiveOperators) ? 1 : -1;
     const { room } = msg.message;
     // eslint-disable-next-line
@@ -142,8 +142,6 @@ module.exports = function plusPlus(robot) {
     const cleanReason = helpers.cleanAndEncode(reason);
     const from = msg.message.user;
 
-    console.error(`DERP ${number} score for [${cleanName}] from [${from.name}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`)
-
     robot.logger.debug(`${number} score for [${cleanName}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
     let response;
     try {
@@ -173,12 +171,12 @@ module.exports = function plusPlus(robot) {
 
   async function multipleUsersVote(msg) {
     // eslint-disable-next-line
-    const [fullMatch, names, dummy, operator, reason] = msg.match;
+    const [fullMatch, names, operator, reason] = msg.match;
     if (!names) {
       return;
     }
 
-    const namesArray = names.trim().toLowerCase().split(',');
+    const namesArray = names.trim().toLowerCase().split(new RegExp(regexp.multiUserSeparator)).filter(Boolean);
     const from = msg.message.user;
     const { room } = msg.message;
     const cleanReason = helpers.cleanAndEncode(reason);
@@ -186,7 +184,10 @@ module.exports = function plusPlus(robot) {
 
     const cleanNames = namesArray
       // Parse names
-      .map((name) => helpers.cleanName(name).match(new RegExp(regexp.votedObject, 'i'))[1])
+      .map((name) => {
+        const cleanedName = helpers.cleanName(name);
+        return cleanedName;
+      })
       // Remove empty ones: {,,,}++
       .filter((name) => !!name.length)
       // Remove duplicates: {user1,user1}++

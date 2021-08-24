@@ -54,7 +54,7 @@ class ScoreKeeper {
       if (await this.isSpam(toUser, fromUser)) {
         this.robot.messageRoom(from.id, this.spamMessage);
       }
-      throw new Error(`I'm sorry ${fromUser.name}, I can't do that.`);
+      throw new Error(`I'm sorry ${fromUser.name}, I'm afraid can't do that.`);
     } catch (e) {
       this.robot.logger.error(`failed to ${incrementValue > 0 ? 'add' : 'subtract'} point to [${userName || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(toUser)}]`, e);
       throw e;
@@ -97,7 +97,7 @@ class ScoreKeeper {
           if (await this.isSpam(toUser, fromUser)) {
             this.robot.messageRoom(from.id, this.spamMessage);
           }
-          throw new Error(`I'm sorry ${fromUser.name}, I can't do that.`);
+          throw new Error(`I'm sorry ${fromUser.name}, I'm afraid can't do that.`);
         }
       } else {
         // to or from is not level 2

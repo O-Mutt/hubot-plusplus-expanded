@@ -2,11 +2,14 @@ const scoreKeyword = process.env.HUBOT_PLUSPLUS_KEYWORD || 'score|scores|karma';
 const reasonConjunctions = process.env.HUBOT_PLUSPLUS_CONJUNCTIONS || 'for|because|cause|cuz|as|porque|just|thanks for';
 
 class RegExpHelper {
-  votedObject = '((?:[\\-\\w@.-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]+(?<![+-]))|(?:[\'"”][^\'"”]*[\'"”]))';
+  votedObject = '[\\-\\w.-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]+(?<![+-])';
+  captureVoted = `@(${this.votedObject})`;
+  nonCaptureVoted = `@(?:${this.votedObject})`;
+  multiUserSeparator= '(?:\\,|\\s|\\:|\\.)';
   // allow for spaces after the thing being upvoted (@user ++)
   allowSpaceAfterObject = '\\s*';
-  positiveOperators = '\\+\\+|:clap:(:skin-tone-[0-9]:)?|:thumbsup:(:skin-tone-[0-9]:)?|:thumbsup_all:';
-  negativeOperators = '--|—|\u2013|\u2014|:thumbsdown:(:skin-tone-[0-9]:)?';
+  positiveOperators = '\\+\\+|:clap:(?::skin-tone-[0-9]:)?|:thumbsup:(?::skin-tone-[0-9]:)?|:thumbsup_all:';
+  negativeOperators = '--|—|\u2013|\u2014|:thumbsdown:(?::skin-tone-[0-9]:)?';
   operator = `(${this.positiveOperators}|${this.negativeOperators})`;
   reasonForVote = `(?:\\s+(?:${reasonConjunctions})\\s+(.+))?`;
   eol = '$';
@@ -15,7 +18,7 @@ class RegExpHelper {
    * botName score for user1
    */
   createAskForScoreRegExp() {
-    return new RegExp(`(?:${scoreKeyword})\\s(\\w+\\s)?${this.votedObject}`, 'i');
+    return new RegExp(`(?:${scoreKeyword})\\s(\\w+\\s)?${this.captureVoted}`, 'i');
   }
 
   /**
@@ -27,7 +30,7 @@ class RegExpHelper {
     const eraseClause = '(?:erase)';
 
     return new RegExp(
-      `${eraseClause}${this.allowSpaceAfterObject}${this.votedObject}${this.allowSpaceAfterObject}${this.reasonForVote}${this.eol}`,
+      `${eraseClause}${this.allowSpaceAfterObject}${this.captureVoted}${this.allowSpaceAfterObject}${this.reasonForVote}${this.eol}`,
       'i'
     );
   }
@@ -50,7 +53,7 @@ class RegExpHelper {
     // from beginning of line
     const beginningOfLine = '^';
     // the thing being upvoted, which is any number of words and spaces
-    const multiUserVotedObject = '{(.*(,?))\\}';
+    const multiUserVotedObject = `{\\s?((?:${this.nonCaptureVoted}${this.multiUserSeparator}?\\s?)+)\\s?}`;
 
     return new RegExp(
       `${beginningOfLine}${multiUserVotedObject}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.eol}`,
@@ -84,7 +87,7 @@ class RegExpHelper {
    */
   createUpDownVoteRegExp() {
     return new RegExp(
-      `${this.votedObject}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.eol}`,
+      `${this.captureVoted}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.eol}`,
       'i'
     );
   }
@@ -95,7 +98,7 @@ class RegExpHelper {
    */
   createGiveTokenRegExp() {
     const reg = new RegExp(
-      `${this.votedObject}${this.allowSpaceAfterObject}\\+${this.allowSpaceAfterObject}([0-9]{1,})${this.reasonForVote}${this.eol}`,
+      `${this.captureVoted}${this.allowSpaceAfterObject}\\+${this.allowSpaceAfterObject}([0-9]{1,})${this.reasonForVote}${this.eol}`,
       'i'
     );
     return reg;

@@ -80,9 +80,9 @@ describe('PlusPlus', function () {
 
     it('should add a point to each user in the multi-user plus plus', async function () {
       room.user.say('derp', '{ @darf, @greg, @tank } ++');
-      await new Promise((resolve) => setTimeout(resolve, 60));
+      await new Promise((resolve) => setTimeout(resolve, 50));
       expect(room.messages[1][1]).to.match(
-        /darf has 1 point\.\n:birthday: Today is darf\'s hubotday! :birthday:\ngreg has 1 point\.\n:birthday: Today is greg\'s hubotday! :birthday:\ntank has 1 point\.\n:birthday: Today is tank\'s hubotday! :birthday:/,
+        /darf has 1 point\.\n:birthday: Today is darf's hubotday! :birthday:\ngreg has 1 point\.\n:birthday: Today is greg's hubotday! :birthday:\ntank has 1 point\.\n:birthday: Today is tank's hubotday! :birthday:/,
       );
     });
 
@@ -176,13 +176,13 @@ describe('PlusPlus', function () {
       expect(from.token).to.equal(198);
       room.user.say('peter.parker', '@hubot @peter.parker.min + 2');
       await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(room.messages[3][1]).to.match(/I'm sorry peter.parker. I can't do that./);
+      expect(room.messages[3][1]).to.equal("I'm sorry peter.parker, I'm afraid can't do that.");
     });
   });
 
   describe('getScore', function getScoreTest() {
     it('should respond with 5 reasons if the user has 5', async function () {
-      room.user.say('matt.erickson', '@hubot score for matt.erickson');
+      room.user.say('matt.erickson', '@hubot score for @matt.erickson');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.match(
         /matt\.erickson has 227 points\.\n\n:star: Here are some reasons :star:(\n.*:.*){5}/,
@@ -190,7 +190,7 @@ describe('PlusPlus', function () {
     });
 
     it('should respond with 3 reasons if the user has 3', async function () {
-      room.user.say('matt.erickson.min', '@hubot score for matt.erickson.min');
+      room.user.say('matt.erickson.min', '@hubot score for @matt.erickson.min');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.match(
         /matt\.erickson\.min has 8 points\.\n\n:star: Here are some reasons :star:(\n.*:.*){3}/,
@@ -198,7 +198,7 @@ describe('PlusPlus', function () {
     });
 
     it('should respond with 3 reasons if the user has 3 and token count', async function () {
-      room.user.say('peter.parker.min', '@hubot score for peter.parker.min');
+      room.user.say('peter.parker.min', '@hubot score for @peter.parker.min');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.match(
         /peter\.parker\.min has 8 points \(\*8 Hubot Tokens\*\)\.\n\n:star: Here are some reasons :star:(\n.*:.*){3}/

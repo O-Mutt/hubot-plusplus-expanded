@@ -14,7 +14,7 @@ describe('regexp', function () {
       const giveTokenMatcher = regexp.createGiveTokenRegExp();
       const match = '@matt + 5'.match(giveTokenMatcher);
       expect('@matt + 5').to.match(giveTokenMatcher);
-      expect(match).to.be.an('array').that.include('@matt', '+', '5');
+      expect(match).to.be.an('array').that.include('matt', '+', '5');
     });
   });
 
@@ -62,12 +62,12 @@ describe('regexp', function () {
 
   describe('createAskForScoreRegExp', function () {
     forEach([
-      ['score for matt', 'for ', 'matt'],
-      ['score matt', undefined, 'matt'],
-      ['score with matt', 'with ', 'matt'],
-      ['scores for matt', 'for ', 'matt'],
-      ['karma phil', undefined, 'phil'],
-      ['score such.a.complex-name-hyphens', undefined, 'such.a.complex-name-hyphens'],
+      ['score for @matt', 'for ', 'matt'],
+      ['score @matt', undefined, 'matt'],
+      ['score with @matt', 'with ', 'matt'],
+      ['scores for @matt', 'for ', 'matt'],
+      ['karma @phil', undefined, 'phil'],
+      ['score @such.a.complex-name-hyphens', undefined, 'such.a.complex-name-hyphens'],
     ])
       .it('should match the search %j', (searchQuery, middleMatch, name) => {
         const scoreMatchRegExp = regexp.createAskForScoreRegExp();
@@ -80,8 +80,8 @@ describe('regexp', function () {
 
   describe('createEraseUserScoreRegExp', function () {
     forEach([
-      ['erase @matt cuz he is bad', '@matt', 'he is bad'],
-      ['erase @frank', '@frank', undefined],
+      ['erase @matt cuz he is bad', 'matt', 'he is bad'],
+      ['erase @frank', 'frank', undefined],
     ]).it('%j should match the erase user regexp', (searchQuery, user, reason) => {
       const eraseUserScoreRegExp = regexp.createEraseUserScoreRegExp();
       expect(eraseUserScoreRegExp).to.be.a('RegExp');
@@ -95,15 +95,17 @@ describe('regexp', function () {
     forEach([
       ['{@matt, @phil}++', '{@matt, @phil}++', '@matt, @phil', '++', undefined],
       ['{@matt, @phil}-- cuz they are the best team', '{@matt, @phil}-- cuz they are the best team', '@matt, @phil', '--', 'they are the best team'],
-      ['{@user, @phil user}--', '{@user, @phil user}--', '@user, @phil user', '--', undefined],
+      ['{@user, @phil.user}--', '{@user, @phil.user}--', '@user, @phil.user', '--', undefined],
+      ['{ @darf, @greg, @tank } ++', '{ @darf, @greg, @tank } ++', '@darf, @greg, @tank ', '++', undefined],
     ])
       .it('should match \'%j\'', (fullText, firstMatch, names, operator, reason) => {
-        const dummy = '';
         const multiUserVoteRegExp = regexp.createMultiUserVoteRegExp();
         expect(multiUserVoteRegExp).to.be.a('RegExp');
-        expect(fullText.match(multiUserVoteRegExp)).to.be.an('array');
-        expect(fullText.match(multiUserVoteRegExp).length).to.equal(8);
-        expect(fullText.match(multiUserVoteRegExp)).to.deep.equal([firstMatch, names, dummy, operator, undefined, undefined, undefined, reason]);
+        expect(fullText).to.match(multiUserVoteRegExp);
+        const match = fullText.match(multiUserVoteRegExp);
+        expect(match).to.be.an('array');
+        expect(fullText.match(multiUserVoteRegExp).length).to.equal(4);
+        expect(fullText.match(multiUserVoteRegExp)).to.deep.equal([firstMatch, names, operator, reason]);
       });
   });
 
@@ -115,9 +117,11 @@ describe('regexp', function () {
       .it('should match %j', (requestForScores, topOrBottom, numberOfUsers) => {
         const topBottomRegExp = regexp.createTopBottomRegExp();
         expect(topBottomRegExp).to.be.a('RegExp');
-        expect(requestForScores.match(topBottomRegExp)).to.be.an('array');
-        expect(requestForScores.match(topBottomRegExp).length).to.equal(3);
-        expect(requestForScores.match(topBottomRegExp)).to.deep.equal([requestForScores, topOrBottom, numberOfUsers]);
+        expect(requestForScores).to.match(topBottomRegExp);
+        const match = requestForScores.match(topBottomRegExp);
+        expect(match).to.be.an('array');
+        expect(match.length).to.equal(3);
+        expect(match).to.deep.equal([requestForScores, topOrBottom, numberOfUsers]);
       });
   });
 
@@ -136,27 +140,38 @@ describe('regexp', function () {
   });
 
   describe('createUpDownVoteRegExp', function () {
-    forEach([
-      ['@matt++', '@matt++', '@matt', '++', undefined],
-      ['@matt++ for being "great"', '@matt++ for being "great"', '@matt', '++', 'being "great"'],
-      ['@matt++ cuz he is awesome', '@matt++ cuz he is awesome', '@matt', '++', 'he is awesome'],
-      ['@matt++ thanks for being awesome', '@matt++ thanks for being awesome', '@matt', '++', 'being awesome'],
-      ['\'what are you doing\'--', '\'what are you doing\'--', '\'what are you doing\'', '--', undefined],
-      ['you are the best matt--', 'matt--', 'matt', '--', undefined],
-      ['\'you are the best matt\'--', '\'you are the best matt\'--', '\'you are the best matt\'', '--', undefined],
-      ['you are the best matt++ cuz you started #matt-s', 'matt++ cuz you started #matt-s', 'matt', '++', 'you started #matt-s'],
-      ['you are the best matt++ cuz you started #matt-s', 'matt++ cuz you started #matt-s', 'matt', '++', 'you started #matt-s'],
-      ['such.a.complex-name-hyphens++', 'such.a.complex-name-hyphens++', 'such.a.complex-name-hyphens', '++', undefined],
-      ['”such a complex-name-hyphens” ++', '”such a complex-name-hyphens” ++', '”such a complex-name-hyphens”', '++', undefined],
-      ['@matt—', '@matt—', '@matt', '—', undefined],
-    ])
-      .it('should hear name [%3$s] up/down [%4$s] with reason [%5$s]', (fullText, firstMatch, name, operator, reason) => {
+    describe('Matching names with @ symbols', function () {
+      forEach([
+        ['@matt++', '@matt++', 'matt', '++', undefined],
+        ['@matt  ++   for being "great"', '@matt  ++   for being "great"', 'matt', '++', 'being "great"'],
+        ['@matt++ cuz he is awesome', '@matt++ cuz he is awesome', 'matt', '++', 'he is awesome'],
+        ['@matt ++ thanks for being awesome', '@matt ++ thanks for being awesome', 'matt', '++', 'being awesome'],
+        ['@matt—', '@matt—', 'matt', '—', undefined],
+      ]).it('should match name [%3$s] up/down [%4$s] with reason [%5$s]', (fullText, dummy, name, operator, reason) => {
         const upVoteOrDownVoteRegExp = regexp.createUpDownVoteRegExp();
         expect(upVoteOrDownVoteRegExp).to.be.a('RegExp');
         const fullMatch = fullText.match(upVoteOrDownVoteRegExp);
+        expect(fullText).to.match(upVoteOrDownVoteRegExp);
         expect(fullMatch).to.be.an('array');
-        expect(fullMatch.length).to.equal(7);
-        expect(fullMatch).to.deep.equal([firstMatch, name, operator, undefined, undefined, undefined, reason]);
+        expect(fullMatch.length).to.equal(4);
+        expect(fullMatch).to.deep.equal([fullText, name, operator, reason]);
       });
+    });
+
+    describe('Not matching names without @ symbols', function () {
+      forEach([
+        ['\'what are you doing\'--'],
+        ['you are the best matt--'],
+        ['\'you are the best matt\'--'],
+        ['you are the best matt++ cuz you started #matt-s'],
+        ['you are the best matt++ cuz you started #matt-s'],
+        ['such.a.complex-name-hyphens++'],
+        ['”such a complex-name-hyphens” ++'],
+      ]).it("shouldn't match name [%1$s]", (text) => {
+        const upVoteOrDownVoteRegExp = regexp.createUpDownVoteRegExp();
+        expect(upVoteOrDownVoteRegExp).to.be.a('RegExp');
+        expect(text).not.to.match(upVoteOrDownVoteRegExp);
+      });
+    });
   });
 });
