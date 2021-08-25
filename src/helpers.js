@@ -20,7 +20,6 @@ function cleanAndEncode(str) {
 
   // this should fix a dumb issue with mac quotes
   const trimmed = JSON.parse(JSON.stringify(str.trim().toLowerCase()));
-  // eslint-disable-next-line
   const buff = new Buffer.from(trimmed);
   const base64data = buff.toString('base64');
   return base64data;
@@ -31,7 +30,6 @@ function decode(str) {
     return undefined;
   }
 
-  // eslint-disable-next-line
   const buff = new Buffer.from(str, 'base64');
   const text = buff.toString('UTF-8');
   return text;
@@ -128,22 +126,22 @@ function getMessageForTokenTransfer(robot, to, from, reason) {
     }
   }
 
-  if (this.isCakeDay(to[`${robot.name}Day`])) {
+  if (this.isCakeDay(to[`${robot.name}Day`], robot)) {
     const yearsAsString = this.getYearsAsString(to[`${robot.name}Day`]);
     cakeDayStr = `\n:birthday: Today is ${to.name}'s ${yearsAsString}${robot.name}day! :birthday:`;
   }
   return `${scoreStr}${reasonStr}${cakeDayStr}`;
 }
 
-function isCakeDay(dateObject) {
+function isCakeDay(dateObject, robot) {
   try {
     const robotDay = moment(dateObject);
     const today = moment();
     if (robotDay.date() === today.date() && robotDay.month() === today.month()) {
       return true;
     }
-  // eslint-disable-next-line no-empty
   } catch (e) {
+    robot.logger.debug('There was an error in the isCakeDay function', e);
   }
   return false;
 }

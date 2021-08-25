@@ -5,7 +5,7 @@ class RegExpHelper {
   votedObject = '[\\-\\w.-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]+(?<![+-])';
   captureVoted = `@(${this.votedObject})`;
   nonCaptureVoted = `@(?:${this.votedObject})`;
-  multiUserSeparator= '(?:\\,|\\s|\\:|\\.)';
+  multiUserSeparator= '(?:\\,|\\s|\\:)';
   // allow for spaces after the thing being upvoted (@user ++)
   allowSpaceAfterObject = '\\s*';
   positiveOperators = '\\+\\+|:clap:(?::skin-tone-[0-9]:)?|:thumbsup:(?::skin-tone-[0-9]:)?|:thumbsup_all:';

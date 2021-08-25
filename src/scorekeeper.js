@@ -87,7 +87,6 @@ class ScoreKeeper {
               toUser: saveResponse,
               fromUser,
             };
-          // eslint-disable-next-line no-else-return
           } else {
             // from has too few tokens to send that many
             throw new Error(`You don't have enough tokens to send ${numberOfTokens} to ${toUser.name}`);
@@ -126,16 +125,6 @@ class ScoreKeeper {
     return true;
   }
 
-  // eslint-disable-next-line
-  last(room) {
-    /* const last = this.storage.last[room];
-    if (typeof last === 'string') {
-      return [last, ''];
-    } else {
-      return [last.user, last.reason];
-    } */
-  }
-
   isSendingToSelf(to, from) {
     this.robot.logger.debug(`Checking if is to self. To [${to.name}] From [${from.name}], Valid: ${to.name !== from.name}`);
     return to.name === from.name;
@@ -159,19 +148,6 @@ class ScoreKeeper {
       this.robot.logger.error('A bot is sending points in DM');
     }
     return isBot;
-  }
-
-  // eslint-disable-next-line
-  normalize(fn) {
-    /* const scores = {};
-
-    _.each(this.storage.scores, function(score, name) {
-      scores[name] = fn(score);
-      if (scores[name] === 0) { return delete scores[name]; }
-    });
-
-    this.storage.scores = scores;
-    return this.robot.brain.save(); */
   }
 }
 

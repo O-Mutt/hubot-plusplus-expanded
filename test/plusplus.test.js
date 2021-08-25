@@ -44,74 +44,86 @@ describe('PlusPlus', function () {
   });
 
   describe('upOrDownVote', function () {
-    it('should add a point when a user is ++\'d', async function () {
-      room.user.say('matt.erickson', '@derp++');
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(room.messages[1][1]).to.match(/derp has 1 point\./);
-      const user = await db.collection('scores').findOne({ name: 'derp' });
-      expect(user.score).to.equal(1);
+    describe('adding points', function () {
+      it('should add a point when a user is ++\'d', async function () {
+        room.user.say('matt.erickson', '@derp++');
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(room.messages[1][1]).to.match(/derp has 1 point\./);
+        const user = await db.collection('scores').findOne({ name: 'derp' });
+        expect(user.score).to.equal(1);
+      });
+
+      it('should add a point when a user is :clap:\'d', async function () {
+        room.user.say('matt.erickson', '@derp :clap:');
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(room.messages[1][1]).to.match(/derp has 1 point\./);
+        const user = await db.collection('scores').findOne({ name: 'derp' });
+        expect(user.score).to.equal(1);
+      });
+
+      it('should add a point when a user is :thumbsup:\'d', async function () {
+        room.user.say('matt.erickson', '@derp :thumbsup: for being the best');
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(room.messages[1][1]).to.match(/derp has 1 point for being the best\./);
+        const user = await db.collection('scores').findOne({ name: 'derp' });
+        expect(user.score).to.equal(1);
+      });
+
+      it('should add a point when a user that is already in the db is ++\'d', async function () {
+        room.user.say('derp', '@matt.erickson++');
+        await new Promise((resolve) => setTimeout(resolve, 45));
+        expect(room.messages[1][1]).to.match(/matt.erickson has 228 points\./);
+        const user = await db
+          .collection('scores')
+          .findOne({ name: 'matt.erickson' });
+        expect(user.score).to.equal(228);
+      });
+
+      it('should add a point to each user in the multi-user plus plus', async function () {
+        room.user.say('derp', '{ @darf, @greg, @tank } ++');
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(room.messages[1][1]).to.match(
+          /darf has 1 point\.\n:birthday: Today is darf's hubotday! :birthday:\ngreg has 1 point\.\n:birthday: Today is greg's hubotday! :birthday:\ntank has 1 point\.\n:birthday: Today is tank's hubotday! :birthday:/,
+        );
+      });
+
+      it('should add a point to each user in the multi-user plus plus with periods in their names', async function () {
+        room.user.say('derp', '{ @darf.arg, @pirate.jack123, @ted.phil } ++');
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(room.messages[1][1]).to.match(
+          /darf.arg has 1 point\.\n:birthday: Today is darf.arg's hubotday! :birthday:\npirate.jack123 has 1 point\.\n:birthday: Today is pirate.jack123's hubotday! :birthday:\nted.phil has 1 point\.\n:birthday: Today is ted.phil's hubotday! :birthday:/,
+        );
+      });
+
+      it('should add a point to user with reason', async function () {
+        room.user.say('derp', '@matt.erickson++ for being awesome');
+        await new Promise((resolve) => setTimeout(resolve, 60));
+        expect(room.messages[1][1]).to.match(
+          /matt\.erickson has 228 points, 2 of which are for being awesome./,
+        );
+      });
     });
 
-    it('should add a point when a user is :clap:\'d', async function () {
-      room.user.say('matt.erickson', '@derp :clap:');
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(room.messages[1][1]).to.match(/derp has 1 point\./);
-      const user = await db.collection('scores').findOne({ name: 'derp' });
-      expect(user.score).to.equal(1);
-    });
+    describe('subtract points', function () {
+      it('should subtract a point when a user that is already in the db is --\'d', async function () {
+        let user = await db
+          .collection('scores')
+          .findOne({ name: 'matt.erickson.min' });
+        expect(user.score).to.equal(8);
+        room.user.say('derp', '@matt.erickson.min--');
+        await new Promise((resolve) => setTimeout(resolve, 45));
+        expect(room.messages[1][1]).to.match(/matt.erickson.min has 7 points\./);
+        user = await db.collection('scores').findOne({ name: 'matt.erickson' });
+        expect(user.score).to.equal(227);
+      });
 
-    it('should add a point when a user is :thumbsup:\'d', async function () {
-      room.user.say('matt.erickson', '@derp :thumbsup: for being the best');
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(room.messages[1][1]).to.match(/derp has 1 point for being the best\./);
-      const user = await db.collection('scores').findOne({ name: 'derp' });
-      expect(user.score).to.equal(1);
-    });
-
-    it('should add a point when a user that is already in the db is ++\'d', async function () {
-      room.user.say('derp', '@matt.erickson++');
-      await new Promise((resolve) => setTimeout(resolve, 45));
-      expect(room.messages[1][1]).to.match(/matt.erickson has 228 points\./);
-      const user = await db
-        .collection('scores')
-        .findOne({ name: 'matt.erickson' });
-      expect(user.score).to.equal(228);
-    });
-
-    it('should add a point to each user in the multi-user plus plus', async function () {
-      room.user.say('derp', '{ @darf, @greg, @tank } ++');
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(room.messages[1][1]).to.match(
-        /darf has 1 point\.\n:birthday: Today is darf's hubotday! :birthday:\ngreg has 1 point\.\n:birthday: Today is greg's hubotday! :birthday:\ntank has 1 point\.\n:birthday: Today is tank's hubotday! :birthday:/,
-      );
-    });
-
-    it('should add a point to user with reason', async function () {
-      room.user.say('derp', '@matt.erickson++ for being awesome');
-      await new Promise((resolve) => setTimeout(resolve, 60));
-      expect(room.messages[1][1]).to.match(
-        /matt\.erickson has 228 points, 2 of which are for being awesome./,
-      );
-    });
-
-    it('should subtract a point when a user that is already in the db is --\'d', async function () {
-      let user = await db
-        .collection('scores')
-        .findOne({ name: 'matt.erickson.min' });
-      expect(user.score).to.equal(8);
-      room.user.say('derp', '@matt.erickson.min--');
-      await new Promise((resolve) => setTimeout(resolve, 45));
-      expect(room.messages[1][1]).to.match(/matt.erickson.min has 7 points\./);
-      user = await db.collection('scores').findOne({ name: 'matt.erickson' });
-      expect(user.score).to.equal(227);
-    });
-
-    it('should subtract a point when a user is :thumbsdown:\'d', async function () {
-      room.user.say('matt.erickson', '@derp :thumbsdown: for being the best');
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(room.messages[1][1]).to.match(/derp has -1 points for being the best\./);
-      const user = await db.collection('scores').findOne({ name: 'derp' });
-      expect(user.score).to.equal(-1);
+      it('should subtract a point when a user is :thumbsdown:\'d', async function () {
+        room.user.say('matt.erickson', '@derp :thumbsdown: for being the best');
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(room.messages[1][1]).to.match(/derp has -1 points for being the best\./);
+        const user = await db.collection('scores').findOne({ name: 'derp' });
+        expect(user.score).to.equal(-1);
+      });
     });
   });
 

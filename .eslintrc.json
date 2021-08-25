@@ -17,9 +17,17 @@
         "ecmaVersion": 2018
     },
     "rules": {
-        "max-len": [ "error", { "code": 240 }],
+        "max-len": "off",
         "func-names": [ "off" ],
-        "prefer-arrow-callback": "off"
+        "prefer-arrow-callback": "off",
+        "new-cap": "off",
+        "no-unused-vars": "warn",
+        "no-await-in-loop": "off",
+        "no-restricted-syntax": "off",
+        "no-param-reassign": "off",
+        "no-plusplus": "off",
+        "no-else-return": "off",
+        "mocha/no-setup-in-describe": "off"
     },
     "plugins": [
         "mocha"

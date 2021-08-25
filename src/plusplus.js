@@ -101,11 +101,9 @@ module.exports = function plusPlus(robot) {
    * Functions for responding to commands
    */
   async function upOrDownVote(msg) {
-    // eslint-disable-next-line
     const [fullMatch, name, operator, reason] = msg.match;
     const increment = operator.match(regexp.positiveOperators) ? 1 : -1;
     const { room } = msg.message;
-    // eslint-disable-next-line
     const cleanName = helpers.cleanName(name);
     const cleanReason = helpers.cleanAndEncode(reason);
     const from = msg.message.user;
@@ -134,10 +132,8 @@ module.exports = function plusPlus(robot) {
   }
 
   async function giveTokenBetweenUsers(msg) {
-    // eslint-disable-next-line
-    let [fullMatch, name, number, reason] = msg.match;
+    const [fullMatch, name, number, reason] = msg.match;
     const { room } = msg.message;
-    // eslint-disable-next-line
     const cleanName = helpers.cleanName(name);
     const cleanReason = helpers.cleanAndEncode(reason);
     const from = msg.message.user;
@@ -170,7 +166,6 @@ module.exports = function plusPlus(robot) {
   }
 
   async function multipleUsersVote(msg) {
-    // eslint-disable-next-line
     const [fullMatch, names, operator, reason] = msg.match;
     if (!names) {
       return;
@@ -198,9 +193,7 @@ module.exports = function plusPlus(robot) {
     if (cleanNames.length === 1) return;
 
     let messages = [];
-    // eslint-disable-next-line no-restricted-syntax
     for (const cleanName of cleanNames) {
-      // eslint-disable-next-line no-await-in-loop
       const user = await scoreKeeper.incrementScore(cleanName, from, room, cleanReason, increment);
       if (user) {
         robot.logger.debug(`clean names map [${cleanName}]: ${user.score}, the reason ${user.reasons[cleanReason]}`);
@@ -246,7 +239,6 @@ module.exports = function plusPlus(robot) {
       const reasonMap = _.reduce(sampleReasons, (memo, val, key) => {
         const decodedKey = helpers.decode(key);
         const pointStr = val > 1 ? 'points' : 'point';
-        // eslint-disable-next-line
         memo += `\n_${decodedKey}_: ${val} ${pointStr}`;
         return memo;
       }, '');
@@ -265,10 +257,8 @@ module.exports = function plusPlus(robot) {
       const bitcoin = resp.data.bpi.USD.rate_float;
       const ars = resp.data.bpi.ARS.rate_float;
       const satoshi = bitcoin / 1e8;
-      // eslint-disable-next-line no-underscore-dangle
       return msg.send(`A bitcoin is worth ${bitcoin} USD right now (${ars} ARS), a satoshi is about ${satoshi}, and ${msg.robot.name} points are worth nothing!`);
     } catch (e) {
-      // eslint-disable-next-line no-underscore-dangle
       return msg.send(`Seems like we are having trouble getting some data... Don't worry, though, your ${msg.robot.name} points are still worth nothing!`);
     }
   }
@@ -281,7 +271,6 @@ module.exports = function plusPlus(robot) {
     const tops = await scoreKeeper.databaseService[methodName](amount);
     const message = [];
     if (tops.length > 0) {
-      // eslint-disable-next-line
       for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
         if (tops[i].accountLevel && tops[i].accountLevel > 1) {
           const tokenStr = tops[i].token > 1 ? 'Tokens' : 'Token';
@@ -309,7 +298,6 @@ module.exports = function plusPlus(robot) {
 
     const message = [];
     if (tops.length > 0) {
-      // eslint-disable-next-line
       for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
         const tokenStr = tops[i].token > 1 ? 'Tokens' : 'Token';
         const pointStr = tops[i].score > 1 ? 'points' : 'point';
@@ -340,14 +328,13 @@ module.exports = function plusPlus(robot) {
 
   async function eraseUserScore(msg) {
     let erased;
-    // eslint-disable-next-line
-    let [__, name, reason] = Array.from(msg.match);
+    const [__, name, reason] = Array.from(msg.match);
     const from = msg.message.user;
     const { user } = msg.envelope;
     const { room } = msg.message;
-    reason = helpers.cleanAndEncode(reason);
 
-    name = helpers.cleanName(name);
+    const cleanReason = helpers.cleanAndEncode(reason);
+    const cleanName = helpers.cleanName(name);
 
     const isAdmin = (this.robot.auth ? this.robot.auth.hasRole(user, 'plusplus-admin') : undefined) || (this.robot.auth ? this.robot.auth.hasRole(user, 'admin') : undefined);
 
@@ -355,12 +342,12 @@ module.exports = function plusPlus(robot) {
       msg.reply("Sorry, you don't have authorization to do that.");
       return;
     } if (isAdmin) {
-      erased = await scoreKeeper.erase(name, from, room, reason);
+      erased = await scoreKeeper.erase(cleanName, from, room, cleanReason);
     }
 
     if (erased) {
-      const decodedReason = helpers.decode(reason);
-      const message = !decodedReason ? `Erased the following reason from ${name}: ${decodedReason}` : `Erased points for ${name}`;
+      const decodedReason = helpers.decode(cleanReason);
+      const message = !decodedReason ? `Erased the following reason from ${cleanName}: ${decodedReason}` : `Erased points for ${cleanName}`;
       msg.send(message);
     }
   }

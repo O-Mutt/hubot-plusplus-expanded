@@ -54,7 +54,6 @@ describe('ScoreKeeper', function scorekeeperTest() {
   afterEach(async function () { msgSpy.resetHistory(); return mongoUnit.drop(); });
 
   describe('adding', function () {
-    // eslint-disable-next-line mocha/no-setup-in-describe
     forEach([
       ['pointReceiver', { name: 'pointSender', id: '123' }, 'room', undefined, { score: 1, reasons: { } }],
       ['pointReceiver', { name: 'pointSender', id: '123' }, 'room', 'because points', { score: 1, reasons: { 'because points': 1 } }],
