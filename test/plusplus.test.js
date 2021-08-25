@@ -188,7 +188,7 @@ describe('PlusPlus', function () {
       expect(from.token).to.equal(198);
       room.user.say('peter.parker', '@hubot @peter.parker.min + 2');
       await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(room.messages[3][1]).to.equal("I'm sorry peter.parker, I'm afraid can't do that.");
+      expect(room.messages[3][1]).to.equal("I'm sorry peter.parker, I'm afraid I can't do that.");
     });
   });
 

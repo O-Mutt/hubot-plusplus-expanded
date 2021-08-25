@@ -93,7 +93,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
         r2 = await scoreKeeper.incrementScore(to, { name: 'from', id: '123' }, 'room', 'because points', 1);
         expect(r2).to.be.an('undefined');
       } catch (e) {
-        expect(e.message).to.equal("I'm sorry from, I'm afraid can't do that.");
+        expect(e.message).to.equal("I'm sorry from, I'm afraid I can't do that.");
       }
       const spamScore = await scoreKeeper.getUser(to);
       expect(spamScore).to.not.equal(2);
@@ -170,7 +170,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
         r2 = await scoreKeeper.incrementScore(to, { name: 'from', id: '123' }, 'room', 'because points', -1);
         expect(r2).to.be.an('undefined');
       } catch (e) {
-        expect(e.message).to.equal("I'm sorry from, I'm afraid can't do that.");
+        expect(e.message).to.equal("I'm sorry from, I'm afraid I can't do that.");
       }
       const spamScore = await scoreKeeper.getUser(to);
       expect(spamScore).to.not.equal(-2);
