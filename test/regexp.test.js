@@ -97,6 +97,7 @@ describe('regexp', function () {
       ['{@matt, @phil}-- cuz they are the best team', '{@matt, @phil}-- cuz they are the best team', '@matt, @phil', '--', 'they are the best team'],
       ['{@user, @phil.user}--', '{@user, @phil.user}--', '@user, @phil.user', '--', undefined],
       ['{ @darf, @greg, @tank } ++', '{ @darf, @greg, @tank } ++', '@darf, @greg, @tank ', '++', undefined],
+      ['where in the world is Carmen Sandiego { @carmen.sandiego, @sarah.nade, @eartha.brute, @double.trouble, @wonder.rat } ++', '{ @carmen.sandiego, @sarah.nade, @eartha.brute, @double.trouble, @wonder.rat } ++', '@carmen.sandiego, @sarah.nade, @eartha.brute, @double.trouble, @wonder.rat ', '++', undefined],
     ])
       .it('should match \'%j\'', (fullText, firstMatch, names, operator, reason) => {
         const multiUserVoteRegExp = regexp.createMultiUserVoteRegExp();
@@ -147,14 +148,15 @@ describe('regexp', function () {
         ['@matt++ cuz he is awesome', '@matt++ cuz he is awesome', 'matt', '++', 'he is awesome'],
         ['@matt ++ thanks for being awesome', '@matt ++ thanks for being awesome', 'matt', '++', 'being awesome'],
         ['@matt—', '@matt—', 'matt', '—', undefined],
-      ]).it('should match name [%3$s] up/down [%4$s] with reason [%5$s]', (fullText, dummy, name, operator, reason) => {
+        ['hello world this is @matt++', '@matt++', 'matt', '++', undefined],
+      ]).it('should match name [%3$s] up/down [%4$s] with reason [%5$s]', (fullText, justMatchSection, name, operator, reason) => {
         const upVoteOrDownVoteRegExp = regexp.createUpDownVoteRegExp();
         expect(upVoteOrDownVoteRegExp).to.be.a('RegExp');
         const fullMatch = fullText.match(upVoteOrDownVoteRegExp);
         expect(fullText).to.match(upVoteOrDownVoteRegExp);
         expect(fullMatch).to.be.an('array');
         expect(fullMatch.length).to.equal(4);
-        expect(fullMatch).to.deep.equal([fullText, name, operator, reason]);
+        expect(fullMatch).to.deep.equal([justMatchSection, name, operator, reason]);
       });
     });
 

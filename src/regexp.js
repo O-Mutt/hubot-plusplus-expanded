@@ -26,7 +26,6 @@ class RegExpHelper {
    * botName erase user2 because they quit and i don't like quitters
    */
   createEraseUserScoreRegExp() {
-    // from beginning of line
     const eraseClause = '(?:erase)';
 
     return new RegExp(
@@ -50,13 +49,11 @@ class RegExpHelper {
    * { user1, user2 }--
    */
   createMultiUserVoteRegExp() {
-    // from beginning of line
-    const beginningOfLine = '^';
     // the thing being upvoted, which is any number of words and spaces
-    const multiUserVotedObject = `{\\s?((?:${this.nonCaptureVoted}${this.multiUserSeparator}?\\s?)+)\\s?}`;
+    const multiUserVotedObject = `{\\s?((?:${this.nonCaptureVoted}${this.multiUserSeparator}?(?:\\s)?)+)\\s?}`;
 
     return new RegExp(
-      `${beginningOfLine}${multiUserVotedObject}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.eol}`,
+      `${multiUserVotedObject}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.eol}`,
       'i'
     );
   }

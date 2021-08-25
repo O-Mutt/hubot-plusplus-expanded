@@ -87,6 +87,14 @@ describe('PlusPlus', function () {
         );
       });
 
+      it('should add a point to each user in the multi-user plus plus with text before it', async function () {
+        room.user.say('derp', 'hello world! { @darf, @greg, @tank } ++');
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(room.messages[1][1]).to.match(
+          /darf has 1 point\.\n:birthday: Today is darf's hubotday! :birthday:\ngreg has 1 point\.\n:birthday: Today is greg's hubotday! :birthday:\ntank has 1 point\.\n:birthday: Today is tank's hubotday! :birthday:/,
+        );
+      });
+
       it('should add a point to each user in the multi-user plus plus with periods in their names', async function () {
         room.user.say('derp', '{ @darf.arg, @pirate.jack123, @ted.phil } ++');
         await new Promise((resolve) => setTimeout(resolve, 50));
