@@ -1,28 +1,17 @@
 const moment = require('moment');
 
-function cleanName(name) {
-  if (name) {
-    let trimmedName = name.trim().toLowerCase();
-    if (trimmedName.charAt(0) === ':') {
-      trimmedName = (trimmedName.replace(/(^\s*['"@])|([,'"\s]*$)/gi, ''));
-    } else {
-      trimmedName = (trimmedName.replace(/(^\s*['"@])|([,:'"\s]*$)/gi, ''));
-    }
-    return trimmedName;
+function getEsOnEndOfWord(number) {
+  if (number === -1 || number === 1) {
+    return '';
   }
-  return name;
+  return 's';
 }
 
-function cleanAndEncode(str) {
-  if (!str) {
-    return undefined;
+function capitalizeFirstLetter(str) {
+  if (typeof str !== 'string') {
+    return '';
   }
-
-  // this should fix a dumb issue with mac quotes
-  const trimmed = JSON.parse(JSON.stringify(str.trim().toLowerCase()));
-  const buff = new Buffer.from(trimmed);
-  const base64data = buff.toString('base64');
-  return base64data;
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 function decode(str) {
@@ -33,104 +22,6 @@ function decode(str) {
   const buff = new Buffer.from(str, 'base64');
   const text = buff.toString('UTF-8');
   return text;
-}
-
-function getMessageForNewScore(user, reason, robot) {
-  if (!user) {
-    return '';
-  }
-  let scoreStr = `${user.name} has ${user.score} points`;
-  let reasonStr = '.';
-  let cakeDayStr = '';
-  if (user.score === 1) {
-    scoreStr = `${user.name} has ${user.score} point`;
-  }
-  if (user.score % 100 === 0) {
-    let scoreFlareStr = (user.score).toString();
-    if (user.score === 0) {
-      scoreFlareStr = 'zero';
-    }
-    const extraFlare = `:${scoreFlareStr}:`;
-    scoreStr = `${extraFlare} ${scoreStr} ${extraFlare}`;
-    reasonStr = '';
-  }
-  if (user.accountLevel && user.accountLevel > 1) {
-    let tokenStr = `(*${user.token} ${this.capitalizeFirstLetter(robot.name)} Tokens*)`;
-    if (user.token === 1) {
-      tokenStr = `(*${user.token} ${this.capitalizeFirstLetter(robot.name)} Token*)`;
-    }
-    scoreStr = scoreStr.concat(` ${tokenStr}`);
-  }
-
-  if (reason) {
-    const decodedReason = decode(reason);
-    if (user.reasons[reason] === 1 || user.reasons[reason] === -1) {
-      if (user.score === 1 || user.score === -1) {
-        reasonStr = ` for ${decodedReason}.`;
-      } else {
-        reasonStr = `, ${user.reasons[reason]} of which is for ${decodedReason}.`;
-      }
-    } else if (user.reasons[reason] === 0) {
-      reasonStr = `, none of which are for ${decodedReason}.`;
-    } else {
-      reasonStr = `, ${user.reasons[reason]} of which are for ${decodedReason}.`;
-    }
-  }
-
-  if (this.isCakeDay(user[`${robot.name}Day`])) {
-    const yearsAsString = this.getYearsAsString(user[`${robot.name}Day`]);
-    cakeDayStr = `\n:birthday: Today is ${user.name}'s ${yearsAsString}${robot.name}day! :birthday:`;
-  }
-  return `${scoreStr}${reasonStr}${cakeDayStr}`;
-}
-
-function getMessageForTokenTransfer(robot, to, from, reason) {
-  if (!to) {
-    return '';
-  }
-  let scoreStr = `${to.name} has ${to.score} points`;
-  let reasonStr = '.';
-  let cakeDayStr = '';
-  if (to.score === 1) {
-    scoreStr = `${to.name} has ${to.score} point`;
-  }
-  if (to.score % 100 === 0) {
-    let scoreFlareStr = (to.score).toString();
-    if (to.score === 0) {
-      scoreFlareStr = 'zero';
-    }
-    const extraFlare = `:${scoreFlareStr}:`;
-    scoreStr = `${extraFlare} ${scoreStr} ${extraFlare}`;
-    reasonStr = '';
-  }
-  if (to.accountLevel && to.accountLevel > 1) {
-    let tokenStr = `(*${to.token} ${this.capitalizeFirstLetter(robot.name)} Tokens*)`;
-    if (to.token === 1) {
-      tokenStr = `(*${to.token} ${this.capitalizeFirstLetter(robot.name)} Token*)`;
-    }
-    scoreStr = scoreStr.concat(` ${tokenStr}`);
-  }
-
-  if (reason) {
-    const decodedReason = decode(reason);
-    if (to.reasons[reason] === 1 || to.reasons[reason] === -1) {
-      if (to.score === 1 || to.score === -1) {
-        reasonStr = ` for ${decodedReason}.`;
-      } else {
-        reasonStr = `, ${to.reasons[reason]} of which is for ${decodedReason}.`;
-      }
-    } else if (to.reasons[reason] === 0) {
-      reasonStr = `, none of which are for ${decodedReason}.`;
-    } else {
-      reasonStr = `, ${to.reasons[reason]} of which are for ${decodedReason}.`;
-    }
-  }
-
-  if (this.isCakeDay(to[`${robot.name}Day`], robot)) {
-    const yearsAsString = this.getYearsAsString(to[`${robot.name}Day`]);
-    cakeDayStr = `\n:birthday: Today is ${to.name}'s ${yearsAsString}${robot.name}day! :birthday:`;
-  }
-  return `${scoreStr}${reasonStr}${cakeDayStr}`;
 }
 
 function isCakeDay(dateObject, robot) {
@@ -166,6 +57,109 @@ function getYearsAsString(dateObj) {
   return `${years}th `;
 }
 
+function getMessageForNewScore(user, reason, robot) {
+  if (!user) {
+    return '';
+  }
+  let scoreStr = `${user.name} has ${user.score} point${getEsOnEndOfWord(user.score)}`;
+  let reasonStr = '.';
+  let cakeDayStr = '';
+
+  if (user.score % 100 === 0) {
+    let scoreFlareStr = (user.score).toString();
+    if (user.score === 0) {
+      scoreFlareStr = 'zero';
+    }
+    const extraFlare = `:${scoreFlareStr}:`;
+    scoreStr = `${extraFlare} ${scoreStr} ${extraFlare}`;
+    reasonStr = '';
+  }
+
+  if (user.accountLevel && user.accountLevel > 1) {
+    let tokenStr = `(*${user.token} ${capitalizeFirstLetter(robot.name)} Tokens*)`;
+    if (user.token === 1) {
+      tokenStr = `(*${user.token} ${capitalizeFirstLetter(robot.name)} Token*)`;
+    }
+    scoreStr = scoreStr.concat(` ${tokenStr}`);
+  }
+
+  if (reason) {
+    const decodedReason = decode(reason);
+    if (user.reasons[reason] === 1 || user.reasons[reason] === -1) {
+      if (user.score === 1 || user.score === -1) {
+        reasonStr = ` for ${decodedReason}.`;
+      } else {
+        reasonStr = `, ${user.reasons[reason]} of which is for ${decodedReason}.`;
+      }
+    } else if (user.reasons[reason] === 0) {
+      reasonStr = `, none of which are for ${decodedReason}.`;
+    } else {
+      reasonStr = `, ${user.reasons[reason]} of which are for ${decodedReason}.`;
+    }
+  }
+
+  if (isCakeDay(user[`${robot.name}Day`])) {
+    const yearsAsString = getYearsAsString(user[`${robot.name}Day`]);
+    cakeDayStr = `\n:birthday: Today is ${user.name}'s ${yearsAsString}${robot.name}day! :birthday:`;
+  }
+  return `${scoreStr}${reasonStr}${cakeDayStr}`;
+}
+
+function getMessageForTokenTransfer(robot, to, from, number, reason) {
+  if (!to) {
+    return '';
+  }
+  const scoreStr = `${from.name} transferred *${number}* ${robot.name} Tokens to ${to.name}. ${to.name} now has ${to.token} token${getEsOnEndOfWord(to.token)}`;
+  let reasonStr = '.';
+  let cakeDayStr = '';
+
+  if (reason) {
+    const decodedReason = decode(reason);
+    if (to.reasons[reason] === 1 || to.reasons[reason] === -1) {
+      if (to.score === 1 || to.score === -1) {
+        reasonStr = ` for ${decodedReason}.`;
+      } else {
+        reasonStr = `, ${to.reasons[reason]} of which is for ${decodedReason}.`;
+      }
+    } else if (to.reasons[reason] === 0) {
+      reasonStr = `, none of which are for ${decodedReason}.`;
+    } else {
+      reasonStr = `, ${to.reasons[reason]} of which are for ${decodedReason}.`;
+    }
+  }
+
+  if (isCakeDay(to[`${robot.name}Day`], robot)) {
+    const yearsAsString = getYearsAsString(to[`${robot.name}Day`]);
+    cakeDayStr = `\n:birthday: Today is ${to.name}'s ${yearsAsString}${robot.name}day! :birthday:`;
+  }
+  return `${scoreStr}${reasonStr}${cakeDayStr}\n_${from.name} has ${from.token} token${getEsOnEndOfWord(from.token)}_`;
+}
+
+function cleanName(name) {
+  if (name) {
+    let trimmedName = name.trim().toLowerCase();
+    if (trimmedName.charAt(0) === ':') {
+      trimmedName = (trimmedName.replace(/(^\s*['"@])|([,'"\s]*$)/gi, ''));
+    } else {
+      trimmedName = (trimmedName.replace(/(^\s*['"@])|([,:'"\s]*$)/gi, ''));
+    }
+    return trimmedName;
+  }
+  return name;
+}
+
+function cleanAndEncode(str) {
+  if (!str) {
+    return undefined;
+  }
+
+  // this should fix a dumb issue with mac quotes
+  const trimmed = JSON.parse(JSON.stringify(str.trim().toLowerCase()));
+  const buff = new Buffer.from(trimmed);
+  const base64data = buff.toString('base64');
+  return base64data;
+}
+
 /*
 * checks if the message is in DM
 * room - {string} name of the room
@@ -175,23 +169,15 @@ function isPrivateMessage(room) {
   return room[0] === 'D' || room === 'Shell';
 }
 
-function capitalizeFirstLetter(str) {
-  if (typeof str !== 'string') {
-    return '';
-  }
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-const helpers = {
+module.exports = {
+  getMessageForNewScore,
+  getMessageForTokenTransfer,
   cleanName,
   cleanAndEncode,
   decode,
-  getMessageForNewScore,
   isCakeDay,
   getYearsAsString,
+  getEsOnEndOfWord,
   isPrivateMessage,
   capitalizeFirstLetter,
-  getMessageForTokenTransfer,
 };
-
-module.exports = helpers;

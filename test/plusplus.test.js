@@ -128,7 +128,7 @@ describe('PlusPlus', function () {
       it('should subtract a point when a user is :thumbsdown:\'d', async function () {
         room.user.say('matt.erickson', '@derp :thumbsdown: for being the best');
         await new Promise((resolve) => setTimeout(resolve, 50));
-        expect(room.messages[1][1]).to.match(/derp has -1 points for being the best\./);
+        expect(room.messages[1][1]).to.match(/derp has -1 point for being the best\./);
         const user = await db.collection('scores').findOne({ name: 'derp' });
         expect(user.score).to.equal(-1);
       });
@@ -139,7 +139,7 @@ describe('PlusPlus', function () {
     it('should add a X points when a user is + #\'d', async function () {
       room.user.say('peter.parker', '@hubot @peter.parker.min + 5');
       await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(room.messages[1][1]).to.match(/peter\.parker\.min has 8 points \(\*13 Hubot Tokens\*\)\./);
+      expect(room.messages[1][1]).to.equal('peter.parker transferred *5* hubot Tokens to peter.parker.min. peter.parker.min now has 13 tokens.\n_peter.parker has 195 tokens_');
       const to = await db.collection('scores').findOne({ name: 'peter.parker.min' });
       expect(to.score).to.equal(8);
       expect(to.token).to.equal(13);
@@ -187,7 +187,7 @@ describe('PlusPlus', function () {
     it('should error on second point (for spam check)', async function () {
       room.user.say('peter.parker', '@hubot @peter.parker.min + 2');
       await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(room.messages[1][1]).to.match(/peter\.parker\.min has 8 points \(\*10 Hubot Tokens\*\)\./);
+      expect(room.messages[1][1]).to.equal('peter.parker transferred *2* hubot Tokens to peter.parker.min. peter.parker.min now has 10 tokens.\n_peter.parker has 198 tokens_');
       const to = await db.collection('scores').findOne({ name: 'peter.parker.min' });
       expect(to.score).to.equal(8);
       expect(to.token).to.equal(10);

@@ -150,6 +150,7 @@ module.exports = function plusPlus(robot) {
     const message = helpers.getMessageForTokenTransfer(robot,
       response.toUser,
       response.fromUser,
+      number,
       cleanReason);
 
     if (message) {
