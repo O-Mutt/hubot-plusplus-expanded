@@ -5,7 +5,7 @@ class RegExpHelper {
   votedObject = '[\\-\\w.-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]+(?<![+-])';
   captureVoted = `@(${this.votedObject})`;
   nonCaptureVoted = `@(?:${this.votedObject})`;
-  multiUserSeparator= '(?:\\,|\\s|\\:)';
+  multiUserSeparator= '(?:\\,|\\s|(?:\\s)?\\:(?:\\s)?)';
   // allow for spaces after the thing being upvoted (@user ++)
   allowSpaceAfterObject = '\\s*';
   positiveOperators = '\\+\\+|:clap:(?::skin-tone-[0-9]:)?|:thumbsup:(?::skin-tone-[0-9]:)?|:thumbsup_all:';
@@ -50,7 +50,7 @@ class RegExpHelper {
    */
   createMultiUserVoteRegExp() {
     // the thing being upvoted, which is any number of words and spaces
-    const multiUserVotedObject = `{\\s?((?:${this.nonCaptureVoted}${this.multiUserSeparator}?(?:\\s)?)+)\\s?}`;
+    const multiUserVotedObject = `(?:\\{|\\[|\\()\\s?((?:${this.nonCaptureVoted}${this.multiUserSeparator}?(?:\\s)?)+)\\s?(?:\\}|\\]|\\))`;
 
     return new RegExp(
       `${multiUserVotedObject}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.eol}`,

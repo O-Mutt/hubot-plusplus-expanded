@@ -98,6 +98,12 @@ describe('regexp', function () {
       ['{@user, @phil.user}--', '{@user, @phil.user}--', '@user, @phil.user', '--', undefined],
       ['{ @darf, @greg, @tank } ++', '{ @darf, @greg, @tank } ++', '@darf, @greg, @tank ', '++', undefined],
       ['where in the world is Carmen Sandiego { @carmen.sandiego, @sarah.nade, @eartha.brute, @double.trouble, @wonder.rat } ++', '{ @carmen.sandiego, @sarah.nade, @eartha.brute, @double.trouble, @wonder.rat } ++', '@carmen.sandiego, @sarah.nade, @eartha.brute, @double.trouble, @wonder.rat ', '++', undefined],
+      ['{@matt @phil}++', '{@matt @phil}++', '@matt @phil', '++', undefined],
+      ['( @matt, @phil )++', '( @matt, @phil )++', '@matt, @phil ', '++', undefined],
+      ['[ @matt : @phil ]++', '[ @matt : @phil ]++', '@matt : @phil ', '++', undefined],
+      ['[ @matt: @phil ]++', '[ @matt: @phil ]++', '@matt: @phil ', '++', undefined],
+      ['[ @matt:@phil ]++', '[ @matt:@phil ]++', '@matt:@phil ', '++', undefined],
+      ['{@matt,@phil}++', '{@matt,@phil}++', '@matt,@phil', '++', undefined],
     ])
       .it('should match \'%j\'', (fullText, firstMatch, names, operator, reason) => {
         const multiUserVoteRegExp = regexp.createMultiUserVoteRegExp();
@@ -105,8 +111,8 @@ describe('regexp', function () {
         expect(fullText).to.match(multiUserVoteRegExp);
         const match = fullText.match(multiUserVoteRegExp);
         expect(match).to.be.an('array');
-        expect(fullText.match(multiUserVoteRegExp).length).to.equal(4);
-        expect(fullText.match(multiUserVoteRegExp)).to.deep.equal([firstMatch, names, operator, reason]);
+        expect(match.length).to.equal(4);
+        expect(match).to.deep.equal([firstMatch, names, operator, reason]);
       });
   });
 
@@ -134,9 +140,11 @@ describe('regexp', function () {
       .it('should match %j', (requestForScores, topOrBottom, token, numberOfUsers) => {
         const topBottomTokenRegExp = regexp.createTopBottomTokenRegExp();
         expect(topBottomTokenRegExp).to.be.a('RegExp');
-        expect(requestForScores.match(topBottomTokenRegExp)).to.be.an('array');
-        expect(requestForScores.match(topBottomTokenRegExp).length).to.equal(3);
-        expect(requestForScores.match(topBottomTokenRegExp)).to.deep.equal([requestForScores, topOrBottom, numberOfUsers]);
+        expect(requestForScores).to.match(topBottomTokenRegExp);
+        const match = requestForScores.match(topBottomTokenRegExp);
+        expect(match).to.be.an('array');
+        expect(match.length).to.equal(3);
+        expect(match).to.deep.equal([requestForScores, topOrBottom, numberOfUsers]);
       });
   });
 
