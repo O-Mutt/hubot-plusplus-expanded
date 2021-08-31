@@ -157,6 +157,7 @@ describe('regexp', function () {
         ['@matt ++ thanks for being awesome', '@matt ++ thanks for being awesome', 'matt', '++', 'being awesome'],
         ['@matt—', '@matt—', 'matt', '—', undefined],
         ['hello world this is @matt++', '@matt++', 'matt', '++', undefined],
+        ['@matt ++ man, you\'re awesome', '@matt ++ man, you\'re awesome', 'matt', '++', 'man, you\'re awesome'],
       ]).it('should match name [%3$s] up/down [%4$s] with reason [%5$s]', (fullText, justMatchSection, name, operator, reason) => {
         const upVoteOrDownVoteRegExp = regexp.createUpDownVoteRegExp();
         expect(upVoteOrDownVoteRegExp).to.be.a('RegExp');

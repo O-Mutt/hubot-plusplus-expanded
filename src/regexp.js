@@ -11,7 +11,7 @@ class RegExpHelper {
   positiveOperators = '\\+\\+|:clap:(?::skin-tone-[0-9]:)?|:thumbsup:(?::skin-tone-[0-9]:)?|:thumbsup_all:';
   negativeOperators = '--|—|\u2013|\u2014|:thumbsdown:(?::skin-tone-[0-9]:)?';
   operator = `(${this.positiveOperators}|${this.negativeOperators})`;
-  reasonForVote = `(?:\\s+(?:${reasonConjunctions})\\s+(.+))?`;
+  reasonForVote = `(?:\\s+(?:${reasonConjunctions})?\\s*(.+))?`;
   eol = '$';
 
   /**

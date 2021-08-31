@@ -110,6 +110,14 @@ describe('PlusPlus', function () {
           /matt\.erickson has 228 points, 2 of which are for being awesome./,
         );
       });
+
+      it('should add a point to user with (sans) conjunction reason', async function () {
+        room.user.say('derp', '@matt.erickson++ gawd you\'re awesome');
+        await new Promise((resolve) => setTimeout(resolve, 60));
+        expect(room.messages[1][1]).to.match(
+          /matt\.erickson has 228 points, 1 of which is for gawd you're awesome./,
+        );
+      });
     });
 
     describe('subtract points', function () {
