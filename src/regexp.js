@@ -8,7 +8,7 @@ class RegExpHelper {
   multiUserSeparator= '(?:\\,|\\s|(?:\\s)?\\:(?:\\s)?)';
   // allow for spaces after the thing being upvoted (@user ++)
   allowSpaceAfterObject = '\\s*';
-  positiveOperators = '\\+\\+|:clap:(?::skin-tone-[0-9]:)?|:thumbsup:(?::skin-tone-[0-9]:)?|:thumbsup_all:';
+  positiveOperators = '\\+\\+|:clap:(?::skin-tone-[0-9]:)?|:thumbsup:(?::skin-tone-[0-9]:)?|:thumbsup_all:|:\+1:(?::skin-tone-[0-9]:)?|';
   negativeOperators = '--|—|\u2013|\u2014|:thumbsdown:(?::skin-tone-[0-9]:)?';
   operator = `(${this.positiveOperators}|${this.negativeOperators})`;
   reasonForVote = `(?:\\s+(?:${reasonConjunctions})?\\s*(.+))?`;
