@@ -108,10 +108,8 @@ describe('ScoreKeeper', function scorekeeperTest() {
       const connection = await client.connect();
       const db = connection.db();
       const encodedName = helpers.cleanAndEncode('derp');
-      await db.collection('scores').insertOne({
-        name: 'matt', score: 9, reasons: {}, pointsGiven: { [encodedName]: 9 },
-      });
-      const r = await scoreKeeper.incrementScore('derp', { name: 'matt', id: '123' }, 'room', 'because points', 1);
+      await db.collection('scores').insertOne({ name: 'matt', score: 9, reasons: {}, pointsGiven: { [encodedName]: 9 }, slackId: '123' });
+      const r = await scoreKeeper.incrementScore({ name: 'derp' }, { name: 'matt', id: '123' }, 'room', 'because points', 1);
       expect(r).to.be.an('object');
       expect(r.score).to.equal(1);
       expect(r.reasons['because points']).to.equal(1);

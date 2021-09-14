@@ -228,7 +228,6 @@ class DatabaseService {
     const search = user.slackId ? { slackId: user.slackId } : { name: userName };
     const db = await this.getDb();
     let tokensAdded = 0;
-
     const foundUser = await db.collection(scoresDocumentName).findOne(search);
     // we are leveling up from 0 (which is level 1) -> 2 or 2 -> 3
     if (foundUser.accountLevel && foundUser.accountLevel === 2) {
@@ -240,7 +239,6 @@ class DatabaseService {
     foundUser.token = 0;
     tokensAdded = foundUser.score;
     await db.collection(scoresDocumentName).updateOne(search, { $set: foundUser });
-
     const newScore = await this.transferScoreFromBotToUser(user, tokensAdded);
     return newScore;
   }
@@ -262,10 +260,8 @@ class DatabaseService {
     const userName = user.name ? user.name : user;
     const search = user.slackId ? { slackId: user.slackId } : { name: userName };
 
-    const fromName = from.name ? from.name : from;
-    const fromSearch = from.slackId ? { slackId: from.slackId } : { name: fromName };
     const db = await this.getDb();
-    this.robot.logger.info(`We are transferring ${scoreChange} ${helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName} from ${fromName || helpers.capitalizeFirstLetter(this.robot.name)}`);
+    this.robot.logger.info(`We are transferring ${scoreChange} ${helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName} from ${from ? from.name : helpers.capitalizeFirstLetter(this.robot.name)}`);
     const result = await db.collection(scoresDocumentName).findOneAndUpdate(
       search,
       {
@@ -280,7 +276,8 @@ class DatabaseService {
     );
     await db.collection(botTokenDocumentName).updateOne({ name: this.robot.name }, { $inc: { token: -scoreChange } });
     // If this isn't a level up and the score is larger than 1 (tipping aka level 3)
-    if (fromName && (scoreChange > 1 || scoreChange < -1)) {
+    if (from && from.name && (scoreChange > 1 || scoreChange < -1)) {
+      const fromSearch = from.slackId ? { slackId: from.slackId } : { name: from.name };
       await db.collection(scoresDocumentName).updateOne(fromSearch, { $inc: { token: -scoreChange } });
     }
     return result.value;
