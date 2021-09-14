@@ -25,6 +25,7 @@ async function mapUsersToDb(msg, props) {
       msg.robot.logger.error('failed to find', member, er);
     }
   }
+  msg.reply(`Ding fries are done. We mapped ${members.length} users`);
 }
 
 async function unmapUsersToDb(msg, props) {
@@ -38,6 +39,7 @@ async function unmapUsersToDb(msg, props) {
   } catch (er) {
     msg.robot.logger.error('failed to unset all slack ids', er);
   }
+  msg.reply('Ding fries are done. We unmapped all users');
 }
 
 module.exports = { mapUsersToDb, unmapUsersToDb };
