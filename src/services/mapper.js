@@ -13,6 +13,7 @@ async function mapUsersToDb(msg, props) {
   // eslint-disable-next-line guard-for-in
   for (const member in members) {
     try {
+      msg.robot.logger.debug('Map this member', JSON.stringify(member));
       const localMember = await databaseService.getUser({ name: member.name });
       // eslint-disable-next-line no-underscore-dangle
       localMember.slackId = member.id;
