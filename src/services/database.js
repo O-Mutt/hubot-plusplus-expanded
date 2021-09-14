@@ -146,7 +146,8 @@ class DatabaseService {
 
     if (updatedUser.pointsGiven[cleanName] % this.furtherFeedbackScore === 0) {
       this.robot.logger.debug(`${from.name} has sent a lot of points to ${to.name} suggesting further feedback ${score}`);
-      this.robot.messageRoom(from.id, `Looks like you've given ${to.name} quite a few points, maybe you should look at submitting ${this.peerFeedbackUrl}`);
+      const toIdent = to.slackId ? `<@${to.slackId}>` : to.name;
+      this.robot.messageRoom(from.id, `Looks like you've given ${toIdent} quite a few points, maybe you should look at submitting ${this.peerFeedbackUrl}`);
     }
   }
 
