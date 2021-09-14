@@ -3,7 +3,8 @@ const DatabaseService = require('./database');
 const { scoresDocumentName } = require('../data/scores');
 
 async function mapUsersToDb(msg, props) {
-  const databaseService = new DatabaseService(props);
+  const { robot } = msg;
+  const databaseService = new DatabaseService({ robot, ...props });
   databaseService.init();
 
   const web = new WebClient(msg.robot.adapter.options.token);
