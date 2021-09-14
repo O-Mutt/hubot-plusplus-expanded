@@ -32,13 +32,15 @@ const { default: axios } = require('axios');
 const _ = require('lodash');
 const moment = require('moment');
 const tokenBuddy = require('token-buddy');
+
 const pjson = require('../package.json');
 const regexp = require('./regexp');
 const wallet = require('./botWallet');
+const mapper = require('./services/mapper');
 const ScoreKeeper = require('./scorekeeper');
 const helpers = require('./helpers');
 // this may need to move or be generic...er
-const token = require('./token');
+const token = require('./token.json');
 const decrypt = require('./services/decrypt');
 
 module.exports = function plusPlus(robot) {
@@ -95,6 +97,8 @@ module.exports = function plusPlus(robot) {
 
   // admin
   robot.respond(regexp.createEraseUserScoreRegExp(), eraseUserScore);
+  robot.respond(/try to map all slack users to db users/, (msg) => mapper.mapUsersToDb(msg, procVars));
+  robot.respond(/unmap all users/, (msg) => mapper.unmapUsersToDb(msg, procVars));
   /* eslint-enable */
 
   /**

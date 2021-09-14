@@ -44,6 +44,12 @@ class ScoreKeeper {
 
         await this.databaseService.savePointsGiven(from, toUser, incrementValue);
         let saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason, incrementValue);
+        try {
+          await this.databaseService.savePlusPlusLog(toUser, from, room, reason, incrementValue);
+        } catch (e) {
+          this.robot.logger.error(`failed saving spam log for user ${toUser.name} from ${from.name} in room ${room} because ${reason}`, e);
+        }
+
         if (saveResponse.accountLevel > 1) {
           saveResponse = await this.databaseService.transferScoreFromBotToUser(toUser.name, incrementValue, fromUser.name);
         }
@@ -82,6 +88,11 @@ class ScoreKeeper {
 
             await this.databaseService.savePointsGiven(from, toUser, numberOfTokens);
             const saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason, numberOfTokens);
+            try {
+              await this.databaseService.savePlusPlusLog(toUser, from, room, reason, numberOfTokens);
+            } catch (e) {
+              this.robot.logger.error(`failed saving spam log for user ${toUser.name} from ${from.name} in room ${room} because ${reason}`, e);
+            }
             await this.databaseService.saveUser(fromUser, toUser, room, reason, -numberOfTokens);
             return {
               toUser: saveResponse,

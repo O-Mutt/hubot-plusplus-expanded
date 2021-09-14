@@ -54,12 +54,9 @@ class DatabaseService {
   /**
    * Saves the user with a new score
    * @param {object} user the user who is getting a point change
-   * @param {object} from the user sending the point change
-   * @param {string} room the room that the point was sent in
-   * @param {encodedString | undefined} reason
    * @returns {object} the updated user who received a change
    */
-  async saveUser(user, from, room, reason, incrementValue) {
+  async saveUser(user) {
     const db = await this.getDb();
 
     const result = await db.collection(scoresDocumentName)
@@ -77,13 +74,7 @@ class DatabaseService {
 
     const updatedUser = result.value;
 
-    try {
-      await this.savePlusPlusLog(user, from, room, reason, incrementValue);
-    } catch (e) {
-      this.robot.logger.error(`failed saving spam log for user ${user.name} from ${from.name} in room ${room} because ${reason}`, e);
-    }
-
-    this.robot.logger.debug(`Saving user original: [${user.name}: ${user.score} ${user.reasons[reason] || 'none'}], new [${updatedUser.name}: ${updatedUser.score} ${updatedUser.reasons[reason] || 'none'}]`);
+    this.robot.logger.debug(`Saving user original: [${user.name}: ${user.score}], new [${updatedUser.name}: ${updatedUser.score}]`);
 
     return updatedUser;
   }
