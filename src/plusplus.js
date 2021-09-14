@@ -258,7 +258,7 @@ module.exports = function plusPlus(robot) {
       pointsGiven += parseInt(user.pointsGiven[key], 10);
     }
     const scoreStr = user.score > 1 ? 'points' : 'point';
-    let baseString = `${user.name} has ${user.score} ${scoreStr}${tokenString}`;
+    let baseString = `<@${user.slackId}> has ${user.score} ${scoreStr}${tokenString}`;
     baseString += `\nAccount Level: ${user.accountLevel}`;
     baseString += `\nTotal Points Given: ${pointsGiven}`;
     if (user[`${this.robot.name}Day`]) {
