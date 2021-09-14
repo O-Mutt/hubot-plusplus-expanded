@@ -239,7 +239,9 @@ module.exports = function plusPlus(robot) {
     const name = helpers.cleanName(msg.match[2]);
     let to = { name };
     if (mentions) {
-      to = mentions.filter((men) => men.type === 'user').shift();
+      const userMentions = mentions.filter((men) => men.type === 'user');
+      userMentions.shift(); // shift off @hubot
+      to = userMentions.shift();
       to.name = name;
     }
 

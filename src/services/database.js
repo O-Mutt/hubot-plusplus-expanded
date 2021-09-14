@@ -84,11 +84,13 @@ class DatabaseService {
     return updatedUser;
   }
 
-  async savePlusPlusLog(user, from, room, reason, incrementValue) {
+  async savePlusPlusLog(to, from, room, reason, incrementValue) {
+    const fromId = from.slackId || from.name;
+    const toId = to.slackId || to.name;
     const db = await this.getDb();
     await db.collection(logDocumentName).insertOne({
-      from: from.name,
-      to: user.name,
+      from: fromId,
+      to: toId,
       date: moment().toISOString(),
       room,
       reason,

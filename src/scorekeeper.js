@@ -34,7 +34,7 @@ class ScoreKeeper {
     let fromUser;
     try {
       toUser = await this.getUser(to);
-      fromUser = await this.getUser(from.name);
+      fromUser = await this.getUser(from);
       if (!(await this.isSpam(toUser, fromUser)) && !this.isSendingToSelf(toUser, fromUser) && !this.isBotInDm(from, room)) {
         toUser.score = parseInt(toUser.score, 10) + parseInt(incrementValue, 10);
         if (reason) {
@@ -45,7 +45,7 @@ class ScoreKeeper {
         await this.databaseService.savePointsGiven(from, toUser, incrementValue);
         let saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason, incrementValue);
         try {
-          await this.databaseService.savePlusPlusLog(toUser, from, room, reason, incrementValue);
+          await this.databaseService.savePlusPlusLog(toUser, fromUser, room, reason, incrementValue);
         } catch (e) {
           this.robot.logger.error(`failed saving spam log for user ${toUser.name} from ${from.name} in room ${room} because ${reason}`, e);
         }
@@ -88,7 +88,7 @@ class ScoreKeeper {
             await this.databaseService.savePointsGiven(from, toUser, numberOfTokens);
             const saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason, numberOfTokens);
             try {
-              await this.databaseService.savePlusPlusLog(toUser, from, room, reason, numberOfTokens);
+              await this.databaseService.savePlusPlusLog(toUser, fromUser, room, reason, numberOfTokens);
             } catch (e) {
               this.robot.logger.error(`failed saving spam log for user ${toUser.name} from ${from.name} in room ${room} because ${reason}`, e);
             }
@@ -141,8 +141,10 @@ class ScoreKeeper {
   }
 
   async isSpam(to, from) {
+    const toId = to.slackId || to.name;
+    const fromId = from.slackId || from.name;
     this.robot.logger.debug(`Checking spam to [${to.name}] from [${from.name}]`);
-    const isSpam = await this.databaseService.isSpam(to.name, from.name);
+    const isSpam = await this.databaseService.isSpam(toId, fromId);
     return isSpam;
   }
 

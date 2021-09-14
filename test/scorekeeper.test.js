@@ -74,7 +74,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
       });
 
     it('does not allow spamming points', async function () {
-      const to = { name: 'mahMainBuddy', id: 'mahMainBuddy' };
+      const to = { name: 'mahMainBuddy', id: 'mahMainBuddyId' };
       // empty score to start
       const beforeUser = await scoreKeeper.getUser(to);
       expect(beforeUser.score).to.be.equal(0);
