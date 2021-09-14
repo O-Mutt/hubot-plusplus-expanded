@@ -37,10 +37,13 @@ class DatabaseService {
   * user - the name of the user
   */
   async getUser(user) {
-    this.robot.logger.debug(`trying to find user ${user}`);
+    const userName = user.name ? user.name : user;
+    const search = user.id ? { slackId: user.id } : { name: userName };
+    this.robot.logger.debug(`trying to find user ${JSON.stringify(search)}`);
     const db = await this.getDb();
+
     const dbUser = await db.collection(scoresDocumentName).findOne(
-      { name: user },
+      search,
       { sort: { score: -1 } },
     );
 

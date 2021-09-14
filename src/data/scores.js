@@ -23,13 +23,21 @@
  */
 const scoresDocumentName = 'scores';
 
-const createNewLevelOneUser = (name, robotName) => ({
-  name,
-  score: 0,
-  reasons: { },
-  pointsGiven: { },
-  [`${robotName}Day`]: new Date(),
-  accountLevel: 1,
-});
+const createNewLevelOneUser = (user, robotName) => {
+  const userName = user.name ? user.name : user;
+
+  const newUser = {
+    name: userName,
+    score: 0,
+    reasons: { },
+    pointsGiven: { },
+    [`${robotName}Day`]: new Date(),
+    accountLevel: 1,
+  };
+  if (user.id) {
+    newUser.slackId = user.id;
+  }
+  return newUser;
+};
 
 module.exports = { scoresDocumentName, createNewLevelOneUser };
