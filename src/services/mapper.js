@@ -5,7 +5,8 @@ const { scoresDocumentName } = require('../data/scores');
 async function mapUsersToDb(msg, props) {
   const { robot } = msg;
   const databaseService = new DatabaseService({ robot, ...props });
-  databaseService.init();
+  await databaseService.init();
+  const db = await databaseService.getDb();
 
   const web = new WebClient(msg.robot.adapter.options.token);
   const { members } = await web.users.list();
@@ -17,9 +18,7 @@ async function mapUsersToDb(msg, props) {
       localMember.slackId = member.id;
       // eslint-disable-next-line no-underscore-dangle
       if (localMember._id) {
-        await databaseService.getDb().collection(scoresDocumentName).insertOne(localMember);
-      } else {
-        await databaseService.getDb().collection(scoresDocumentName).replaceOne({ name: localMember.name }, localMember);
+        await db.collection(scoresDocumentName).replaceOne({ name: localMember.name }, localMember);
       }
       msg.robot.logger.debug(`Save the new member ${JSON.stringify(localMember)}`);
     } catch (er) {
@@ -29,9 +28,9 @@ async function mapUsersToDb(msg, props) {
 }
 
 async function unmapUsersToDb(msg, props) {
-  const databaseService = new DatabaseService(props);
-
-  databaseService.init();
+  const { robot } = msg;
+  const databaseService = new DatabaseService({ robot, ...props });
+  await databaseService.init();
 
   try {
     const db = await databaseService.getDb();
