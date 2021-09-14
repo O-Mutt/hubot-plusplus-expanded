@@ -10,8 +10,7 @@ async function mapUsersToDb(msg, props) {
   const web = new WebClient(msg.robot.adapter.options.token);
   const { members } = await web.users.list();
 
-  // eslint-disable-next-line guard-for-in
-  for (const member in members) {
+  for (const member of members) {
     try {
       msg.robot.logger.debug('Map this member', JSON.stringify(member));
       const localMember = await databaseService.getUser({ name: member.name });
