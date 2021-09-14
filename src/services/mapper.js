@@ -14,10 +14,14 @@ async function mapUsersToDb(msg, props) {
     try {
       msg.robot.logger.debug('Map this member', JSON.stringify(member));
       const localMember = await databaseService.getUser({ name: member.name });
-      // eslint-disable-next-line no-underscore-dangle
       localMember.slackId = member.id;
-      await databaseService.saveUser(localMember);
-      msg.robot.logger.debug(`Save the new member ${localMember.name} with slack id ${localMember.slackId}`);
+      // eslint-disable-next-line no-underscore-dangle
+      if (localMember._id) {
+        await databaseService.getDb().collection(scoresDocumentName).insertOne(localMember);
+      } else {
+        await databaseService.getDb().collection(scoresDocumentName).replaceOne({ name: localMember.name }, localMember);
+      }
+      msg.robot.logger.debug(`Save the new member ${JSON.stringify(localMember)}`);
     } catch (er) {
       msg.robot.logger.error('failed to find', member, er);
     }
