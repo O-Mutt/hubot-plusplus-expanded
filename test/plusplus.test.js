@@ -79,28 +79,30 @@ describe('PlusPlus', function () {
         expect(user.score).to.equal(228);
       });
 
-      it('should add a point to each user in the multi-user plus plus', async function () {
-        room.user.say('derp', '{ @darf, @greg, @tank } ++');
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        expect(room.messages[1][1]).to.match(
-          /darf has 1 point\.\n:birthday: Today is darf's hubotday! :birthday:\ngreg has 1 point\.\n:birthday: Today is greg's hubotday! :birthday:\ntank has 1 point\.\n:birthday: Today is tank's hubotday! :birthday:/,
-        );
-      });
+      describe.skip('multi user vote', function () {
+        it('should add a point to each user in the multi-user plus plus', async function () {
+          room.user.say('derp', '{ @darf, @greg, @tank } ++');
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          expect(room.messages[1][1]).to.match(
+            /darf has 1 point\.\n:birthday: Today is darf's hubotday! :birthday:\ngreg has 1 point\.\n:birthday: Today is greg's hubotday! :birthday:\ntank has 1 point\.\n:birthday: Today is tank's hubotday! :birthday:/,
+          );
+        });
 
-      it('should add a point to each user in the multi-user plus plus with text before it', async function () {
-        room.user.say('derp', 'hello world! { @darf, @greg, @tank } ++');
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        expect(room.messages[1][1]).to.match(
-          /darf has 1 point\.\n:birthday: Today is darf's hubotday! :birthday:\ngreg has 1 point\.\n:birthday: Today is greg's hubotday! :birthday:\ntank has 1 point\.\n:birthday: Today is tank's hubotday! :birthday:/,
-        );
-      });
+        it('should add a point to each user in the multi-user plus plus with text before it', async function () {
+          room.user.say('derp', 'hello world! { @darf, @greg, @tank } ++');
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          expect(room.messages[1][1]).to.match(
+            /darf has 1 point\.\n:birthday: Today is darf's hubotday! :birthday:\ngreg has 1 point\.\n:birthday: Today is greg's hubotday! :birthday:\ntank has 1 point\.\n:birthday: Today is tank's hubotday! :birthday:/,
+          );
+        });
 
-      it('should add a point to each user in the multi-user plus plus with periods in their names', async function () {
-        room.user.say('derp', '{ @darf.arg, @pirate.jack123, @ted.phil } ++');
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        expect(room.messages[1][1]).to.match(
-          /darf.arg has 1 point\.\n:birthday: Today is darf.arg's hubotday! :birthday:\npirate.jack123 has 1 point\.\n:birthday: Today is pirate.jack123's hubotday! :birthday:\nted.phil has 1 point\.\n:birthday: Today is ted.phil's hubotday! :birthday:/,
-        );
+        it('should add a point to each user in the multi-user plus plus with periods in their names', async function () {
+          room.user.say('derp', '{ @darf.arg, @pirate.jack123, @ted.phil } ++');
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          expect(room.messages[1][1]).to.match(
+            /darf.arg has 1 point\.\n:birthday: Today is darf.arg's hubotday! :birthday:\npirate.jack123 has 1 point\.\n:birthday: Today is pirate.jack123's hubotday! :birthday:\nted.phil has 1 point\.\n:birthday: Today is ted.phil's hubotday! :birthday:/,
+          );
+        });
       });
 
       it('should add a point to user with reason', async function () {
@@ -213,7 +215,7 @@ describe('PlusPlus', function () {
       room.user.say('matt.erickson', '@hubot score for @matt.erickson');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.match(
-        /matt\.erickson has 227 points\.\n\n:star: Here are some reasons :star:(\n.*:.*){5}/,
+        /matt\.erickson has 227 points\.\nAccount Level: 1\nTotal Points Given: 14\n:birthday: Hubotday is 07-09-2020\n\n:star: Here are some reasons :star:(\n.*:.*){5}/,
       );
     });
 
@@ -221,7 +223,7 @@ describe('PlusPlus', function () {
       room.user.say('matt.erickson.min', '@hubot score for @matt.erickson.min');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.match(
-        /matt\.erickson\.min has 8 points\.\n\n:star: Here are some reasons :star:(\n.*:.*){3}/,
+        /matt\.erickson\.min has 8 points\.\nAccount Level: 1\nTotal Points Given: -2\n:birthday: Hubotday is 07-09-2020\n\n:star: Here are some reasons :star:(\n.*:.*){3}/,
       );
     });
 
@@ -229,7 +231,7 @@ describe('PlusPlus', function () {
       room.user.say('peter.parker.min', '@hubot score for @peter.parker.min');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.match(
-        /peter\.parker\.min has 8 points \(\*8 Hubot Tokens\*\)\.\n\n:star: Here are some reasons :star:(\n.*:.*){3}/
+        /peter\.parker\.min has 8 points \(\*8 Hubot Tokens\*\)\.\nAccount Level: 2\nTotal Points Given: -2\n:birthday: Hubotday is 07-09-2020\n\n:star: Here are some reasons :star:(\n.*:.*){3}/
       );
     });
   });

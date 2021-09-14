@@ -84,5 +84,6 @@
   },
   "hubotDay" : "2020-07-09T16:55:04.374Z",
   "accountLevel": 2,
-  "token": 200
+  "token": 200,
+  "slackId": "peter.parker"
 }

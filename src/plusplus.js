@@ -107,15 +107,20 @@ module.exports = function plusPlus(robot) {
   async function upOrDownVote(msg) {
     const [fullMatch, name, operator, reason] = msg.match;
     const increment = operator.match(regexp.positiveOperators) ? 1 : -1;
-    const { room } = msg.message;
+    const { room, mentions } = msg.message;
     const cleanName = helpers.cleanName(name);
+    let to = { name: cleanName };
+    if (mentions) {
+      to = mentions.filter((men) => men.type === 'user').shift();
+      to.name = cleanName;
+    }
     const cleanReason = helpers.cleanAndEncode(reason);
     const from = msg.message.user;
 
-    robot.logger.debug(`${increment} score for [${cleanName}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
+    robot.logger.debug(`${increment} score for [${to.name}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
     let user;
     try {
-      user = await scoreKeeper.incrementScore(cleanName, from, room, cleanReason, increment);
+      user = await scoreKeeper.incrementScore(to, from, room, cleanReason, increment);
     } catch (e) {
       msg.send(e.message);
       return;
@@ -137,15 +142,20 @@ module.exports = function plusPlus(robot) {
 
   async function giveTokenBetweenUsers(msg) {
     const [fullMatch, name, number, reason] = msg.match;
-    const { room } = msg.message;
+    const { room, mentions } = msg.message;
     const cleanName = helpers.cleanName(name);
+    let to = { name: cleanName };
+    if (mentions) {
+      to = mentions.filter((men) => men.type === 'user').shift();
+      to.name = cleanName;
+    }
     const cleanReason = helpers.cleanAndEncode(reason);
     const from = msg.message.user;
 
-    robot.logger.debug(`${number} score for [${cleanName}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
+    robot.logger.debug(`${number} score for [${mentions}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
     let response;
     try {
-      response = await scoreKeeper.transferTokens(cleanName, from, room, cleanReason, number);
+      response = await scoreKeeper.transferTokens(to, from, room, cleanReason, number);
     } catch (e) {
       msg.send(e.message);
       return;
@@ -178,7 +188,11 @@ module.exports = function plusPlus(robot) {
 
     const namesArray = names.trim().toLowerCase().split(new RegExp(regexp.multiUserSeparator)).filter(Boolean);
     const from = msg.message.user;
-    const { room } = msg.message;
+    const { room, mentions } = msg.message;
+    let to;
+    if (mentions) {
+      to = mentions.filter((men) => men.type === 'user');
+    }
     const cleanReason = helpers.cleanAndEncode(reason);
     const increment = operator.match(regexp.positiveOperators) ? 1 : -1;
 
@@ -193,15 +207,17 @@ module.exports = function plusPlus(robot) {
       // Remove duplicates: {user1,user1}++
       .filter((name, pos, self) => self.indexOf(name) === pos);
 
-    // If after the parse + cleanup of the names there is only one name, ignore it.
-    // {user1}++
-    if (cleanNames.length === 1) return;
+    if (cleanNames.length !== to.length) {
+      msg.send('We are having trouble mapping your multi-user plusplus. Please try again and only include @ mentions.');
+      return;
+    }
 
     let messages = [];
-    for (const cleanName of cleanNames) {
-      const user = await scoreKeeper.incrementScore(cleanName, from, room, cleanReason, increment);
+    for (let i = 0; i < cleanNames.length; i++) {
+      to[i].name = cleanNames[i];
+      const user = await scoreKeeper.incrementScore(to[i], from, room, cleanReason, increment);
       if (user) {
-        robot.logger.debug(`clean names map [${cleanName}]: ${user.score}, the reason ${user.reasons[cleanReason]}`);
+        robot.logger.debug(`clean names map [${to[i].name}]: ${user.score}, the reason ${user.reasons[cleanReason]}`);
         messages.push(helpers.getMessageForNewScore(user, cleanReason, robot));
       }
     }
@@ -209,7 +225,7 @@ module.exports = function plusPlus(robot) {
 
     robot.logger.debug(`These are the messages \n ${messages.join('\n')}`);
     msg.send(messages.join('\n'));
-    cleanNames.map((name) => robot.emit('plus-one', {
+    to.map((name) => robot.emit('plus-one', {
       name,
       direction: operator,
       room,
@@ -219,17 +235,34 @@ module.exports = function plusPlus(robot) {
   }
 
   async function respondWithScore(msg) {
+    const { mentions } = msg.message;
     const name = helpers.cleanName(msg.match[2]);
+    let to = { name };
+    if (mentions) {
+      to = mentions.filter((men) => men.type === 'user').shift();
+      to.name = name;
+    }
 
-    const user = await scoreKeeper.getUser(name);
+    const user = await scoreKeeper.getUser(to);
+
     let tokenString = '.';
     if (user.accountLevel > 1) {
       tokenString = ` (*${user.token} ${helpers.capitalizeFirstLetter(this.robot.name)} `;
       tokenString = tokenString.concat(user.token > 1 ? 'Tokens*).' : 'Token*).');
     }
+    let pointsGiven = 0;
+    // eslint-disable-next-line guard-for-in
+    for (const key in user.pointsGiven) {
+      pointsGiven += parseInt(user.pointsGiven[key], 10);
+    }
     const scoreStr = user.score > 1 ? 'points' : 'point';
-    const baseString = `${user.name} has ${user.score} ${scoreStr}${tokenString}`;
-
+    let baseString = `${user.name} has ${user.score} ${scoreStr}${tokenString}`;
+    baseString += `\nAccount Level: ${user.accountLevel}`;
+    baseString += `\nTotal Points Given: ${pointsGiven}`;
+    if (user[`${this.robot.name}Day`]) {
+      const dateObj = new Date(user[`${this.robot.name}Day`]);
+      baseString += `\n:birthday: ${helpers.capitalizeFirstLetter(this.robot.name)}day is ${moment(dateObj).format('MM-DD-yyyy')}`;
+    }
     const keys = Object.keys(user.reasons);
     if (keys.length > 1) {
       const sampleReasons = {};
@@ -326,7 +359,7 @@ module.exports = function plusPlus(robot) {
       userToLookup = helpers.cleanName(msg.match[2]);
       messageName = `${userToLookup}'s`;
     }
-    const user = await scoreKeeper.databaseService.getUser(userToLookup);
+    const user = await scoreKeeper.databaseService.getUser({ name: userToLookup });
     const dateObj = new Date(user[`${robot.name}Day`]);
     msg.send(`${messageName} ${robot.name}day is ${moment(dateObj).format('MM-DD-yyyy')}`);
   }
@@ -336,10 +369,16 @@ module.exports = function plusPlus(robot) {
     const [__, name, reason] = Array.from(msg.match);
     const from = msg.message.user;
     const { user } = msg.envelope;
-    const { room } = msg.message;
+    const { room, mentions } = msg.message;
 
     const cleanReason = helpers.cleanAndEncode(reason);
+    let to = mentions.filter((men) => men.type === 'user').shift();
     const cleanName = helpers.cleanName(name);
+    if (!to) {
+      to = { name: cleanName };
+    } else {
+      to.name = cleanName;
+    }
 
     const isAdmin = (this.robot.auth ? this.robot.auth.hasRole(user, 'plusplus-admin') : undefined) || (this.robot.auth ? this.robot.auth.hasRole(user, 'admin') : undefined);
 
@@ -347,12 +386,12 @@ module.exports = function plusPlus(robot) {
       msg.reply("Sorry, you don't have authorization to do that.");
       return;
     } if (isAdmin) {
-      erased = await scoreKeeper.erase(cleanName, from, room, cleanReason);
+      erased = await scoreKeeper.erase(to, from, room, cleanReason);
     }
 
     if (erased) {
       const decodedReason = helpers.decode(cleanReason);
-      const message = !decodedReason ? `Erased the following reason from ${cleanName}: ${decodedReason}` : `Erased points for ${cleanName}`;
+      const message = !decodedReason ? `Erased the following reason from ${to.name}: ${decodedReason}` : `Erased points for ${to.name}`;
       msg.send(message);
     }
   }
