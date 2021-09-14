@@ -61,7 +61,8 @@ function getMessageForNewScore(user, reason, robot) {
   if (!user) {
     return '';
   }
-  let scoreStr = `${user.name} has ${user.score} point${getEsOnEndOfWord(user.score)}`;
+  const username = user.slackId ? `<@${user.slackId}>` : user.name;
+  let scoreStr = `${username} has ${user.score} point${getEsOnEndOfWord(user.score)}`;
   let reasonStr = '.';
   let cakeDayStr = '';
 
@@ -100,7 +101,7 @@ function getMessageForNewScore(user, reason, robot) {
 
   if (isCakeDay(user[`${robot.name}Day`])) {
     const yearsAsString = getYearsAsString(user[`${robot.name}Day`]);
-    cakeDayStr = `\n:birthday: Today is ${user.name}'s ${yearsAsString}${robot.name}day! :birthday:`;
+    cakeDayStr = `\n:birthday: Today is ${username}'s ${yearsAsString}${robot.name}day! :birthday:`;
   }
   return `${scoreStr}${reasonStr}${cakeDayStr}`;
 }
@@ -109,7 +110,10 @@ function getMessageForTokenTransfer(robot, to, from, number, reason) {
   if (!to) {
     return '';
   }
-  const scoreStr = `${from.name} transferred *${number}* ${robot.name} Tokens to ${to.name}. ${to.name} now has ${to.token} token${getEsOnEndOfWord(to.token)}`;
+  const toTag = to.slackId ? `<@${to.slackId}>` : to.name;
+  const fromTag = from.slackId ? `<@${from.slackId}>` : from.name;
+
+  const scoreStr = `${fromTag} transferred *${number}* ${robot.name} Tokens to ${toTag}.\n${toTag} now has ${to.token} token${getEsOnEndOfWord(to.token)}`;
   let reasonStr = '.';
   let cakeDayStr = '';
 
@@ -130,9 +134,9 @@ function getMessageForTokenTransfer(robot, to, from, number, reason) {
 
   if (isCakeDay(to[`${robot.name}Day`], robot)) {
     const yearsAsString = getYearsAsString(to[`${robot.name}Day`]);
-    cakeDayStr = `\n:birthday: Today is ${to.name}'s ${yearsAsString}${robot.name}day! :birthday:`;
+    cakeDayStr = `\n:birthday: Today is ${toTag}'s ${yearsAsString}${robot.name}day! :birthday:`;
   }
-  return `${scoreStr}${reasonStr}${cakeDayStr}\n_${from.name} has ${from.token} token${getEsOnEndOfWord(from.token)}_`;
+  return `${scoreStr}${reasonStr}${cakeDayStr}\n_${fromTag} has ${from.token} token${getEsOnEndOfWord(from.token)}_`;
 }
 
 function cleanName(name) {

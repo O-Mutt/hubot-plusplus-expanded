@@ -72,7 +72,7 @@ describe('PlusPlus', function () {
       it('should add a point when a user that is already in the db is ++\'d', async function () {
         room.user.say('derp', '@matt.erickson++');
         await new Promise((resolve) => setTimeout(resolve, 45));
-        expect(room.messages[1][1]).to.match(/matt.erickson has 228 points\./);
+        expect(room.messages[1][1]).to.match(/<@matt.erickson> has 228 points\./);
         const user = await db
           .collection('scores')
           .findOne({ name: 'matt.erickson' });
@@ -109,7 +109,7 @@ describe('PlusPlus', function () {
         room.user.say('derp', '@matt.erickson++ for being awesome');
         await new Promise((resolve) => setTimeout(resolve, 60));
         expect(room.messages[1][1]).to.match(
-          /matt\.erickson has 228 points, 2 of which are for being awesome./,
+          /<@matt\.erickson> has 228 points, 2 of which are for being awesome./,
         );
       });
 
@@ -117,7 +117,7 @@ describe('PlusPlus', function () {
         room.user.say('derp', '@matt.erickson++ gawd you\'re awesome');
         await new Promise((resolve) => setTimeout(resolve, 60));
         expect(room.messages[1][1]).to.match(
-          /matt\.erickson has 228 points, 1 of which is for gawd you're awesome./,
+          /<@matt\.erickson> has 228 points, 1 of which is for gawd you're awesome./,
         );
       });
     });
@@ -130,7 +130,7 @@ describe('PlusPlus', function () {
         expect(user.score).to.equal(8);
         room.user.say('derp', '@matt.erickson.min--');
         await new Promise((resolve) => setTimeout(resolve, 45));
-        expect(room.messages[1][1]).to.match(/matt.erickson.min has 7 points\./);
+        expect(room.messages[1][1]).to.match(/<@matt.erickson.min> has 7 points\./);
         user = await db.collection('scores').findOne({ name: 'matt.erickson' });
         expect(user.score).to.equal(227);
       });
@@ -138,7 +138,7 @@ describe('PlusPlus', function () {
       it('should subtract a point when a user is :thumbsdown:\'d', async function () {
         room.user.say('matt.erickson', '@derp :thumbsdown: for being the best');
         await new Promise((resolve) => setTimeout(resolve, 50));
-        expect(room.messages[1][1]).to.match(/derp has -1 point for being the best\./);
+        expect(room.messages[1][1]).to.equal('derp has -1 point for being the best.\n:birthday: Today is derp\'s hubotday! :birthday:');
         const user = await db.collection('scores').findOne({ name: 'derp' });
         expect(user.score).to.equal(-1);
       });
@@ -149,7 +149,7 @@ describe('PlusPlus', function () {
     it('should add a X points when a user is + #\'d', async function () {
       room.user.say('peter.parker', '@hubot @peter.parker.min + 5');
       await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(room.messages[1][1]).to.equal('peter.parker transferred *5* hubot Tokens to peter.parker.min. peter.parker.min now has 13 tokens.\n_peter.parker has 195 tokens_');
+      expect(room.messages[1][1]).to.equal('<@peter.parker> transferred *5* hubot Tokens to <@peter.parker.min>.\n<@peter.parker.min> now has 13 tokens.\n_<@peter.parker> has 195 tokens_');
       const to = await db.collection('scores').findOne({ name: 'peter.parker.min' });
       expect(to.score).to.equal(8);
       expect(to.token).to.equal(13);
@@ -197,7 +197,7 @@ describe('PlusPlus', function () {
     it('should error on second point (for spam check)', async function () {
       room.user.say('peter.parker', '@hubot @peter.parker.min + 2');
       await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(room.messages[1][1]).to.equal('peter.parker transferred *2* hubot Tokens to peter.parker.min. peter.parker.min now has 10 tokens.\n_peter.parker has 198 tokens_');
+      expect(room.messages[1][1]).to.equal('<@peter.parker> transferred *2* hubot Tokens to <@peter.parker.min>.\n<@peter.parker.min> now has 10 tokens.\n_<@peter.parker> has 198 tokens_');
       const to = await db.collection('scores').findOne({ name: 'peter.parker.min' });
       expect(to.score).to.equal(8);
       expect(to.token).to.equal(10);
@@ -215,7 +215,7 @@ describe('PlusPlus', function () {
       room.user.say('matt.erickson', '@hubot score for @matt.erickson');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.match(
-        /matt\.erickson has 227 points\.\nAccount Level: 1\nTotal Points Given: 14\n:birthday: Hubotday is 07-09-2020\n\n:star: Here are some reasons :star:(\n.*:.*){5}/,
+        /<@matt\.erickson> has 227 points\.\nAccount Level: 1\nTotal Points Given: 14\n:birthday: Hubotday is 07-09-2020\n\n:star: Here are some reasons :star:(\n.*:.*){5}/,
       );
     });
 
@@ -223,7 +223,7 @@ describe('PlusPlus', function () {
       room.user.say('matt.erickson.min', '@hubot score for @matt.erickson.min');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.match(
-        /matt\.erickson\.min has 8 points\.\nAccount Level: 1\nTotal Points Given: -2\n:birthday: Hubotday is 07-09-2020\n\n:star: Here are some reasons :star:(\n.*:.*){3}/,
+        /<@matt\.erickson\.min> has 8 points\.\nAccount Level: 1\nTotal Points Given: -2\n:birthday: Hubotday is 07-09-2020\n\n:star: Here are some reasons :star:(\n.*:.*){3}/,
       );
     });
 
@@ -231,7 +231,7 @@ describe('PlusPlus', function () {
       room.user.say('peter.parker.min', '@hubot score for @peter.parker.min');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.match(
-        /peter\.parker\.min has 8 points \(\*8 Hubot Tokens\*\)\.\nAccount Level: 2\nTotal Points Given: -2\n:birthday: Hubotday is 07-09-2020\n\n:star: Here are some reasons :star:(\n.*:.*){3}/
+        /<@peter\.parker\.min> has 8 points \(\*8 Hubot Tokens\*\)\.\nAccount Level: 2\nTotal Points Given: -2\n:birthday: Hubotday is 07-09-2020\n\n:star: Here are some reasons :star:(\n.*:.*){3}/
       );
     });
   });
