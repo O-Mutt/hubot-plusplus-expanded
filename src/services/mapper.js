@@ -29,6 +29,7 @@ async function mapUsersToDb(msg, props) {
 
 async function unmapUsersToDb(msg, props) {
   const databaseService = new DatabaseService(props);
+
   databaseService.init();
 
   try {
