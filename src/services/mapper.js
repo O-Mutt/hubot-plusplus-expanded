@@ -1,5 +1,6 @@
 const { WebClient } = require('@slack/client');
 const DatabaseService = require('./database');
+const { scoresDocumentName } = require('../data/scores');
 
 async function mapUsersToDb(msg, props) {
   const databaseService = new DatabaseService(props);
@@ -29,7 +30,7 @@ async function unmapUsersToDb(msg, props) {
 
   try {
     const db = await databaseService.getDb();
-    await db.updateMany({}, { $unset: { slackId: 1 } });
+    await db.collection(scoresDocumentName).updateMany({}, { $unset: { slackId: 1 } });
   } catch (er) {
     msg.robot.logger.error('failed to unset all slack ids', er);
   }
