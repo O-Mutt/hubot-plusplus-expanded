@@ -13,16 +13,11 @@ async function mapUsersToDb(msg, props) {
     try {
       const localMember = await databaseService.getUser({ name: member.name });
       // eslint-disable-next-line no-underscore-dangle
-      if (!localMember._id) {
-        msg.robot.logger.debug(`failed to find ${member.name}`);
-        return;
-      }
       localMember.slackId = member.id;
       await databaseService.saveUser(localMember);
-
       msg.robot.logger.debug(`Save the new member ${localMember.name} with slack id ${localMember.slackId}`);
     } catch (er) {
-      msg.robot.logger.error(`failed to find ${member.name}`);
+      msg.robot.logger.error('failed to find', member, er);
     }
   }
 }
@@ -36,7 +31,7 @@ async function unmapUsersToDb(msg, props) {
     const db = await databaseService.getDb();
     await db.updateMany({}, { $unset: { slackId: 1 } });
   } catch (er) {
-    msg.robot.logger.error('failed to unset all slack ids');
+    msg.robot.logger.error('failed to unset all slack ids', er);
   }
 }
 
