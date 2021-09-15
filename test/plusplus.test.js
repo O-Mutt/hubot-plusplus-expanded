@@ -247,7 +247,7 @@ describe('PlusPlus', function () {
       room.user.say('phil.bob', 'hubot what day is matt.erickson hubot day?');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.equal(
-        'matt.erickson\'s hubotday is 07-09-2020',
+        '<@matt.erickson>\'s hubotday is 07-09-2020',
       );
     });
 
@@ -255,7 +255,7 @@ describe('PlusPlus', function () {
       room.user.say('phil.bob', 'hubot what day is matt.erickson\'s hubot day?');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.equal(
-        'matt.erickson\'s hubotday is 07-09-2020',
+        '<@matt.erickson>\'s hubotday is 07-09-2020',
       );
     });
 
@@ -266,7 +266,7 @@ describe('PlusPlus', function () {
       );
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.equal(
-        'matt.erickson\'s hubotday is 07-09-2020',
+        '<@matt.erickson>\'s hubotday is 07-09-2020',
       );
     });
   });
@@ -332,7 +332,7 @@ describe('PlusPlus', function () {
       room.user.say('matt.erickson', '@hubot top 2');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.include(
-        '\n1. matt.erickson: 227\n2. peter.parker: 200 (*200 Hubot Tokens*)',
+        '\n1. <@matt.erickson>: 227\n2. <@peter.parker>: 200 (*200 Hubot Tokens*)',
       );
     });
 
@@ -340,7 +340,7 @@ describe('PlusPlus', function () {
       room.user.say('matt.erickson', '@hubot bottom 2');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.include(
-        '\n1. peter.parker.min: 8 (*8 Hubot Tokens*)\n2. matt.erickson.min: 8',
+        '\n1. <@peter.parker.min>: 8 (*8 Hubot Tokens*)\n2. <@matt.erickson.min>: 8',
       );
     });
 
@@ -348,7 +348,7 @@ describe('PlusPlus', function () {
       room.user.say('matt.erickson', '@hubot top 2');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.include(
-        '\n1. matt.erickson: 227\n2. peter.parker: 200 (*200 Hubot Tokens*)',
+        '\n1. <@matt.erickson>: 227\n2. <@peter.parker>: 200 (*200 Hubot Tokens*)',
       );
     });
   });
@@ -358,7 +358,7 @@ describe('PlusPlus', function () {
       room.user.say('matt.erickson', '@hubot top tokens 2');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.include(
-        '\n1. peter.parker: *200 Hubot Tokens* (200 points)\n2. peter.parker.min: *8 Hubot Tokens* (8 points)',
+        '\n1. <@peter.parker>: *200 Hubot Tokens* (200 points)\n2. <@peter.parker.min>: *8 Hubot Tokens* (8 points)',
       );
     });
 
@@ -366,7 +366,7 @@ describe('PlusPlus', function () {
       room.user.say('matt.erickson', '@hubot bottom tokens 2');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.include(
-        '\n1. peter.parker.min: *8 Hubot Tokens* (8 points)\n2. peter.parker: *200 Hubot Tokens* (200 points)',
+        '\n1. <@peter.parker.min>: *8 Hubot Tokens* (8 points)\n2. <@peter.parker>: *200 Hubot Tokens* (200 points)',
       );
     });
   });

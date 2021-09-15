@@ -358,13 +358,16 @@ module.exports = function plusPlus(robot) {
 
   async function respondWithUsersBotDay(msg) {
     let userToLookup = msg.message.user.name;
+    const isMy = msg.match[2].toLowerCase() !== 'my';
     let messageName = 'Your';
     robot.logger.debug(`respond with users bot day ${msg.match}`);
-    if (msg.match[2].toLowerCase() !== 'my') {
+    if (isMy) {
       userToLookup = helpers.cleanName(msg.match[2]);
     }
     const user = await scoreKeeper.databaseService.getUser({ name: userToLookup });
-    messageName = user.slackId ? `<@${user.slackId}>'s` : `${user.name}'s`;
+    if (isMy) {
+      messageName = user.slackId ? `<@${user.slackId}>'s` : `${user.name}'s`;
+    }
     const dateObj = new Date(user[`${robot.name}Day`]);
     msg.send(`${messageName} ${robot.name}day is ${moment(dateObj).format('MM-DD-yyyy')}`);
   }
