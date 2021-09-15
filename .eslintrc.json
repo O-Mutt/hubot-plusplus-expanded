@@ -27,7 +27,8 @@
         "no-param-reassign": "off",
         "no-plusplus": "off",
         "no-else-return": "off",
-        "mocha/no-setup-in-describe": "off"
+        "mocha/no-setup-in-describe": "off",
+        "no-underscore-dangle": "off"
     },
     "plugins": [
         "mocha"

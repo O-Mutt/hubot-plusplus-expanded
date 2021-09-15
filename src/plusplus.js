@@ -98,6 +98,7 @@ module.exports = function plusPlus(robot) {
   // admin
   robot.respond(regexp.createEraseUserScoreRegExp(), eraseUserScore);
   robot.respond(/try to map all slack users to db users/, (msg) => mapper.mapUsersToDb(msg, procVars));
+  robot.respond(/try to map \@.* to db users/, (msg) => mapper.mapSingleUserToDb(msg, procVars));
   robot.respond(/unmap all users/, (msg) => mapper.unmapUsersToDb(msg, procVars));
   /* eslint-enable */
 
