@@ -45,7 +45,10 @@ async function mapSingleUserToDb(msg, props) {
     return;
   }
   const userMentions = mentions.filter((men) => men.type === 'user');
-  userMentions.shift(); // shift off @hubot
+  console.log("mentions", userMentions);
+  if (userMentions > 1) {
+    userMentions.shift(); // shift off @hubot
+  }
   const to = userMentions.shift();
   const databaseService = new DatabaseService({ robot, ...props });
   await databaseService.init();
