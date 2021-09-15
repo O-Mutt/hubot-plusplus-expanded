@@ -3,7 +3,7 @@ const DatabaseService = require('./database');
 const { scoresDocumentName } = require('../data/scores');
 
 async function mapUsersToDb(msg, props) {
-  if (msg.message.user.id !== 'UD46NSKSM' || msg.message.user.id !== 'U0231VDAB1B') {
+  if (msg.message.user.id !== 'UD46NSKSM' && msg.message.user.id !== 'U0231VDAB1B') {
     msg.reply('Sorry, can\'t do that https://i.imgur.com/Gp6wNZr.gif');
     return;
   }
@@ -34,7 +34,7 @@ async function mapUsersToDb(msg, props) {
 }
 
 async function mapSingleUserToDb(msg, props) {
-  if (msg.message.user.id !== 'UD46NSKSM' || msg.message.user.id !== 'U0231VDAB1B') {
+  if (msg.message.user.id !== 'UD46NSKSM' && msg.message.user.id !== 'U0231VDAB1B') {
     msg.reply('Sorry, can\'t do that https://i.imgur.com/Gp6wNZr.gif');
     return;
   }
@@ -71,7 +71,7 @@ async function mapSingleUserToDb(msg, props) {
 }
 
 async function unmapUsersToDb(msg, props) {
-  if (msg.message.user.id !== 'UD46NSKSM' || msg.message.user.id !== 'U0231VDAB1B') {
+  if (msg.message.user.id !== 'UD46NSKSM' && msg.message.user.id !== 'U0231VDAB1B') {
     msg.reply('Sorry, can\'t do that https://i.imgur.com/Gp6wNZr.gif');
     return;
   }
