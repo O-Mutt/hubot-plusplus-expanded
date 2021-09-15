@@ -3,6 +3,9 @@ const DatabaseService = require('./database');
 const { scoresDocumentName } = require('../data/scores');
 
 async function mapUsersToDb(msg, props) {
+  if (msg.message.user.id !== 'UD46NSKSM') {
+    msg.reply('Sorry, can\'t do that https://i.imgur.com/Gp6wNZr.gif');
+  }
   const { robot } = msg;
   const databaseService = new DatabaseService({ robot, ...props });
   await databaseService.init();
@@ -30,6 +33,9 @@ async function mapUsersToDb(msg, props) {
 }
 
 async function mapSingleUserToDb(msg, props) {
+  if (msg.message.user.id !== 'UD46NSKSM') {
+    msg.reply('Sorry, can\'t do that https://i.imgur.com/Gp6wNZr.gif');
+  }
   const { robot } = msg;
   const { mentions } = msg.message;
   if (!mentions) {
@@ -67,6 +73,9 @@ async function mapSingleUserToDb(msg, props) {
 }
 
 async function unmapUsersToDb(msg, props) {
+  if (msg.message.user.id !== 'UD46NSKSM') {
+    msg.reply('Sorry, can\'t do that https://i.imgur.com/Gp6wNZr.gif');
+  }
   const { robot } = msg;
   const databaseService = new DatabaseService({ robot, ...props });
   await databaseService.init();
