@@ -3,8 +3,9 @@ const DatabaseService = require('./database');
 const { scoresDocumentName } = require('../data/scores');
 
 async function mapUsersToDb(msg, props) {
-  if (msg.message.user.id !== 'UD46NSKSM') {
+  if (msg.message.user.id !== 'UD46NSKSM' || msg.message.user.id !== 'U0231VDAB1B') {
     msg.reply('Sorry, can\'t do that https://i.imgur.com/Gp6wNZr.gif');
+    return;
   }
   const { robot } = msg;
   const databaseService = new DatabaseService({ robot, ...props });
@@ -33,8 +34,9 @@ async function mapUsersToDb(msg, props) {
 }
 
 async function mapSingleUserToDb(msg, props) {
-  if (msg.message.user.id !== 'UD46NSKSM') {
+  if (msg.message.user.id !== 'UD46NSKSM' || msg.message.user.id !== 'U0231VDAB1B') {
     msg.reply('Sorry, can\'t do that https://i.imgur.com/Gp6wNZr.gif');
+    return;
   }
   const { robot } = msg;
   const { mentions } = msg.message;
@@ -50,31 +52,28 @@ async function mapSingleUserToDb(msg, props) {
   const db = await databaseService.getDb();
 
   const web = new WebClient(msg.robot.adapter.options.token);
-  const { members } = await web.users.list();
+  const { user } = await web.users.info({ user: to.id });
 
-  for (const member of members) {
-    try {
-      if (member.name === to.name) {
-        msg.robot.logger.debug('Map this member', JSON.stringify(member));
-        const localMember = await databaseService.getUser(member.name);
-        localMember.slackId = member.id;
-        // eslint-disable-next-line no-underscore-dangle
-        if (localMember._id) {
-          await db.collection(scoresDocumentName).replaceOne({ name: localMember.name }, localMember);
-          msg.reply(`Mapping completed for ${to.name}: { name: ${localMember.name}, slackId: ${localMember.slackId}, id: ${localMember._id} }`);
-          return;
-        }
-        msg.robot.logger.debug(`Save the new member ${JSON.stringify(localMember)}`);
-      }
-    } catch (er) {
-      msg.robot.logger.error('failed to find', member, er);
+  try {
+    msg.robot.logger.debug('Map this member', JSON.stringify(user));
+    const localMember = await databaseService.getUser(user.name);
+    localMember.slackId = user.id;
+    // eslint-disable-next-line no-underscore-dangle
+    if (localMember._id) {
+      await db.collection(scoresDocumentName).replaceOne({ name: localMember.name }, localMember);
+      msg.reply(`Mapping completed for ${to.name}: { name: ${localMember.name}, slackId: ${localMember.slackId}, id: ${localMember._id} }`);
+      return;
     }
+    msg.robot.logger.debug(`Save the new member ${JSON.stringify(localMember)}`);
+  } catch (er) {
+    msg.robot.logger.error('failed to find', user, er);
   }
 }
 
 async function unmapUsersToDb(msg, props) {
-  if (msg.message.user.id !== 'UD46NSKSM') {
+  if (msg.message.user.id !== 'UD46NSKSM' || msg.message.user.id !== 'U0231VDAB1B') {
     msg.reply('Sorry, can\'t do that https://i.imgur.com/Gp6wNZr.gif');
+    return;
   }
   const { robot } = msg;
   const databaseService = new DatabaseService({ robot, ...props });
