@@ -28,13 +28,13 @@ class ScoreKeeper {
   * incrementValue - [number] the value to change the score by
   * return scoreObject - the new document for the user who received the score
   */
-  async incrementScore(userName, from, room, reason, incrementValue) {
+  async incrementScore(to, from, room, reason, incrementValue) {
     from = typeof from === 'string' ? { name: from, id: from } : from;
     let toUser;
     let fromUser;
     try {
-      toUser = await this.getUser(userName);
-      fromUser = await this.getUser(from.name);
+      toUser = await this.getUser(to);
+      fromUser = await this.getUser(from);
       if (!(await this.isSpam(toUser, fromUser)) && !this.isSendingToSelf(toUser, fromUser) && !this.isBotInDm(from, room)) {
         toUser.score = parseInt(toUser.score, 10) + parseInt(incrementValue, 10);
         if (reason) {
@@ -44,8 +44,14 @@ class ScoreKeeper {
 
         await this.databaseService.savePointsGiven(from, toUser, incrementValue);
         let saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason, incrementValue);
+        try {
+          await this.databaseService.savePlusPlusLog(toUser, fromUser, room, reason, incrementValue);
+        } catch (e) {
+          this.robot.logger.error(`failed saving spam log for user ${toUser.name} from ${from.name} in room ${room} because ${reason}`, e);
+        }
+
         if (saveResponse.accountLevel > 1) {
-          saveResponse = await this.databaseService.transferScoreFromBotToUser(toUser.name, incrementValue, fromUser.name);
+          saveResponse = await this.databaseService.transferScoreFromBotToUser(toUser, incrementValue, fromUser);
         }
         return saveResponse;
       }
@@ -56,18 +62,17 @@ class ScoreKeeper {
       }
       throw new Error(`I'm sorry ${fromUser.name}, I'm afraid I can't do that.`);
     } catch (e) {
-      this.robot.logger.error(`failed to ${incrementValue > 0 ? 'add' : 'subtract'} point to [${userName || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(toUser)}]`, e);
+      this.robot.logger.error(`failed to ${incrementValue > 0 ? 'add' : 'subtract'} point to [${to.name || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(toUser)}]`, e);
       throw e;
     }
   }
 
-  async transferTokens(userName, from, room, reason, numberOfTokens) {
-    from = typeof from === 'string' ? { name: from, id: from } : from;
+  async transferTokens(to, from, room, reason, numberOfTokens) {
     let toUser;
     let fromUser;
     try {
-      toUser = await this.getUser(userName);
-      fromUser = await this.getUser(from.name);
+      toUser = await this.getUser(to);
+      fromUser = await this.getUser(from);
       if (toUser.accountLevel >= 2 && fromUser.accountLevel >= 2) {
         if (!(await this.isSpam(toUser, fromUser))
             && !this.isSendingToSelf(toUser, fromUser)
@@ -82,6 +87,11 @@ class ScoreKeeper {
 
             await this.databaseService.savePointsGiven(from, toUser, numberOfTokens);
             const saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason, numberOfTokens);
+            try {
+              await this.databaseService.savePlusPlusLog(toUser, fromUser, room, reason, numberOfTokens);
+            } catch (e) {
+              this.robot.logger.error(`failed saving spam log for user ${toUser.name} from ${from.name} in room ${room} because ${reason}`, e);
+            }
             await this.databaseService.saveUser(fromUser, toUser, room, reason, -numberOfTokens);
             return {
               toUser: saveResponse,
@@ -103,7 +113,7 @@ class ScoreKeeper {
         throw new Error(`In order to send tokens to ${toUser.name} you both must be, at least, level 2.`);
       }
     } catch (e) {
-      this.robot.logger.error(`failed to transfer tokens to [${userName || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${toUser.name}]`, e);
+      this.robot.logger.error(`failed to transfer tokens to [${to.name || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${toUser.name}]`, e);
       throw e;
     }
   }
@@ -131,8 +141,10 @@ class ScoreKeeper {
   }
 
   async isSpam(to, from) {
+    const toId = to.slackId || to.name;
+    const fromId = from.slackId || from.name;
     this.robot.logger.debug(`Checking spam to [${to.name}] from [${from.name}]`);
-    const isSpam = await this.databaseService.isSpam(to.name, from.name);
+    const isSpam = await this.databaseService.isSpam(toId, fromId);
     return isSpam;
   }
 

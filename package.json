@@ -41,6 +41,7 @@
     "url": "https://github.com/Mutmatt/hubot-plusplus-expanded/issues"
   },
   "dependencies": {
+    "@slack/client": "^5.0.2",
     "axios": "^0.21.1",
     "clark": "^0.0.6",
     "hubot-conversation": "^1.1.1",

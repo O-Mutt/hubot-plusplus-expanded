@@ -37,10 +37,13 @@ class DatabaseService {
   * user - the name of the user
   */
   async getUser(user) {
-    this.robot.logger.debug(`trying to find user ${user}`);
+    const userName = user.name ? user.name : user;
+    const search = user.id ? { slackId: user.id } : { name: userName };
+    this.robot.logger.debug(`trying to find user ${JSON.stringify(search)}`);
     const db = await this.getDb();
+
     const dbUser = await db.collection(scoresDocumentName).findOne(
-      { name: user },
+      search,
       { sort: { score: -1 } },
     );
 
@@ -54,17 +57,16 @@ class DatabaseService {
   /**
    * Saves the user with a new score
    * @param {object} user the user who is getting a point change
-   * @param {object} from the user sending the point change
-   * @param {string} room the room that the point was sent in
-   * @param {encodedString | undefined} reason
    * @returns {object} the updated user who received a change
    */
-  async saveUser(user, from, room, reason, incrementValue) {
+  async saveUser(user) {
+    const userName = user.name ? user.name : user;
+    const search = user.slackId ? { slackId: user.slackId } : { name: userName };
     const db = await this.getDb();
 
     const result = await db.collection(scoresDocumentName)
       .findOneAndUpdate(
-        { name: user.name },
+        search,
         {
           $set: user,
         },
@@ -77,22 +79,18 @@ class DatabaseService {
 
     const updatedUser = result.value;
 
-    try {
-      await this.savePlusPlusLog(user, from, room, reason, incrementValue);
-    } catch (e) {
-      this.robot.logger.error(`failed saving spam log for user ${user.name} from ${from.name} in room ${room} because ${reason}`, e);
-    }
-
-    this.robot.logger.debug(`Saving user original: [${user.name}: ${user.score} ${user.reasons[reason] || 'none'}], new [${updatedUser.name}: ${updatedUser.score} ${updatedUser.reasons[reason] || 'none'}]`);
+    this.robot.logger.debug(`Saving user original: [${user.name}: ${user.score}], new [${updatedUser.name}: ${updatedUser.score}]`);
 
     return updatedUser;
   }
 
-  async savePlusPlusLog(user, from, room, reason, incrementValue) {
+  async savePlusPlusLog(to, from, room, reason, incrementValue) {
+    const fromId = from.slackId || from.name;
+    const toId = to.slackId || to.name;
     const db = await this.getDb();
     await db.collection(logDocumentName).insertOne({
-      from: from.name,
-      to: user.name,
+      from: fromId,
+      to: toId,
       date: moment().toISOString(),
       room,
       reason,
@@ -128,14 +126,15 @@ class DatabaseService {
   async savePointsGiven(from, to, score) {
     const db = await this.getDb();
     const cleanName = helpers.cleanAndEncode(to.name);
-    const fromUser = await this.getUser(from.name);
+    const fromUser = await this.getUser(from);
+    const fromSearch = fromUser.slackId ? { slackId: fromUser.slackId } : { name: fromUser.name };
 
     const oldScore = fromUser.pointsGiven[cleanName] ? fromUser.pointsGiven[cleanName] : 0;
     // even if they are down voting them they should still get a tally as they ++/-- the same person
     fromUser.pointsGiven[cleanName] = (oldScore + 1);
     const result = await db.collection(scoresDocumentName)
       .findOneAndUpdate(
-        { name: fromUser.name },
+        fromSearch,
         { $set: fromUser },
         {
           returnDocument: 'after',
@@ -147,7 +146,8 @@ class DatabaseService {
 
     if (updatedUser.pointsGiven[cleanName] % this.furtherFeedbackScore === 0) {
       this.robot.logger.debug(`${from.name} has sent a lot of points to ${to.name} suggesting further feedback ${score}`);
-      this.robot.messageRoom(from.id, `Looks like you've given ${to.name} quite a few points, maybe you should look at submitting ${this.peerFeedbackUrl}`);
+      const toIdent = to.slackId ? `<@${to.slackId}>` : to.name;
+      this.robot.messageRoom(from.id, `Looks like you've given ${toIdent} quite a few points, maybe you should look at submitting ${this.peerFeedbackUrl}`);
     }
   }
 
@@ -207,27 +207,31 @@ class DatabaseService {
     return results;
   }
 
-  async erase(username, reason) {
+  async erase(user, reason) {
+    const userName = user.name ? user.name : user;
+    const search = user.slackId ? { slackId: user.slackId } : { name: userName };
     const db = await this.getDb();
+
     let result;
     if (reason) {
-      const oldUser = await db.collection(scoresDocumentName).findOne({ name: username });
+      const oldUser = await db.collection(scoresDocumentName).findOne(search);
       const newScore = oldUser.score - oldUser.reasons[reason];
       result = await db.collection(scoresDocumentName)
-        .updateOne({ name: username }, { $set: { score: newScore, reasons: { [`${reason}`]: 0 } } });
+        .updateOne(search, { $set: { score: newScore, reasons: { [`${reason}`]: 0 } } });
     } else {
       result = await db.collection(scoresDocumentName)
-        .deleteOne({ name: username }, { $set: { score: 0 } });
+        .deleteOne(search, { $set: { score: 0 } });
     }
 
     return result;
   }
 
   async updateAccountLevelToTwo(user) {
+    const userName = user.name ? user.name : user;
+    const search = user.slackId ? { slackId: user.slackId } : { name: userName };
     const db = await this.getDb();
     let tokensAdded = 0;
-
-    const foundUser = await db.collection(scoresDocumentName).findOne({ name: user.name });
+    const foundUser = await db.collection(scoresDocumentName).findOne(search);
     // we are leveling up from 0 (which is level 1) -> 2 or 2 -> 3
     if (foundUser.accountLevel && foundUser.accountLevel === 2) {
       // this is a weird case and shouldn't really happen... not sure about this...
@@ -237,9 +241,8 @@ class DatabaseService {
     foundUser.accountLevel = 2;
     foundUser.token = 0;
     tokensAdded = foundUser.score;
-    await db.collection(scoresDocumentName).updateOne({ name: user.name }, { $set: foundUser });
-
-    const newScore = await this.transferScoreFromBotToUser(user.name, tokensAdded);
+    await db.collection(scoresDocumentName).updateOne(search, { $set: foundUser });
+    const newScore = await this.transferScoreFromBotToUser(user, tokensAdded);
     return newScore;
   }
 
@@ -250,19 +253,20 @@ class DatabaseService {
   }
 
   /**
-   * 
+   *
    * @param {string} userName the name of the user receiving the points
    * @param {number} scoreChange the increment in which the user is getting/losing points
    * @param {string} fromName the name of the user sending the points
    * @returns {object} the user who received the points updated value
    */
-  async transferScoreFromBotToUser(userName, scoreChange, fromName) {
+  async transferScoreFromBotToUser(user, scoreChange, from) {
+    const userName = user.name ? user.name : user;
+    const search = user.slackId ? { slackId: user.slackId } : { name: userName };
+
     const db = await this.getDb();
-    this.robot.logger.info(`We are transferring ${scoreChange} ${helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName} from ${fromName || helpers.capitalizeFirstLetter(this.robot.name)}`);
+    this.robot.logger.info(`We are transferring ${scoreChange} ${helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName} from ${from ? from.name : helpers.capitalizeFirstLetter(this.robot.name)}`);
     const result = await db.collection(scoresDocumentName).findOneAndUpdate(
-      {
-        name: userName,
-      },
+      search,
       {
         $inc:
         {
@@ -275,8 +279,9 @@ class DatabaseService {
     );
     await db.collection(botTokenDocumentName).updateOne({ name: this.robot.name }, { $inc: { token: -scoreChange } });
     // If this isn't a level up and the score is larger than 1 (tipping aka level 3)
-    if (fromName && (scoreChange > 1 || scoreChange < -1)) {
-      await db.collection(scoresDocumentName).updateOne({ name: fromName }, { $inc: { token: -scoreChange } });
+    if (from && from.name && (scoreChange > 1 || scoreChange < -1)) {
+      const fromSearch = from.slackId ? { slackId: from.slackId } : { name: from.name };
+      await db.collection(scoresDocumentName).updateOne(fromSearch, { $inc: { token: -scoreChange } });
     }
     return result.value;
   }

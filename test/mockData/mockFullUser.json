@@ -83,5 +83,6 @@
 		"bWF0dC5jb3JsZXk=" : 2
 	},
 	"hubotDay" : "2020-07-09T16:55:04.374Z",
-	"accountLevel": 1
+	"accountLevel": 1,
+  "slackId": "matt.erickson"
 }

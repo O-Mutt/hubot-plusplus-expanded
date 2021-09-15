@@ -14,7 +14,7 @@ async function levelUpAccount(msg, scoreKeeper) {
     return msg.reply(`You should only execute a level up from within the context of a DM with ${msg.robot.name}`);
   }
 
-  const user = await scoreKeeper.databaseService.getUser(msg.message.user.name);
+  const user = await scoreKeeper.databaseService.getUser(msg.message.user);
   if (user.accountLevel === 2) {
     msg.reply(`You are already Level 2, ${user.name}. It looks as if you are ready for Level 3 where you can deposit/withdraw ${helpers.capitalizeFirstLetter(msg.robot.name)} Tokens! Is that correct? [Yes/No]`);
     dialog.addChoice(/yes/i, (msg2) => {
@@ -29,6 +29,7 @@ async function levelUpAccount(msg, scoreKeeper) {
 
   const leveledUpUser = await scoreKeeper.databaseService.updateAccountLevelToTwo(user);
   msg.robot.logger.debug('DB results', leveledUpUser);
+
   msg.reply(`${user.name}, we are going to level up your account to Level 2! This means you will start getting ${helpers.capitalizeFirstLetter(msg.robot.name)} Tokens as well as points!`);
   return true;
 }
