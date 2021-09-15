@@ -23,7 +23,7 @@ async function mapUsersToDb(msg, props) {
       localMember.slackId = member.id;
       if (localMember._id) {
         await db.collection(scoresDocumentName).replaceOne({ name: localMember.name }, localMember);
-        mappings.push(`{ name: ${localMember.name}, slackId: ${localMember.slackId}, id: ${localMember._id} }`);
+        mappings.push(`\`{ name: ${localMember.name}, slackId: ${localMember.slackId}, id: ${localMember._id} }\``);
       }
       msg.robot.logger.debug(`Save the new member ${JSON.stringify(localMember)}`);
     } catch (er) {
@@ -45,7 +45,6 @@ async function mapSingleUserToDb(msg, props) {
     return;
   }
   const userMentions = mentions.filter((men) => men.type === 'user');
-  console.log("mentions", userMentions);
   if (userMentions > 1) {
     userMentions.shift(); // shift off @hubot
   }
