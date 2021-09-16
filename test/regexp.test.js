@@ -62,57 +62,58 @@ describe('regexp', function () {
 
   describe('createAskForScoreRegExp', function () {
     forEach([
-      ['score for @matt', 'for ', 'matt'],
-      ['score @matt', undefined, 'matt'],
-      ['score with @matt', 'with ', 'matt'],
-      ['scores for @matt', 'for ', 'matt'],
-      ['karma @phil', undefined, 'phil'],
-      ['score @such.a.complex-name-hyphens', undefined, 'such.a.complex-name-hyphens'],
+      ['score for @matt', undefined, 'for ', 'matt'],
+      ['score @matt', undefined, undefined, 'matt'],
+      ['score with @matt', undefined, 'with ', 'matt'],
+      ['scores for @matt', undefined, 'for ', 'matt'],
+      ['karma @phil', undefined, undefined, 'phil'],
+      ['score @such.a.complex-name-hyphens', undefined, undefined, 'such.a.complex-name-hyphens'],
+      ['what even should it be score with @matt', 'what even should it be ', 'with ', 'matt'],
     ])
-      .it('should match the search %j', (searchQuery, middleMatch, name) => {
+      .it('should match the search %j', (fullText, premessage, conjunction, name) => {
         const scoreMatchRegExp = regexp.createAskForScoreRegExp();
         expect(scoreMatchRegExp).to.be.a('RegExp');
-        expect(searchQuery.match(scoreMatchRegExp)).to.be.an('array');
-        expect(searchQuery.match(scoreMatchRegExp).length).to.equal(3);
-        expect(searchQuery.match(scoreMatchRegExp)).to.deep.equal([searchQuery, middleMatch, name]);
+        expect(fullText.match(scoreMatchRegExp)).to.be.an('array');
+        expect(fullText.match(scoreMatchRegExp).length).to.equal(4);
+        expect(fullText.match(scoreMatchRegExp)).to.deep.equal([fullText, premessage, conjunction, name]);
       });
   });
 
   describe('createEraseUserScoreRegExp', function () {
     forEach([
-      ['erase @matt cuz he is bad', 'matt', 'he is bad'],
-      ['erase @frank', 'frank', undefined],
-    ]).it('%j should match the erase user regexp', (searchQuery, user, reason) => {
+      ['erase @matt cuz he is bad', undefined, 'matt', 'cuz', 'he is bad'],
+      ['erase @frank', undefined, 'frank', undefined, undefined],
+    ]).it('%j should match the erase user regexp', (fullText, premessage, user, conjunction, reason) => {
       const eraseUserScoreRegExp = regexp.createEraseUserScoreRegExp();
       expect(eraseUserScoreRegExp).to.be.a('RegExp');
-      expect(searchQuery.match(eraseUserScoreRegExp)).to.be.an('array');
-      expect(searchQuery.match(eraseUserScoreRegExp).length).to.equal(3);
-      expect(searchQuery.match(eraseUserScoreRegExp)).to.deep.equal([searchQuery, user, reason]);
+      expect(fullText.match(eraseUserScoreRegExp)).to.be.an('array');
+      expect(fullText.match(eraseUserScoreRegExp).length).to.equal(5);
+      expect(fullText.match(eraseUserScoreRegExp)).to.deep.equal([fullText, premessage, user, conjunction, reason]);
     });
   });
 
   describe('createMultiUserVoteRegExp', function () {
     forEach([
-      ['{@matt, @phil}++', '{@matt, @phil}++', '@matt, @phil', '++', undefined],
-      ['{@matt, @phil}-- cuz they are the best team', '{@matt, @phil}-- cuz they are the best team', '@matt, @phil', '--', 'they are the best team'],
-      ['{@user, @phil.user}--', '{@user, @phil.user}--', '@user, @phil.user', '--', undefined],
-      ['{ @darf, @greg, @tank } ++', '{ @darf, @greg, @tank } ++', '@darf, @greg, @tank ', '++', undefined],
-      ['where in the world is Carmen Sandiego { @carmen.sandiego, @sarah.nade, @eartha.brute, @double.trouble, @wonder.rat } ++', '{ @carmen.sandiego, @sarah.nade, @eartha.brute, @double.trouble, @wonder.rat } ++', '@carmen.sandiego, @sarah.nade, @eartha.brute, @double.trouble, @wonder.rat ', '++', undefined],
-      ['{@matt @phil}++', '{@matt @phil}++', '@matt @phil', '++', undefined],
-      ['( @matt, @phil )++', '( @matt, @phil )++', '@matt, @phil ', '++', undefined],
-      ['[ @matt : @phil ]++', '[ @matt : @phil ]++', '@matt : @phil ', '++', undefined],
-      ['[ @matt: @phil ]++', '[ @matt: @phil ]++', '@matt: @phil ', '++', undefined],
-      ['[ @matt:@phil ]++', '[ @matt:@phil ]++', '@matt:@phil ', '++', undefined],
-      ['{@matt,@phil}++', '{@matt,@phil}++', '@matt,@phil', '++', undefined],
+      ['{@matt, @phil}++', undefined, '@matt, @phil', '++', undefined, undefined],
+      ['{@matt, @phil}-- cuz they are the best team', undefined, '@matt, @phil', '--', 'cuz', 'they are the best team'],
+      ['{@user, @phil.user}--', undefined, '@user, @phil.user', '--', undefined, undefined],
+      ['{ @darf, @greg, @tank } ++', undefined, '@darf, @greg, @tank ', '++', undefined, undefined],
+      ['where in the world is Carmen Sandiego { @carmen.sandiego, @sarah.nade, @eartha.brute, @double.trouble, @wonder.rat } ++', 'where in the world is Carmen Sandiego ', '@carmen.sandiego, @sarah.nade, @eartha.brute, @double.trouble, @wonder.rat ', '++', undefined, undefined],
+      ['{@matt @phil}++', undefined, '@matt @phil', '++', undefined, undefined],
+      ['( @matt, @phil )++', undefined, '@matt, @phil ', '++', undefined, undefined],
+      ['[ @matt : @phil ]++', undefined, '@matt : @phil ', '++', undefined, undefined],
+      ['[ @matt: @phil ]++', undefined, '@matt: @phil ', '++', undefined, undefined],
+      ['[ @matt:@phil ]++', undefined, '@matt:@phil ', '++', undefined, undefined],
+      ['{@matt,@phil}++', undefined, '@matt,@phil', '++', undefined, undefined],
     ])
-      .it('should match \'%j\'', (fullText, firstMatch, names, operator, reason) => {
+      .it('should match \'%j\'', (fullText, premessage, names, operator, conjunction, reason) => {
         const multiUserVoteRegExp = regexp.createMultiUserVoteRegExp();
         expect(multiUserVoteRegExp).to.be.a('RegExp');
         expect(fullText).to.match(multiUserVoteRegExp);
         const match = fullText.match(multiUserVoteRegExp);
         expect(match).to.be.an('array');
-        expect(match.length).to.equal(4);
-        expect(match).to.deep.equal([firstMatch, names, operator, reason]);
+        expect(match.length).to.equal(6);
+        expect(match).to.deep.equal([fullText, premessage, names, operator, conjunction, reason]);
       });
   });
 
@@ -151,21 +152,21 @@ describe('regexp', function () {
   describe('createUpDownVoteRegExp', function () {
     describe('Matching names with @ symbols', function () {
       forEach([
-        ['@matt++', '@matt++', 'matt', '++', undefined],
-        ['@matt  ++   for being "great"', '@matt  ++   for being "great"', 'matt', '++', 'being "great"'],
-        ['@matt++ cuz he is awesome', '@matt++ cuz he is awesome', 'matt', '++', 'he is awesome'],
-        ['@matt ++ thanks for being awesome', '@matt ++ thanks for being awesome', 'matt', '++', 'being awesome'],
-        ['@matt—', '@matt—', 'matt', '—', undefined],
-        ['hello world this is @matt++', '@matt++', 'matt', '++', undefined],
-        ['@matt ++ man, you\'re awesome', '@matt ++ man, you\'re awesome', 'matt', '++', 'man, you\'re awesome'],
-      ]).it('should match name [%3$s] up/down [%4$s] with reason [%5$s]', (fullText, justMatchSection, name, operator, reason) => {
+        ['@matt++', undefined, 'matt', '++', undefined, undefined],
+        ['@matt  ++   for being "great"', undefined, 'matt', '++', 'for', 'being "great"'],
+        ['@matt++ cuz he is awesome', undefined, 'matt', '++', 'cuz', 'he is awesome'],
+        ['@matt ++ thanks for being awesome', undefined, 'matt', '++', 'thanks for', 'being awesome'],
+        ['@matt—', undefined, 'matt', '—', undefined, undefined],
+        ['hello world this is @matt++', 'hello world this is ', 'matt', '++', undefined, undefined],
+        ['@matt ++ man, you\'re awesome', undefined, 'matt', '++', undefined, 'man, you\'re awesome'],
+      ]).it('should match name [%3$s] up/down [%4$s] with reason [%5$s]', (fullText, premessage, name, operator, conjunction, reason) => {
         const upVoteOrDownVoteRegExp = regexp.createUpDownVoteRegExp();
         expect(upVoteOrDownVoteRegExp).to.be.a('RegExp');
         const fullMatch = fullText.match(upVoteOrDownVoteRegExp);
         expect(fullText).to.match(upVoteOrDownVoteRegExp);
         expect(fullMatch).to.be.an('array');
-        expect(fullMatch.length).to.equal(4);
-        expect(fullMatch).to.deep.equal([justMatchSection, name, operator, reason]);
+        expect(fullMatch.length).to.equal(6);
+        expect(fullMatch).to.deep.equal([fullText, premessage, name, operator, conjunction, reason]);
       });
     });
 
