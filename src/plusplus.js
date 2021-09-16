@@ -57,6 +57,7 @@ module.exports = function plusPlus(robot) {
   procVars.magicIv = process.env.HUBOT_UNIMPORTANT_MAGIC_IV || 'yup';
   procVars.furtherHelpUrl = process.env.HUBOT_CRYPTO_FURTHER_HELP_URL || undefined;
   procVars.notificationsRoom = process.env.HUBOT_PLUSPLUS_NOTIFICATION_ROOM || undefined;
+  procVars.notificationsRoom = process.env.HUBOT_PLUSPLUS_FALSE_POSITIVE_NOTIFICATION_ROOM || undefined;
 
   const scoreKeeper = new ScoreKeeper(
     {
@@ -104,6 +105,7 @@ module.exports = function plusPlus(robot) {
 
   // event listeners
   robot.on('plus-plus', sendPlusPlusNotification);
+  robot.on('plus-plus-false-positive', sendPlusPlusFalsePositiveNotification);
   /* eslint-enable */
 
   /**
@@ -113,8 +115,8 @@ module.exports = function plusPlus(robot) {
     const [fullText, premessage, name, operator, conjunction, reason] = msg.match;
     if (premessage || (!conjunction && reason)) {
       // circuit break a plus plus
-      robot.emit('plus-plus', {
-        notificationMessage: `False positive detected in <#${msg.message.room}>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
+      robot.emit('plus-plus-false-positive', {
+        notificationMessage: `False positive detected in <#${msg.message.room}> from <@${msg.message.user.id}>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
         room: msg.message.room,
       });
       return;
@@ -158,8 +160,8 @@ module.exports = function plusPlus(robot) {
     const [fullText, premessage, name, number, conjunction, reason] = msg.match;
     if (!conjunction && reason) {
       // circuit break a plus plus
-      robot.emit('plus-plus', {
-        notificationMessage: `False positive detected:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
+      robot.emit('plus-plus-false-positive', {
+        notificationMessage: `False positive detected in <#${msg.message.room}> from <@${msg.message.user.id}>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
         room: msg.message.room,
       });
       return;
@@ -209,8 +211,8 @@ module.exports = function plusPlus(robot) {
     }
     if (premessage || (!conjunction && reason)) {
       // circuit break a plus plus
-      robot.emit('plus-plus', {
-        notificationMessage: `False positive detected:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
+      robot.emit('plus-plus-false-positive', {
+        notificationMessage: `False positive detected in <#${msg.message.room}> from <@${msg.message.user.id}>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
         room: msg.message.room,
       });
       return;
@@ -276,7 +278,9 @@ module.exports = function plusPlus(robot) {
     let to = { name: helpers.cleanName(name) };
     if (mentions) {
       const userMentions = mentions.filter((men) => men.type === 'user');
-      userMentions.shift(); // shift off @hubot
+      if (userMentions > 1) {
+        userMentions.shift(); // shift off @hubot
+      }
       to = userMentions.shift();
       to.name = name;
     }
@@ -492,9 +496,15 @@ module.exports = function plusPlus(robot) {
     msg.send(message);
   }
 
-  async function sendPlusPlusNotification(notificationObject) {
+  function sendPlusPlusNotification(notificationObject) {
     if (procVars.notificationsRoom) {
       robot.messageRoom(procVars.notificationsRoom, notificationObject.notificationMessage);
+    }
+  }
+
+  function sendPlusPlusFalsePositiveNotification(notificationObject) {
+    if (procVars.falsePositiveNotificationsRoom) {
+      robot.messageRoom(procVars.falsePositiveNotificationsRoom, notificationObject.notificationMessage);
     }
   }
 };

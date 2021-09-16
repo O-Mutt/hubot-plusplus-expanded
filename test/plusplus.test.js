@@ -57,8 +57,8 @@ describe('PlusPlus', function () {
         const emitSpy = sinon.spy(room.robot, 'emit');
         room.user.say('matt.erickson', 'where are you d00d @derp++');
         await new Promise((resolve) => setTimeout(resolve, 50));
-        expect(emitSpy).to.have.been.calledWith('plus-plus', {
-          notificationMessage: 'False positive detected in <#room1>:\n'
+        expect(emitSpy).to.have.been.calledWith('plus-plus-false-positive', {
+          notificationMessage: 'False positive detected in <#room1> from <@matt.erickson>:\n'
             + 'Pre-Message text: [true].\n'
             + 'Missing Conjunction: [false]\n'
             + '\n'
@@ -74,8 +74,8 @@ describe('PlusPlus', function () {
         const emitSpy = sinon.spy(room.robot, 'emit');
         room.user.say('matt.erickson', '@derp++ winning the business');
         await new Promise((resolve) => setTimeout(resolve, 50));
-        expect(emitSpy).to.have.been.calledWith('plus-plus', {
-          notificationMessage: 'False positive detected in <#room1>:\n'
+        expect(emitSpy).to.have.been.calledWith('plus-plus-false-positive', {
+          notificationMessage: 'False positive detected in <#room1> from <@matt.erickson>:\n'
             + 'Pre-Message text: [false].\n'
             + 'Missing Conjunction: [true]\n'
             + '\n'
@@ -151,8 +151,8 @@ describe('PlusPlus', function () {
         const emitSpy = sinon.spy(room.robot, 'emit');
         room.user.say('derp', '@matt.erickson++ gawd you\'re awesome');
         await new Promise((resolve) => setTimeout(resolve, 60));
-        expect(emitSpy).to.have.been.calledWith('plus-plus', {
-          notificationMessage: 'False positive detected in <#room1>:\n'
+        expect(emitSpy).to.have.been.calledWith('plus-plus-false-positive', {
+          notificationMessage: 'False positive detected in <#room1> from <@derp>:\n'
             + 'Pre-Message text: [false].\n'
             + 'Missing Conjunction: [true]\n'
             + '\n'
