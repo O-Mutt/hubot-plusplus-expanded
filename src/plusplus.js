@@ -110,7 +110,15 @@ module.exports = function plusPlus(robot) {
    * Functions for responding to commands
    */
   async function upOrDownVote(msg) {
-    const [fullMatch, name, operator, reason] = msg.match;
+    const [fullText, premessage, name, operator, conjunction, reason] = msg.match;
+    if (premessage || (!conjunction && reason)) {
+      // circuit break a plus plus
+      robot.emit('plus-plus', {
+        notificationMessage: `False positive detected:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
+        room: msg.message.room,
+      });
+      return;
+    }
     const increment = operator.match(regexp.positiveOperators) ? 1 : -1;
     const { room, mentions } = msg.message;
     const cleanName = helpers.cleanName(name);
@@ -147,7 +155,15 @@ module.exports = function plusPlus(robot) {
   }
 
   async function giveTokenBetweenUsers(msg) {
-    const [fullMatch, name, number, reason] = msg.match;
+    const [fullText, premessage, name, number, conjunction, reason] = msg.match;
+    if (!conjunction && reason) {
+      // circuit break a plus plus
+      robot.emit('plus-plus', {
+        notificationMessage: `False positive detected:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
+        room: msg.message.room,
+      });
+      return;
+    }
     const { room, mentions } = msg.message;
     const cleanName = helpers.cleanName(name);
     let to = { name: cleanName };
@@ -187,8 +203,16 @@ module.exports = function plusPlus(robot) {
   }
 
   async function multipleUsersVote(msg) {
-    const [fullMatch, names, operator, reason] = msg.match;
+    const [fullText, premessage, names, operator, conjunction, reason] = msg.match;
     if (!names) {
+      return;
+    }
+    if (premessage || (!conjunction && reason)) {
+      // circuit break a plus plus
+      robot.emit('plus-plus', {
+        notificationMessage: `False positive detected:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
+        room: msg.message.room,
+      });
       return;
     }
 
@@ -248,8 +272,8 @@ module.exports = function plusPlus(robot) {
 
   async function respondWithScore(msg) {
     const { mentions } = msg.message;
-    const name = helpers.cleanName(msg.match[2]);
-    let to = { name };
+    const [fullText, premessage, conjunction, name] = msg.match;
+    let to = { name: helpers.cleanName(name) };
     if (mentions) {
       const userMentions = mentions.filter((men) => men.type === 'user');
       userMentions.shift(); // shift off @hubot
@@ -385,7 +409,7 @@ module.exports = function plusPlus(robot) {
 
   async function eraseUserScore(msg) {
     let erased;
-    const [__, name, reason] = Array.from(msg.match);
+    const [fullText, premessage, name, conjunction, reason] = msg.match;
     const from = msg.message.user;
     const { user } = msg.envelope;
     const { room, mentions } = msg.message;
