@@ -23,7 +23,7 @@ Uses Hubot brain. Also exposes the following events, should you wish to hook
 into it to do things like print out funny gifs for point streaks:
 
 ```coffeescript
-robot.emit "plus-one", {
+robot.emit "plus-plus", {
   name: 'Jack'
   direction: '++' # (or --)
   room: 'chatRoomAlpha'
