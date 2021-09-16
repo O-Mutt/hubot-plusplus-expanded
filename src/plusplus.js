@@ -136,7 +136,7 @@ module.exports = function plusPlus(robot) {
     if (message) {
       msg.send(message);
       robot.emit('plus-plus', {
-        notificationMessage: `<@${from.id}> ${operator.match(regexp.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regexp.positiveOperators) ? 'to' : 'from'} ${user.slackId} in <#${room}>`,
+        notificationMessage: `<@${from.id}> ${operator.match(regexp.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regexp.positiveOperators) ? 'to' : 'from'} <@${user.slackId}> in <#${room}>`,
         name: user.name,
         direction: operator,
         room,
@@ -176,7 +176,7 @@ module.exports = function plusPlus(robot) {
     if (message) {
       msg.send(message);
       robot.emit('plus-plus', {
-        notificationMessage: `<@${from.id}> sent ${number} ${helpers.capitalizeFirstLetter(robot.name)} point${parseInt(number, 10) > 1 ? 's' : ''} to ${response.toUser.slackId} in <#${room}>`,
+        notificationMessage: `<@${from.id}> sent ${number} ${helpers.capitalizeFirstLetter(robot.name)} point${parseInt(number, 10) > 1 ? 's' : ''} to <@${response.toUser.slackId}> in <#${room}>`,
         name: response.toUser.name,
         direction: '+',
         room,
@@ -236,7 +236,7 @@ module.exports = function plusPlus(robot) {
 
     for (const user of users) {
       robot.emit('plus-plus', {
-        notificationMessage: `<@${from.id}> ${operator.match(regexp.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regexp.positiveOperators) ? 'to' : 'from'} ${user.slackId} in <#${room}>`,
+        notificationMessage: `<@${from.id}> ${operator.match(regexp.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regexp.positiveOperators) ? 'to' : 'from'} <@${user.slackId}> in <#${room}>`,
         name: user.name,
         direction: operator,
         room,
@@ -470,7 +470,7 @@ module.exports = function plusPlus(robot) {
 
   async function sendPlusPlusNotification(notificationObject) {
     if (procVars.notificationsRoom) {
-      robot.messageRoom(procVars, notificationObject.notificationMessage);
+      robot.messageRoom(procVars.notificationsRoom, notificationObject.notificationMessage);
     }
   }
 };
