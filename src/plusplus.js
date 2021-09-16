@@ -56,6 +56,7 @@ module.exports = function plusPlus(robot) {
   procVars.magicNumber = process.env.HUBOT_UNIMPORTANT_MAGIC_NUMBER || 'nope';
   procVars.magicIv = process.env.HUBOT_UNIMPORTANT_MAGIC_IV || 'yup';
   procVars.furtherHelpUrl = process.env.HUBOT_CRYPTO_FURTHER_HELP_URL || undefined;
+  procVars.notificationsRoom = process.env.HUBOT_PLUSPLUS_NOTIFICATION_ROOM || undefined;
 
   const scoreKeeper = new ScoreKeeper(
     {
@@ -76,12 +77,12 @@ module.exports = function plusPlus(robot) {
     });
   });
 
-  /* eslint-disable */
+  /* eslint-disable no-use-before-define */
   // listen to everything
   robot.hear(regexp.createUpDownVoteRegExp(), upOrDownVote);
-  robot.hear(new RegExp(`how much .*point.*`, 'i'), tellHowMuchPointsAreWorth);
+  robot.hear(new RegExp('how much .*point.*', 'i'), tellHowMuchPointsAreWorth);
   robot.hear(regexp.createMultiUserVoteRegExp(), multipleUsersVote);
-  
+
   // listen for bot tag/ping
   robot.respond(regexp.createGiveTokenRegExp(), giveTokenBetweenUsers);
   robot.respond(regexp.createAskForScoreRegExp(), respondWithScore);
@@ -98,8 +99,11 @@ module.exports = function plusPlus(robot) {
   // admin
   robot.respond(regexp.createEraseUserScoreRegExp(), eraseUserScore);
   robot.respond(/try to map all slack users to db users/, (msg) => mapper.mapUsersToDb(msg, procVars));
-  robot.respond(/try to map \@.* to db users/, (msg) => mapper.mapSingleUserToDb(msg, procVars));
+  robot.respond(/try to map @.* to db users/, (msg) => mapper.mapSingleUserToDb(msg, procVars));
   robot.respond(/unmap all users/, (msg) => mapper.unmapUsersToDb(msg, procVars));
+
+  // event listeners
+  robot.on('plus-plus', sendPlusPlusNotification);
   /* eslint-enable */
 
   /**
@@ -131,11 +135,12 @@ module.exports = function plusPlus(robot) {
 
     if (message) {
       msg.send(message);
-      robot.emit('plus-one', {
-        name,
+      robot.emit('plus-plus', {
+        notificationMessage: `<@${from.id}> ${operator.match(regexp.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regexp.positiveOperators) ? 'to' : 'from'} ${user.slackId} in <#${room}>`,
+        name: user.name,
         direction: operator,
         room,
-        reason,
+        cleanReason,
         from,
       });
     }
@@ -170,13 +175,13 @@ module.exports = function plusPlus(robot) {
 
     if (message) {
       msg.send(message);
-      robot.emit('plus-one', {
-        name,
+      robot.emit('plus-plus', {
+        notificationMessage: `<@${from.id}> sent ${number} ${helpers.capitalizeFirstLetter(robot.name)} point${parseInt(number, 10) > 1 ? 's' : ''} to ${response.toUser.slackId} in <#${room}>`,
+        name: response.toUser.name,
         direction: '+',
         room,
-        reason,
+        cleanReason,
         from,
-        number,
       });
     }
   }
@@ -214,10 +219,12 @@ module.exports = function plusPlus(robot) {
     }
 
     let messages = [];
+    const users = [];
     for (let i = 0; i < cleanNames.length; i++) {
       to[i].name = cleanNames[i];
       const user = await scoreKeeper.incrementScore(to[i], from, room, cleanReason, increment);
       if (user) {
+        users.push(user);
         robot.logger.debug(`clean names map [${to[i].name}]: ${user.score}, the reason ${user.reasons[cleanReason]}`);
         messages.push(helpers.getMessageForNewScore(user, cleanReason, robot));
       }
@@ -226,13 +233,17 @@ module.exports = function plusPlus(robot) {
 
     robot.logger.debug(`These are the messages \n ${messages.join('\n')}`);
     msg.send(messages.join('\n'));
-    to.map((name) => robot.emit('plus-one', {
-      name,
-      direction: operator,
-      room,
-      cleanReason,
-      from,
-    }));
+
+    for (const user of users) {
+      robot.emit('plus-plus', {
+        notificationMessage: `<@${from.id}> ${operator.match(regexp.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regexp.positiveOperators) ? 'to' : 'from'} ${user.slackId} in <#${room}>`,
+        name: user.name,
+        direction: operator,
+        room,
+        cleanReason,
+        from,
+      });
+    }
   }
 
   async function respondWithScore(msg) {
@@ -250,7 +261,7 @@ module.exports = function plusPlus(robot) {
 
     let tokenString = '.';
     if (user.accountLevel > 1) {
-      tokenString = ` (*${user.token} ${helpers.capitalizeFirstLetter(this.robot.name)} `;
+      tokenString = ` (*${user.token} ${helpers.capitalizeFirstLetter(robot.name)} `;
       tokenString = tokenString.concat(user.token > 1 ? 'Tokens*).' : 'Token*).');
     }
     let pointsGiven = 0;
@@ -262,9 +273,9 @@ module.exports = function plusPlus(robot) {
     let baseString = `<@${user.slackId}> has ${user.score} ${scoreStr}${tokenString}`;
     baseString += `\nAccount Level: ${user.accountLevel}`;
     baseString += `\nTotal Points Given: ${pointsGiven}`;
-    if (user[`${this.robot.name}Day`]) {
-      const dateObj = new Date(user[`${this.robot.name}Day`]);
-      baseString += `\n:birthday: ${helpers.capitalizeFirstLetter(this.robot.name)}day is ${moment(dateObj).format('MM-DD-yyyy')}`;
+    if (user[`${robot.name}Day`]) {
+      const dateObj = new Date(user[`${robot.name}Day`]);
+      baseString += `\n:birthday: ${helpers.capitalizeFirstLetter(robot.name)}day is ${moment(dateObj).format('MM-DD-yyyy')}`;
     }
     const keys = Object.keys(user.reasons);
     if (keys.length > 1) {
@@ -455,5 +466,11 @@ module.exports = function plusPlus(robot) {
       });
     }
     msg.send(message);
+  }
+
+  async function sendPlusPlusNotification(notificationObject) {
+    if (procVars.notificationsRoom) {
+      robot.messageRoom(procVars, notificationObject.notificationMessage);
+    }
   }
 };
