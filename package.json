@@ -1,6 +1,6 @@
 {
   "name": "hubot-plusplus-expanded",
-  "version": "3.0.3",
+  "version": "3.1.1",
   "description": "A hubot script for micro praise",
   "main": "index.js",
   "engines": {

@@ -139,7 +139,7 @@ describe('PlusPlus', function () {
         });
       });
 
-      it('shouldn add a point to user with reason', async function () {
+      it('should add a point to user with reason', async function () {
         room.user.say('derp', '@matt.erickson++ for being awesome');
         await new Promise((resolve) => setTimeout(resolve, 60));
         expect(room.messages[1][1]).to.match(
