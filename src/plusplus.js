@@ -114,7 +114,7 @@ module.exports = function plusPlus(robot) {
     if (premessage || (!conjunction && reason)) {
       // circuit break a plus plus
       robot.emit('plus-plus', {
-        notificationMessage: `False positive detected:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
+        notificationMessage: `False positive detected in <#${msg.message.room}>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
         room: msg.message.room,
       });
       return;
