@@ -57,7 +57,7 @@ module.exports = function plusPlus(robot) {
   procVars.magicIv = process.env.HUBOT_UNIMPORTANT_MAGIC_IV || 'yup';
   procVars.furtherHelpUrl = process.env.HUBOT_CRYPTO_FURTHER_HELP_URL || undefined;
   procVars.notificationsRoom = process.env.HUBOT_PLUSPLUS_NOTIFICATION_ROOM || undefined;
-  procVars.notificationsRoom = process.env.HUBOT_PLUSPLUS_FALSE_POSITIVE_NOTIFICATION_ROOM || undefined;
+  procVars.falsePositiveNotificationsRoom = process.env.HUBOT_PLUSPLUS_FALSE_POSITIVE_NOTIFICATION_ROOM || undefined;
 
   const scoreKeeper = new ScoreKeeper(
     {
