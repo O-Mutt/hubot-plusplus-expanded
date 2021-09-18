@@ -100,6 +100,7 @@ module.exports = function plusPlus(robot) {
   // admin
   robot.respond(regexp.createEraseUserScoreRegExp(), eraseUserScore);
   robot.respond(/try to map all slack users to db users/, (msg) => mapper.mapUsersToDb(msg, procVars));
+  robot.respond(/try to map more data to all slack users to db users/, (msg) => mapper.mapMoreUserFieldsBySlackId(msg, procVars));
   robot.respond(/try to map @.* to db users/, (msg) => mapper.mapSingleUserToDb(msg, procVars));
   robot.respond(/unmap all users/, (msg) => mapper.unmapUsersToDb(msg, procVars));
 
@@ -278,10 +279,7 @@ module.exports = function plusPlus(robot) {
     let to = { name: helpers.cleanName(name) };
     if (mentions) {
       const userMentions = mentions.filter((men) => men.type === 'user');
-      if (userMentions > 1) {
-        userMentions.shift(); // shift off @hubot
-      }
-      to = userMentions.shift();
+      to = userMentions.pop();
       to.name = name;
     }
 
