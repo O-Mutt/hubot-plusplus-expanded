@@ -25,6 +25,7 @@ const robotStub = {
     info() {},
     error() {},
   },
+  emit: (not) => not,
   name: 'hubot',
   messageRoom: (message) => message,
 };
@@ -37,6 +38,7 @@ const defaultData = {
   ],
 };
 const msgSpy = sinon.spy(robotStub, 'messageRoom');
+const emitSpy = sinon.spy(robotStub, 'emit');
 
 describe('ScoreKeeper', function scorekeeperTest() {
   let scoreKeeper;
@@ -64,7 +66,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
       .it('should adds points to [%1$s] with reason [%4$s] and return [%6$s]', async (to, from, room, reason, expectedResult) => {
         const beforeUser = await scoreKeeper.getUser(to);
         expect(beforeUser.score).to.be.equal(0);
-        const r = await scoreKeeper.incrementScore(to, from, room, reason, 1);
+        const { toUser: r } = await scoreKeeper.incrementScore(to, from, room, reason, 1);
         expect(r).to.be.an('object');
         expect(r.score).to.equal(expectedResult.score);
         expect(r.reasons['because points']).to.equal(expectedResult.reasons['because points']);
@@ -78,7 +80,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
       // empty score to start
       const beforeUser = await scoreKeeper.getUser(to);
       expect(beforeUser.score).to.be.equal(0);
-      const r = await scoreKeeper.incrementScore(to, { name: 'from', id: '123' }, 'room', 'because points', 1);
+      const { toUser: r } = await scoreKeeper.incrementScore(to, { name: 'from', id: '123' }, 'room', 'because points', 1);
       expect(r).to.be.an('object');
       expect(r.score).to.equal(1);
       expect(r.reasons['because points']).to.equal(1);
@@ -90,7 +92,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
       // Try to spam
       let r2;
       try {
-        r2 = await scoreKeeper.incrementScore(to, { name: 'from', id: '123' }, 'room', 'because points', 1);
+        ({ toUser: r2 } = await scoreKeeper.incrementScore(to, { name: 'from', id: '123' }, 'room', 'because points', 1));
         expect(r2).to.be.an('undefined');
       } catch (e) {
         expect(e.message).to.equal("I'm sorry from, I'm afraid I can't do that.");
@@ -98,8 +100,8 @@ describe('ScoreKeeper', function scorekeeperTest() {
       const spamScore = await scoreKeeper.getUser(to);
       expect(spamScore).to.not.equal(2);
 
-      expect(msgSpy.called).to.equal(true);
-      expect(msgSpy).to.have.been.calledWith('123', spamMessage);
+      expect(emitSpy.called).to.equal(true);
+      expect(emitSpy).to.have.been.calledWith('plus-plus-spam');
     });
 
     it('should call for a special response if user has 10 "gives"', async function () {
@@ -109,7 +111,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
       const db = connection.db();
       const encodedName = helpers.cleanAndEncode('derp');
       await db.collection('scores').insertOne({ name: 'matt', score: 9, reasons: {}, pointsGiven: { [encodedName]: 9 }, slackId: '123' });
-      const r = await scoreKeeper.incrementScore({ name: 'derp' }, { name: 'matt', id: '123' }, 'room', 'because points', 1);
+      const { toUser: r } = await scoreKeeper.incrementScore({ name: 'derp' }, { name: 'matt', id: '123' }, 'room', 'because points', 1);
       expect(r).to.be.an('object');
       expect(r.score).to.equal(1);
       expect(r.reasons['because points']).to.equal(1);
@@ -119,12 +121,12 @@ describe('ScoreKeeper', function scorekeeperTest() {
 
     it('adds more points to a user for a reason', async function () {
       const to = 'to';
-      let r = await scoreKeeper.incrementScore(to, { name: 'from', id: '123' }, 'room', 'because points', 1);
+      let { toUser: r } = await scoreKeeper.incrementScore(to, { name: 'from', id: '123' }, 'room', 'because points', 1);
       expect(r).to.be.an('object');
       expect(r.score).to.equal(1);
       expect(r.reasons['because points']).to.equal(1);
 
-      r = await scoreKeeper.incrementScore(to, { name: 'another-from', id: '321' }, 'room', 'because points', 1);
+      ({ toUser: r } = await scoreKeeper.incrementScore(to, { name: 'another-from', id: '321' }, 'room', 'because points', 1));
       expect(r).to.be.an('object');
       expect(r.score).to.equal(2);
       expect(r.reasons['because points']).to.equal(2);
@@ -137,12 +139,12 @@ describe('ScoreKeeper', function scorekeeperTest() {
 
   describe('subtracting', function () {
     it('adds points to a user', async function () {
-      const r = await scoreKeeper.incrementScore({ name: 'to', id: 'to' }, { name: 'from', id: '123' }, 'room', undefined, -1);
+      const { toUser: r } = await scoreKeeper.incrementScore({ name: 'to', id: 'to' }, { name: 'from', id: '123' }, 'room', undefined, -1);
       expect(r.score).to.equal(-1);
     });
 
     it('subtracts points from a user for a reason', async function () {
-      const r = await scoreKeeper.incrementScore({ name: 'to', id: 'to' }, { name: 'from', id: '123' }, 'room', 'because points', -1);
+      const { toUser: r } = await scoreKeeper.incrementScore({ name: 'to', id: 'to' }, { name: 'from', id: '123' }, 'room', 'because points', -1);
       expect(r).to.be.an('object');
       expect(r.score).to.equal(-1);
       expect(r.reasons['because points']).to.equal(-1);
@@ -153,7 +155,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
       // empty score to start
       const beforeUser = await scoreKeeper.getUser(to);
       expect(beforeUser.score).to.be.equal(0);
-      const r = await scoreKeeper.incrementScore(to, { name: 'from', id: '123' }, 'room', 'because points', -1);
+      const { toUser: r } = await scoreKeeper.incrementScore(to, { name: 'from', id: '123' }, 'room', 'because points', -1);
       expect(r).to.be.an('object');
       expect(r.score).to.equal(-1);
       expect(r.reasons['because points']).to.equal(-1);
@@ -165,7 +167,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
       // Try to spam
       let r2;
       try {
-        r2 = await scoreKeeper.incrementScore(to, { name: 'from', id: '123' }, 'room', 'because points', -1);
+        ({ toUser: r2 } = await scoreKeeper.incrementScore(to, { name: 'from', id: '123' }, 'room', 'because points', -1));
         expect(r2).to.be.an('undefined');
       } catch (e) {
         expect(e.message).to.equal("I'm sorry from, I'm afraid I can't do that.");
@@ -173,13 +175,13 @@ describe('ScoreKeeper', function scorekeeperTest() {
       const spamScore = await scoreKeeper.getUser(to);
       expect(spamScore).to.not.equal(-2);
 
-      expect(msgSpy.called).to.equal(true);
-      expect(msgSpy).to.have.been.calledWith('123', spamMessage);
+      expect(emitSpy.called).to.equal(true);
+      expect(emitSpy).to.have.been.calledWith('plus-plus-spam');
     });
 
     it('subtracts more points from a user for a reason', async function () {
-      let r = await scoreKeeper.incrementScore({ name: 'to', id: 'to' }, { name: 'from', id: '123' }, 'room', 'because points', -1);
-      r = await scoreKeeper.incrementScore({ name: 'to', id: 'to' }, 'another-from', 'room', 'because points', -1);
+      let { toUser: r } = await scoreKeeper.incrementScore({ name: 'to', id: 'to' }, { name: 'from', id: '123' }, 'room', 'because points', -1);
+      ({ toUser: r } = await scoreKeeper.incrementScore({ name: 'to', id: 'to' }, 'another-from', 'room', 'because points', -1));
       expect(r).to.be.an('object');
       expect(r.score).to.equal(-2);
       expect(r.reasons['because points']).to.equal(-2);
@@ -188,7 +190,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
 
   describe('erasing', function () {
     it('erases a reason from a user', async function () {
-      const p = await scoreKeeper.incrementScore({ name: 'to', id: 'to' }, { name: 'from', id: '123' }, 'room', 'reason', 1);
+      const { toUser: p } = await scoreKeeper.incrementScore({ name: 'to', id: 'to' }, { name: 'from', id: '123' }, 'room', 'reason', 1);
       expect(p).to.be.an('object');
       expect(p.score).to.equal(1);
       expect(p.reasons.reason).to.equal(1);
@@ -200,7 +202,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
     });
 
     it('erases a user from the scoreboard', async function () {
-      const p = await scoreKeeper.incrementScore({ name: 'to', id: 'to' }, { name: 'from', id: '123' }, 'room', 'reason', 1);
+      const { toUser: p } = await scoreKeeper.incrementScore({ name: 'to', id: 'to' }, { name: 'from', id: '123' }, 'room', 'reason', 1);
       expect(p).to.be.an('object');
       expect(p.score).to.equal(1);
       expect(p.reasons.reason).to.equal(1);
@@ -213,7 +215,8 @@ describe('ScoreKeeper', function scorekeeperTest() {
 
   describe('scores', function () {
     it('returns the score for a user', async function () {
-      await scoreKeeper.incrementScore({ name: 'to', id: 'to' }, { name: 'from', id: '123' }, 'room', undefined, 1);
+      const { toUser: p } = await scoreKeeper.incrementScore({ name: 'to', id: 'to' }, { name: 'from', id: '123' }, 'room', undefined, 1);
+      expect(p.score).to.equal(1);
       const user = await scoreKeeper.getUser('to');
       expect(user.score).to.equal(1);
     });

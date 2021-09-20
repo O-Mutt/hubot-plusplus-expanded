@@ -107,6 +107,7 @@ module.exports = function plusPlus(robot) {
   // event listeners
   robot.on('plus-plus', sendPlusPlusNotification);
   robot.on('plus-plus-false-positive', sendPlusPlusFalsePositiveNotification);
+  robot.on('plus-plus-spam', logAndNotifySpam);
   /* eslint-enable */
 
   /**
@@ -134,25 +135,26 @@ module.exports = function plusPlus(robot) {
     const from = msg.message.user;
 
     robot.logger.debug(`${increment} score for [${to.name}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
-    let user;
+    let toUser; let fromUser;
     try {
-      user = await scoreKeeper.incrementScore(to, from, room, cleanReason, increment);
+      ({ toUser, fromUser } = await scoreKeeper.incrementScore(to, from, room, cleanReason, increment));
     } catch (e) {
       msg.send(e.message);
       return;
     }
 
-    const message = helpers.getMessageForNewScore(user, cleanReason, robot);
+    const message = helpers.getMessageForNewScore(toUser, cleanReason, robot);
 
     if (message) {
       msg.send(message);
       robot.emit('plus-plus', {
-        notificationMessage: `<@${from.id}> ${operator.match(regexp.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regexp.positiveOperators) ? 'to' : 'from'} <@${user.slackId}> in <#${room}>`,
-        name: user.name,
+        notificationMessage: `<@${fromUser.slackId}> ${operator.match(regexp.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regexp.positiveOperators) ? 'to' : 'from'} <@${toUser.slackId}> in <#${room}>`,
+        sender: fromUser,
+        recipient: toUser,
         direction: operator,
         room,
         cleanReason,
-        from,
+        msg,
       });
     }
   }
@@ -195,12 +197,13 @@ module.exports = function plusPlus(robot) {
     if (message) {
       msg.send(message);
       robot.emit('plus-plus', {
-        notificationMessage: `<@${from.id}> sent ${number} ${helpers.capitalizeFirstLetter(robot.name)} point${parseInt(number, 10) > 1 ? 's' : ''} to <@${response.toUser.slackId}> in <#${room}>`,
-        name: response.toUser.name,
-        direction: '+',
+        notificationMessage: `<@${response.fromUser.slackId}> sent ${number} ${helpers.capitalizeFirstLetter(robot.name)} point${parseInt(number, 10) > 1 ? 's' : ''} to <@${response.toUser.slackId}> in <#${room}>`,
+        recipient: response.toUser,
+        sender: response.fromUser,
+        direction: '++',
         room,
         cleanReason,
-        from,
+        msg,
       });
     }
   }
@@ -246,14 +249,16 @@ module.exports = function plusPlus(robot) {
     }
 
     let messages = [];
-    const users = [];
+    const toUsers = [];
+    let fromUser;
     for (let i = 0; i < cleanNames.length; i++) {
       to[i].name = cleanNames[i];
-      const user = await scoreKeeper.incrementScore(to[i], from, room, cleanReason, increment);
-      if (user) {
-        users.push(user);
-        robot.logger.debug(`clean names map [${to[i].name}]: ${user.score}, the reason ${user.reasons[cleanReason]}`);
-        messages.push(helpers.getMessageForNewScore(user, cleanReason, robot));
+      let toUser;
+      ({ toUser, fromUser } = await scoreKeeper.incrementScore(to[i], from, room, cleanReason, increment));
+      if (toUser) {
+        toUsers.push(toUser);
+        robot.logger.debug(`clean names map [${to[i].name}]: ${toUser.score}, the reason ${toUser.reasons[cleanReason]}`);
+        messages.push(helpers.getMessageForNewScore(toUser, cleanReason, robot));
       }
     }
     messages = messages.filter((message) => !!message); // de-dupe
@@ -261,14 +266,15 @@ module.exports = function plusPlus(robot) {
     robot.logger.debug(`These are the messages \n ${messages.join('\n')}`);
     msg.send(messages.join('\n'));
 
-    for (const user of users) {
+    for (const user of toUsers) {
       robot.emit('plus-plus', {
-        notificationMessage: `<@${from.id}> ${operator.match(regexp.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regexp.positiveOperators) ? 'to' : 'from'} <@${user.slackId}> in <#${room}>`,
-        name: user.name,
+        notificationMessage: `<@${fromUser.slackId}> ${operator.match(regexp.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regexp.positiveOperators) ? 'to' : 'from'} <@${user.slackId}> in <#${room}>`,
+        sender: fromUser,
+        recipient: user,
         direction: operator,
         room,
         cleanReason,
-        from,
+        msg,
       });
     }
   }
@@ -504,5 +510,17 @@ module.exports = function plusPlus(robot) {
     if (procVars.falsePositiveNotificationsRoom) {
       robot.messageRoom(procVars.falsePositiveNotificationsRoom, notificationObject.notificationMessage);
     }
+  }
+
+  /**
+   *
+   * @param {object} notificationObject
+   * @param {object} notificationObject.to the user object who was receiving the point
+   * @param {object} notificationObject.from the user object who was sending the point
+   * @param {string} notificationObject.message the message that should be sent to the user
+   * @param {string} notificationObject.reason a reason why the message is being sent
+   */
+  function logAndNotifySpam(notificationObject) {
+    robot.messageRoom(notificationObject.from.slackId, `${notificationObject.message}\n\n${notificationObject.reason}`);
   }
 };

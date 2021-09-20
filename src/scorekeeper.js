@@ -53,13 +53,9 @@ class ScoreKeeper {
         if (saveResponse.accountLevel > 1) {
           saveResponse = await this.databaseService.transferScoreFromBotToUser(toUser, incrementValue, fromUser);
         }
-        return saveResponse;
+        return { toUser: saveResponse, fromUser };
       }
 
-      // is spam
-      if (await this.isSpam(toUser, fromUser)) {
-        this.robot.messageRoom(from.id, this.spamMessage);
-      }
       throw new Error(`I'm sorry ${fromUser.name}, I'm afraid I can't do that.`);
     } catch (e) {
       this.robot.logger.error(`failed to ${incrementValue > 0 ? 'add' : 'subtract'} point to [${to.name || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(toUser)}]`, e);
@@ -102,10 +98,6 @@ class ScoreKeeper {
             throw new Error(`You don't have enough tokens to send ${numberOfTokens} to ${toUser.name}`);
           }
         } else {
-          // is spam
-          if (await this.isSpam(toUser, fromUser)) {
-            this.robot.messageRoom(from.id, this.spamMessage);
-          }
           throw new Error(`I'm sorry ${fromUser.name}, I'm afraid I can't do that.`);
         }
       } else {
@@ -137,6 +129,12 @@ class ScoreKeeper {
 
   isSendingToSelf(to, from) {
     this.robot.logger.debug(`Checking if is to self. To [${to.name}] From [${from.name}], Valid: ${to.name !== from.name}`);
+    this.robot.emit('plus-plus-spam', {
+      to,
+      from,
+      message: this.spamMessage,
+      reason: 'Looks like you may be trying to send a point to yourself.',
+    });
     return to.name === from.name;
   }
 
@@ -145,6 +143,12 @@ class ScoreKeeper {
     const fromId = from.slackId || from.name;
     this.robot.logger.debug(`Checking spam to [${to.name}] from [${from.name}]`);
     const isSpam = await this.databaseService.isSpam(toId, fromId);
+    this.robot.emit('plus-plus-spam', {
+      to,
+      from,
+      message: this.spamMessage,
+      reason: `You recently sent <@${toId}> a point.`,
+    });
     return isSpam;
   }
 
@@ -159,6 +163,12 @@ class ScoreKeeper {
       isBot = true;
       this.robot.logger.error('A bot is sending points in DM');
     }
+    this.robot.emit('plus-plus-spam', {
+      to: undefined,
+      from,
+      message: this.spamMessage,
+      reason: 'You can\'t have a bot do the dirty work.',
+    });
     return isBot;
   }
 }
