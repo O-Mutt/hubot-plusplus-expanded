@@ -129,13 +129,16 @@ class ScoreKeeper {
 
   isSendingToSelf(to, from) {
     this.robot.logger.debug(`Checking if is to self. To [${to.name}] From [${from.name}], Valid: ${to.name !== from.name}`);
-    this.robot.emit('plus-plus-spam', {
-      to,
-      from,
-      message: this.spamMessage,
-      reason: 'Looks like you may be trying to send a point to yourself.',
-    });
-    return to.name === from.name;
+    const isToSelf = to.name === from.name;
+    if (isToSelf) {
+      this.robot.emit('plus-plus-spam', {
+        to,
+        from,
+        message: this.spamMessage,
+        reason: 'Looks like you may be trying to send a point to yourself.',
+      });
+    }
+    return isToSelf;
   }
 
   async isSpam(to, from) {
@@ -143,12 +146,14 @@ class ScoreKeeper {
     const fromId = from.slackId || from.name;
     this.robot.logger.debug(`Checking spam to [${to.name}] from [${from.name}]`);
     const isSpam = await this.databaseService.isSpam(toId, fromId);
-    this.robot.emit('plus-plus-spam', {
-      to,
-      from,
-      message: this.spamMessage,
-      reason: `You recently sent <@${toId}> a point.`,
-    });
+    if (isSpam) {
+      this.robot.emit('plus-plus-spam', {
+        to,
+        from,
+        message: this.spamMessage,
+        reason: `You recently sent <@${toId}> a point.`,
+      });
+    }
     return isSpam;
   }
 
@@ -163,12 +168,14 @@ class ScoreKeeper {
       isBot = true;
       this.robot.logger.error('A bot is sending points in DM');
     }
-    this.robot.emit('plus-plus-spam', {
-      to: undefined,
-      from,
-      message: this.spamMessage,
-      reason: 'You can\'t have a bot do the dirty work.',
-    });
+    if (isBot) {
+      this.robot.emit('plus-plus-spam', {
+        to: undefined,
+        from,
+        message: this.spamMessage,
+        reason: 'You can\'t have a bot do the dirty work.',
+      });
+    }
     return isBot;
   }
 }

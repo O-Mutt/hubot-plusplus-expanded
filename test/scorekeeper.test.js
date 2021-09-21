@@ -84,6 +84,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
       expect(r).to.be.an('object');
       expect(r.score).to.equal(1);
       expect(r.reasons['because points']).to.equal(1);
+      expect(emitSpy.called).to.equal(false);
 
       // score added
       const afterUser = await scoreKeeper.getUser(to);
