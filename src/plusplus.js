@@ -106,7 +106,7 @@ module.exports = function plusPlus(robot) {
 
   // event listeners
   robot.on('plus-plus', sendPlusPlusNotification);
-  robot.on('plus-plus-false-positive', sendPlusPlusFalsePositiveNotification);
+  robot.on('plus-plus-failure', sendPlusPlusFalsePositiveNotification);
   robot.on('plus-plus-spam', logAndNotifySpam);
   /* eslint-enable */
 
@@ -117,7 +117,7 @@ module.exports = function plusPlus(robot) {
     const [fullText, premessage, name, operator, conjunction, reason] = msg.match;
     if (premessage || (!conjunction && reason)) {
       // circuit break a plus plus
-      robot.emit('plus-plus-false-positive', {
+      robot.emit('plus-plus-failure', {
         notificationMessage: `False positive detected in <#${msg.message.room}> from <@${msg.message.user.id}>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
         room: msg.message.room,
       });
@@ -152,8 +152,9 @@ module.exports = function plusPlus(robot) {
         sender: fromUser,
         recipient: toUser,
         direction: operator,
+        amount: 1,
         room,
-        cleanReason,
+        reason: cleanReason,
         msg,
       });
     }
@@ -163,7 +164,7 @@ module.exports = function plusPlus(robot) {
     const [fullText, premessage, name, number, conjunction, reason] = msg.match;
     if (!conjunction && reason) {
       // circuit break a plus plus
-      robot.emit('plus-plus-false-positive', {
+      robot.emit('plus-plus-failure', {
         notificationMessage: `False positive detected in <#${msg.message.room}> from <@${msg.message.user.id}>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
         room: msg.message.room,
       });
@@ -201,8 +202,9 @@ module.exports = function plusPlus(robot) {
         recipient: response.toUser,
         sender: response.fromUser,
         direction: '++',
+        amount: number,
         room,
-        cleanReason,
+        reason: cleanReason,
         msg,
       });
     }
@@ -215,7 +217,7 @@ module.exports = function plusPlus(robot) {
     }
     if (premessage || (!conjunction && reason)) {
       // circuit break a plus plus
-      robot.emit('plus-plus-false-positive', {
+      robot.emit('plus-plus-failure', {
         notificationMessage: `False positive detected in <#${msg.message.room}> from <@${msg.message.user.id}>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
         room: msg.message.room,
       });
@@ -272,8 +274,9 @@ module.exports = function plusPlus(robot) {
         sender: fromUser,
         recipient: user,
         direction: operator,
+        amount: 1,
         room,
-        cleanReason,
+        reason: cleanReason,
         msg,
       });
     }
