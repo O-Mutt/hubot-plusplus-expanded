@@ -107,7 +107,7 @@ Individual run:
 `npm run test`
 
 Tdd:
-`npm run tdd`
+`npm run test:watch`
 
 ## Known issue
 As of now there is an issue that has shown up a couple times without a root cause. The `$setOnInsert` excludes the `reasons: {}` object. The fix, currently, is to identify the bad document in mongo `db.scores.find({ "reasons: null"});` and update them  `db.scores.updateMany({ "reasons: null"}, { $set: { "reasons": {} });`

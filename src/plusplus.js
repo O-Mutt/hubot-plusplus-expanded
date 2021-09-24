@@ -115,7 +115,8 @@ module.exports = function plusPlus(robot) {
    */
   async function upOrDownVote(msg) {
     const [fullText, premessage, name, operator, conjunction, reason] = msg.match;
-    if (premessage || (!conjunction && reason)) {
+
+    if (helpers.isKnownFalsePositive(premessage, conjunction, reason, operator)) {
       // circuit break a plus plus
       robot.emit('plus-plus-failure', {
         notificationMessage: `False positive detected in <#${msg.message.room}> from <@${msg.message.user.id}>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
@@ -215,7 +216,7 @@ module.exports = function plusPlus(robot) {
     if (!names) {
       return;
     }
-    if (premessage || (!conjunction && reason)) {
+    if (helpers.isKnownFalsePositive(premessage, conjunction, reason, operator)) {
       // circuit break a plus plus
       robot.emit('plus-plus-failure', {
         notificationMessage: `False positive detected in <#${msg.message.room}> from <@${msg.message.user.id}>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,

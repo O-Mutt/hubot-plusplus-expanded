@@ -53,11 +53,12 @@ describe('PlusPlus', function () {
         expect(user.score).to.equal(1);
       });
 
-      it('shouldn\'t add a point when a user is ++\'d with pre-text', async function () {
+      it('should add a point when a user is ++\'d with pre-text', async function () {
         const emitSpy = sinon.spy(room.robot, 'emit');
         room.user.say('matt.erickson', 'where are you d00d @derp++');
         await new Promise((resolve) => setTimeout(resolve, 50));
-        expect(emitSpy).to.have.been.calledWith('plus-plus-failure', {
+        expect(room.messages[1][1]).to.match(/derp has 1 point\.\n:birthday: Today is derp's hubotday! :birthday:/);
+        expect(emitSpy).not.to.have.been.calledWith('plus-plus-failure', {
           notificationMessage: 'False positive detected in <#room1> from <@matt.erickson>:\n'
             + 'Pre-Message text: [true].\n'
             + 'Missing Conjunction: [false]\n'
@@ -67,14 +68,16 @@ describe('PlusPlus', function () {
         });
 
         const user = await db.collection('scores').findOne({ name: 'derp' });
-        expect(user).to.equal(undefined);
+        expect(user).not.to.equal(undefined);
+        expect(user.score).to.equal(1);
       });
 
-      it('shouldn\'t add a point when a user is ++\'d without a conjunction', async function () {
+      it('should add a point when a user is ++\'d without a conjunction', async function () {
         const emitSpy = sinon.spy(room.robot, 'emit');
         room.user.say('matt.erickson', '@derp++ winning the business');
         await new Promise((resolve) => setTimeout(resolve, 50));
-        expect(emitSpy).to.have.been.calledWith('plus-plus-failure', {
+        expect(room.messages[1][1]).to.match(/derp has 1 point for winning the business\.\n:birthday: Today is derp's hubotday! :birthday:/);
+        expect(emitSpy).not.to.have.been.calledWith('plus-plus-failure', {
           notificationMessage: 'False positive detected in <#room1> from <@matt.erickson>:\n'
             + 'Pre-Message text: [false].\n'
             + 'Missing Conjunction: [true]\n'
@@ -84,7 +87,8 @@ describe('PlusPlus', function () {
         });
 
         const user = await db.collection('scores').findOne({ name: 'derp' });
-        expect(user).to.equal(undefined);
+        expect(user).not.to.equal(undefined);
+        expect(user.score).to.equal(1);
       });
 
       it('should add a point when a user is :clap:\'d', async function () {
@@ -147,11 +151,14 @@ describe('PlusPlus', function () {
         );
       });
 
-      it('shouldn\'t add a point to user with (sans) conjunction reason', async function () {
+      it('should add a point to user with (sans) conjunction reason', async function () {
         const emitSpy = sinon.spy(room.robot, 'emit');
         room.user.say('derp', '@matt.erickson++ gawd you\'re awesome');
         await new Promise((resolve) => setTimeout(resolve, 60));
-        expect(emitSpy).to.have.been.calledWith('plus-plus-failure', {
+        expect(room.messages[1][1]).to.match(
+          /<@matt\.erickson> has 228 points, 1 of which is for gawd you're awesome./,
+        );
+        expect(emitSpy).not.to.have.been.calledWith('plus-plus-failure', {
           notificationMessage: 'False positive detected in <#room1> from <@derp>:\n'
             + 'Pre-Message text: [false].\n'
             + 'Missing Conjunction: [true]\n'
@@ -181,6 +188,23 @@ describe('PlusPlus', function () {
         expect(room.messages[1][1]).to.equal('derp has -1 point for being the best.\n:birthday: Today is derp\'s hubotday! :birthday:');
         const user = await db.collection('scores').findOne({ name: 'derp' });
         expect(user.score).to.equal(-1);
+      });
+
+      it('shouldn\'t remove a point when a user is ++\'d with pre-text and no conjunction', async function () {
+        const emitSpy = sinon.spy(room.robot, 'emit');
+        room.user.say('matt.erickson', 'hello, @derp -- i have no idea what you are doing');
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(emitSpy).to.have.been.calledWith('plus-plus-failure', {
+          notificationMessage: 'False positive detected in <#room1> from <@matt.erickson>:\n'
+            + 'Pre-Message text: [true].\n'
+            + 'Missing Conjunction: [true]\n'
+            + '\n'
+            + 'hello, @derp -- i have no idea what you are doing',
+          room: 'room1',
+        });
+
+        const user = await db.collection('scores').findOne({ name: 'derp' });
+        expect(user).to.equal(undefined);
       });
     });
   });

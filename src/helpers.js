@@ -1,4 +1,5 @@
 const moment = require('moment');
+const regexp = require('./regexp');
 
 function getEsOnEndOfWord(number) {
   if (number === -1 || number === 1) {
@@ -173,6 +174,11 @@ function isPrivateMessage(room) {
   return room[0] === 'D' || room === 'Shell';
 }
 
+function isKnownFalsePositive(premessage, conjunction, reason, operator) {
+  const falsePositive = premessage && !conjunction && reason && operator.match(regexp.negativeOperators);
+  return falsePositive;
+}
+
 module.exports = {
   getMessageForNewScore,
   getMessageForTokenTransfer,
@@ -184,4 +190,5 @@ module.exports = {
   getEsOnEndOfWord,
   isPrivateMessage,
   capitalizeFirstLetter,
+  isKnownFalsePositive,
 };
