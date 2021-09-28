@@ -1,5 +1,5 @@
 const moment = require('moment');
-const regexp = require('./regexp');
+const regExpCreator = require('./regexpCreator');
 
 function getEsOnEndOfWord(number) {
   if (number === -1 || number === 1) {
@@ -175,8 +175,26 @@ function isPrivateMessage(room) {
 }
 
 function isKnownFalsePositive(premessage, conjunction, reason, operator) {
-  const falsePositive = premessage && !conjunction && reason && operator.match(regexp.negativeOperators);
+  const falsePositive = premessage && !conjunction && reason && operator.match(regExpCreator.negativeOperators);
   return falsePositive;
+}
+
+function getProcessVariables(env) {
+  const procVars = {};
+  procVars.reasonsKeyword = env.HUBOT_PLUSPLUS_REASONS || 'reasons';
+  procVars.spamMessage = env.HUBOT_SPAM_MESSAGE || 'Looks like you hit the spam filter. Please slow your roll.';
+  procVars.spamTimeLimit = parseInt(env.SPAM_TIME_LIMIT, 10) || 5;
+  procVars.companyName = env.HUBOT_COMPANY_NAME || 'Company Name';
+  procVars.peerFeedbackUrl = env.HUBOT_PEER_FEEDBACK_URL || `praise in Lattice (https://${procVars.companyName}.latticehq.com/)`;
+  procVars.furtherFeedbackSuggestedScore = parseInt(env.HUBOT_FURTHER_FEEDBACK_SCORE, 10) || 10;
+  procVars.mongoUri = env.MONGODB_URI || env.MONGO_URI || env.MONGODB_URL || env.MONGOLAB_URI || env.MONGOHQ_URL || 'mongodb://localhost/plusPlus';
+  procVars.cryptoRpcProvider = env.HUBOT_CRYPTO_RPC_PROVIDER || '';
+  procVars.magicNumber = env.HUBOT_UNIMPORTANT_MAGIC_NUMBER || 'nope';
+  procVars.magicIv = env.HUBOT_UNIMPORTANT_MAGIC_IV || 'yup';
+  procVars.furtherHelpUrl = env.HUBOT_CRYPTO_FURTHER_HELP_URL || undefined;
+  procVars.notificationsRoom = env.HUBOT_PLUSPLUS_NOTIFICATION_ROOM || undefined;
+  procVars.falsePositiveNotificationsRoom = env.HUBOT_PLUSPLUS_FALSE_POSITIVE_NOTIFICATION_ROOM || undefined;
+  return procVars;
 }
 
 module.exports = {
@@ -191,4 +209,5 @@ module.exports = {
   isPrivateMessage,
   capitalizeFirstLetter,
   isKnownFalsePositive,
+  getProcessVariables,
 };

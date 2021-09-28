@@ -28,7 +28,8 @@
         "no-plusplus": "off",
         "no-else-return": "off",
         "mocha/no-setup-in-describe": "off",
-        "no-underscore-dangle": "off"
+        "no-underscore-dangle": "off",
+        "no-use-before-define": "off"
     },
     "plugins": [
         "mocha"

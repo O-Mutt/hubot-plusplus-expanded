@@ -1,7 +1,7 @@
 /* eslint-disable guard-for-in */
 /* eslint-disable no-restricted-syntax */
-const helpers = require('./helpers');
-const DatabaseService = require('./services/database');
+const helpers = require('../helpers');
+const DatabaseService = require('./database');
 
 class ScoreKeeper {
   /*
@@ -35,28 +35,27 @@ class ScoreKeeper {
     try {
       toUser = await this.getUser(to);
       fromUser = await this.getUser(from);
-      if (!(await this.isSpam(toUser, fromUser)) && !this.isSendingToSelf(toUser, fromUser) && !this.isBotInDm(from, room)) {
-        toUser.score = parseInt(toUser.score, 10) + parseInt(incrementValue, 10);
-        if (reason) {
-          const oldReasonScore = toUser.reasons[`${reason}`] ? toUser.reasons[`${reason}`] : 0;
-          toUser.reasons[`${reason}`] = oldReasonScore + incrementValue;
-        }
-
-        await this.databaseService.savePointsGiven(from, toUser, incrementValue);
-        let saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason, incrementValue);
-        try {
-          await this.databaseService.savePlusPlusLog(toUser, fromUser, room, reason, incrementValue);
-        } catch (e) {
-          this.robot.logger.error(`failed saving spam log for user ${toUser.name} from ${from.name} in room ${room} because ${reason}`, e);
-        }
-
-        if (saveResponse.accountLevel > 1) {
-          saveResponse = await this.databaseService.transferScoreFromBotToUser(toUser, incrementValue, fromUser);
-        }
-        return { toUser: saveResponse, fromUser };
+      if ((await this.isSpam(toUser, fromUser)) || this.isSendingToSelf(toUser, fromUser) || this.isBotInDm(from, room)) {
+        throw new Error(`I'm sorry <@${fromUser.slackId}>, I'm afraid I can't do that.`);
+      }
+      toUser.score = parseInt(toUser.score, 10) + parseInt(incrementValue, 10);
+      if (reason) {
+        const oldReasonScore = toUser.reasons[`${reason}`] ? toUser.reasons[`${reason}`] : 0;
+        toUser.reasons[`${reason}`] = oldReasonScore + incrementValue;
       }
 
-      throw new Error(`I'm sorry ${fromUser.name}, I'm afraid I can't do that.`);
+      await this.databaseService.savePointsGiven(from, toUser, incrementValue);
+      let saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason, incrementValue);
+      try {
+        await this.databaseService.savePlusPlusLog(toUser, fromUser, room, reason, incrementValue);
+      } catch (e) {
+        this.robot.logger.error(`failed saving spam log for user ${toUser.name} from ${from.name} in room ${room} because ${reason}`, e);
+      }
+
+      if (saveResponse.accountLevel > 1) {
+        saveResponse = await this.databaseService.transferScoreFromBotToUser(toUser, incrementValue, fromUser);
+      }
+      return { toUser: saveResponse, fromUser };
     } catch (e) {
       this.robot.logger.error(`failed to ${incrementValue > 0 ? 'add' : 'subtract'} point to [${to.name || 'no to'}] from [${from ? from.name : 'no from'}] because [${reason}] object [${JSON.stringify(toUser)}]`, e);
       throw e;
@@ -70,35 +69,32 @@ class ScoreKeeper {
       toUser = await this.getUser(to);
       fromUser = await this.getUser(from);
       if (toUser.accountLevel >= 2 && fromUser.accountLevel >= 2) {
-        if (!(await this.isSpam(toUser, fromUser))
-            && !this.isSendingToSelf(toUser, fromUser)
-            && !this.isBotInDm(from, room)) {
-          if (fromUser.token >= parseInt(numberOfTokens, 10)) {
-            fromUser.token = parseInt(fromUser.token, 10) - parseInt(numberOfTokens, 10);
-            toUser.token = parseInt(toUser.token, 10) + parseInt(numberOfTokens, 10);
-            if (reason) {
-              const oldReasonScore = toUser.reasons[`${reason}`] ? toUser.reasons[`${reason}`] : 0;
-              toUser.reasons[`${reason}`] = oldReasonScore + numberOfTokens;
-            }
-
-            await this.databaseService.savePointsGiven(from, toUser, numberOfTokens);
-            const saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason, numberOfTokens);
-            try {
-              await this.databaseService.savePlusPlusLog(toUser, fromUser, room, reason, numberOfTokens);
-            } catch (e) {
-              this.robot.logger.error(`failed saving spam log for user ${toUser.name} from ${from.name} in room ${room} because ${reason}`, e);
-            }
-            await this.databaseService.saveUser(fromUser, toUser, room, reason, -numberOfTokens);
-            return {
-              toUser: saveResponse,
-              fromUser,
-            };
-          } else {
-            // from has too few tokens to send that many
-            throw new Error(`You don't have enough tokens to send ${numberOfTokens} to ${toUser.name}`);
+        if ((await this.isSpam(toUser, fromUser)) || this.isSendingToSelf(toUser, fromUser) || this.isBotInDm(from, room)) {
+          throw new Error(`I'm sorry <@${fromUser.slackId}>, I'm afraid I can't do that.`);
+        }
+        if (fromUser.token >= parseInt(numberOfTokens, 10)) {
+          fromUser.token = parseInt(fromUser.token, 10) - parseInt(numberOfTokens, 10);
+          toUser.token = parseInt(toUser.token, 10) + parseInt(numberOfTokens, 10);
+          if (reason) {
+            const oldReasonScore = toUser.reasons[`${reason}`] ? toUser.reasons[`${reason}`] : 0;
+            toUser.reasons[`${reason}`] = oldReasonScore + numberOfTokens;
           }
+
+          await this.databaseService.savePointsGiven(from, toUser, numberOfTokens);
+          const saveResponse = await this.databaseService.saveUser(toUser, fromUser, room, reason, numberOfTokens);
+          try {
+            await this.databaseService.savePlusPlusLog(toUser, fromUser, room, reason, numberOfTokens);
+          } catch (e) {
+            this.robot.logger.error(`failed saving spam log for user ${toUser.name} from ${from.name} in room ${room} because ${reason}`, e);
+          }
+          await this.databaseService.saveUser(fromUser, toUser, room, reason, -numberOfTokens);
+          return {
+            toUser: saveResponse,
+            fromUser,
+          };
         } else {
-          throw new Error(`I'm sorry ${fromUser.name}, I'm afraid I can't do that.`);
+          // from has too few tokens to send that many
+          throw new Error(`You don't have enough tokens to send ${numberOfTokens} to ${toUser.name}`);
         }
       } else {
         // to or from is not level 2

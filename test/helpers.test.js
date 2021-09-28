@@ -8,7 +8,7 @@ const moment = require('moment');
 
 const { expect } = chai;
 
-const helpers = require('../src/helpers');
+const helpers = require('../src/lib/helpers');
 
 describe('Helpers', function () {
   describe('cleanName', function () {

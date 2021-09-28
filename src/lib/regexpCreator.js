@@ -1,7 +1,7 @@
 const scoreKeyword = process.env.HUBOT_PLUSPLUS_KEYWORD || 'score|scores|karma';
 const reasonConjunctions = process.env.HUBOT_PLUSPLUS_CONJUNCTIONS || 'for|because|cause|cuz|as|porque|just|thanks for';
 
-class RegExpHelper {
+class RegExpCreator {
   votedObject = '[\\-\\w.-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]+(?<![+-])';
   captureVoted = `@(${this.votedObject})`;
   nonCaptureVoted = `@(?:${this.votedObject})`;
@@ -123,5 +123,5 @@ class RegExpHelper {
   }
 }
 
-const localReg = new RegExpHelper();
+const localReg = new RegExpCreator();
 module.exports = localReg;

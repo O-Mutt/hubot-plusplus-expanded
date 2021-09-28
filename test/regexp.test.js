@@ -6,12 +6,12 @@ const forEach = require('mocha-each');
 
 const { expect } = chai;
 
-const regexp = require('../src/regexp');
+const regExpCreator = require('../src/lib/regexpCreator');
 
 describe('regexp', function () {
   describe('createGiveTokenRegExp', function () {
     it('should match a name + number', function () {
-      const giveTokenMatcher = regexp.createGiveTokenRegExp();
+      const giveTokenMatcher = regExpCreator.createGiveTokenRegExp();
       const match = '@matt + 5'.match(giveTokenMatcher);
       expect('@matt + 5').to.match(giveTokenMatcher);
       expect(match).to.be.an('array').that.include('matt', '+', '5');
@@ -19,7 +19,7 @@ describe('regexp', function () {
   });
 
   describe('positiveOperators', function () {
-    const positiveRegexp = new RegExp(regexp.positiveOperators);
+    const positiveRegexp = new RegExp(regExpCreator.positiveOperators);
     it('should match base-line ++', function () {
       expect('++').to.match(positiveRegexp);
     });
@@ -46,7 +46,7 @@ describe('regexp', function () {
   });
 
   describe('negativeOperators', function () {
-    const negativeRegexp = new RegExp(regexp.negativeOperators);
+    const negativeRegexp = new RegExp(regExpCreator.negativeOperators);
     it('should match base-line --', function () {
       expect('--').to.match(negativeRegexp);
     });
@@ -71,7 +71,7 @@ describe('regexp', function () {
       ['what even should it be score with @matt', 'what even should it be ', 'with ', 'matt'],
     ])
       .it('should match the search %j', (fullText, premessage, conjunction, name) => {
-        const scoreMatchRegExp = regexp.createAskForScoreRegExp();
+        const scoreMatchRegExp = regExpCreator.createAskForScoreRegExp();
         expect(scoreMatchRegExp).to.be.a('RegExp');
         expect(fullText.match(scoreMatchRegExp)).to.be.an('array');
         expect(fullText.match(scoreMatchRegExp).length).to.equal(4);
@@ -84,7 +84,7 @@ describe('regexp', function () {
       ['erase @matt cuz he is bad', undefined, 'matt', 'cuz', 'he is bad'],
       ['erase @frank', undefined, 'frank', undefined, undefined],
     ]).it('%j should match the erase user regexp', (fullText, premessage, user, conjunction, reason) => {
-      const eraseUserScoreRegExp = regexp.createEraseUserScoreRegExp();
+      const eraseUserScoreRegExp = regExpCreator.createEraseUserScoreRegExp();
       expect(eraseUserScoreRegExp).to.be.a('RegExp');
       expect(fullText.match(eraseUserScoreRegExp)).to.be.an('array');
       expect(fullText.match(eraseUserScoreRegExp).length).to.equal(5);
@@ -107,7 +107,7 @@ describe('regexp', function () {
       ['{@matt,@phil}++', undefined, '@matt,@phil', '++', undefined, undefined],
     ])
       .it('should match \'%j\'', (fullText, premessage, names, operator, conjunction, reason) => {
-        const multiUserVoteRegExp = regexp.createMultiUserVoteRegExp();
+        const multiUserVoteRegExp = regExpCreator.createMultiUserVoteRegExp();
         expect(multiUserVoteRegExp).to.be.a('RegExp');
         expect(fullText).to.match(multiUserVoteRegExp);
         const match = fullText.match(multiUserVoteRegExp);
@@ -123,7 +123,7 @@ describe('regexp', function () {
       ['bottom 5', 'bottom', '5'],
     ])
       .it('should match %j', (requestForScores, topOrBottom, numberOfUsers) => {
-        const topBottomRegExp = regexp.createTopBottomRegExp();
+        const topBottomRegExp = regExpCreator.createTopBottomRegExp();
         expect(topBottomRegExp).to.be.a('RegExp');
         expect(requestForScores).to.match(topBottomRegExp);
         const match = requestForScores.match(topBottomRegExp);
@@ -139,7 +139,7 @@ describe('regexp', function () {
       ['bottom tokens 5', 'bottom', 'tokens', '5'],
     ])
       .it('should match %j', (requestForScores, topOrBottom, token, numberOfUsers) => {
-        const topBottomTokenRegExp = regexp.createTopBottomTokenRegExp();
+        const topBottomTokenRegExp = regExpCreator.createTopBottomTokenRegExp();
         expect(topBottomTokenRegExp).to.be.a('RegExp');
         expect(requestForScores).to.match(topBottomTokenRegExp);
         const match = requestForScores.match(topBottomTokenRegExp);
@@ -160,7 +160,7 @@ describe('regexp', function () {
         ['hello world this is @matt++', 'hello world this is ', 'matt', '++', undefined, undefined],
         ['@matt ++ man, you\'re awesome', undefined, 'matt', '++', undefined, 'man, you\'re awesome'],
       ]).it('should match name [%3$s] up/down [%4$s] with reason [%5$s]', (fullText, premessage, name, operator, conjunction, reason) => {
-        const upVoteOrDownVoteRegExp = regexp.createUpDownVoteRegExp();
+        const upVoteOrDownVoteRegExp = regExpCreator.createUpDownVoteRegExp();
         expect(upVoteOrDownVoteRegExp).to.be.a('RegExp');
         const fullMatch = fullText.match(upVoteOrDownVoteRegExp);
         expect(fullText).to.match(upVoteOrDownVoteRegExp);
@@ -180,7 +180,7 @@ describe('regexp', function () {
         ['such.a.complex-name-hyphens++'],
         ['”such a complex-name-hyphens” ++'],
       ]).it("shouldn't match name [%1$s]", (text) => {
-        const upVoteOrDownVoteRegExp = regexp.createUpDownVoteRegExp();
+        const upVoteOrDownVoteRegExp = regExpCreator.createUpDownVoteRegExp();
         expect(upVoteOrDownVoteRegExp).to.be.a('RegExp');
         expect(text).not.to.match(upVoteOrDownVoteRegExp);
       });

@@ -34,36 +34,16 @@ const moment = require('moment');
 const tokenBuddy = require('token-buddy');
 
 const pjson = require('../package.json');
-const regexp = require('./regexp');
-const wallet = require('./botWallet');
-const mapper = require('./services/mapper');
-const ScoreKeeper = require('./scorekeeper');
-const helpers = require('./helpers');
+const regExpCreator = require('./lib/regexpCreator');
+const ScoreKeeper = require('./lib/services/scorekeeper');
+const helpers = require('./lib/helpers');
 // this may need to move or be generic...er
-const token = require('./token.json');
-const decrypt = require('./services/decrypt');
+const token = require('./lib/token.json');
+const decrypt = require('./lib/services/decrypt');
 
-module.exports = function plusPlus(robot) {
-  const procVars = {};
-  procVars.reasonsKeyword = process.env.HUBOT_PLUSPLUS_REASONS || 'reasons';
-  procVars.spamMessage = process.env.HUBOT_SPAM_MESSAGE || 'Looks like you hit the spam filter. Please slow your roll.';
-  procVars.spamTimeLimit = parseInt(process.env.SPAM_TIME_LIMIT, 10) || 5;
-  procVars.companyName = process.env.HUBOT_COMPANY_NAME || 'Company Name';
-  procVars.peerFeedbackUrl = process.env.HUBOT_PEER_FEEDBACK_URL || `praise in Lattice (https://${procVars.companyName}.latticehq.com/)`;
-  procVars.furtherFeedbackSuggestedScore = parseInt(process.env.HUBOT_FURTHER_FEEDBACK_SCORE, 10) || 10;
-  procVars.mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGODB_URL || process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/plusPlus';
-  procVars.cryptoRpcProvider = process.env.HUBOT_CRYPTO_RPC_PROVIDER || '';
-  procVars.magicNumber = process.env.HUBOT_UNIMPORTANT_MAGIC_NUMBER || 'nope';
-  procVars.magicIv = process.env.HUBOT_UNIMPORTANT_MAGIC_IV || 'yup';
-  procVars.furtherHelpUrl = process.env.HUBOT_CRYPTO_FURTHER_HELP_URL || undefined;
-  procVars.notificationsRoom = process.env.HUBOT_PLUSPLUS_NOTIFICATION_ROOM || undefined;
-  procVars.falsePositiveNotificationsRoom = process.env.HUBOT_PLUSPLUS_FALSE_POSITIVE_NOTIFICATION_ROOM || undefined;
-
-  const scoreKeeper = new ScoreKeeper(
-    {
-      robot, ...procVars,
-    },
-  );
+module.exports = (robot) => {
+  const procVars = helpers.getProcessVariables(process.env);
+  const scoreKeeper = new ScoreKeeper({ robot, ...procVars });
 
   scoreKeeper.databaseService.getMagicSecretStringNumberValue().then((databaseMagicString) => {
     const magicMnumber = decrypt(procVars.magicIv, procVars.magicNumber, databaseMagicString);
@@ -78,37 +58,18 @@ module.exports = function plusPlus(robot) {
     });
   });
 
-  /* eslint-disable no-use-before-define */
   // listen to everything
-  robot.hear(regexp.createUpDownVoteRegExp(), upOrDownVote);
+  robot.hear(regExpCreator.createUpDownVoteRegExp(), upOrDownVote);
   robot.hear(new RegExp('how much .*point.*', 'i'), tellHowMuchPointsAreWorth);
-  robot.hear(regexp.createMultiUserVoteRegExp(), multipleUsersVote);
+  robot.hear(regExpCreator.createMultiUserVoteRegExp(), multipleUsersVote);
 
   // listen for bot tag/ping
-  robot.respond(regexp.createGiveTokenRegExp(), giveTokenBetweenUsers);
-  robot.respond(regexp.createAskForScoreRegExp(), respondWithScore);
-  robot.respond(regexp.createTopBottomRegExp(), respondWithLeaderLoserBoard);
-  robot.respond(regexp.createTopBottomTokenRegExp(), respondWithLeaderLoserTokenBoard);
-  robot.respond(regexp.createBotDayRegExp(robot.name), respondWithUsersBotDay);
-  robot.respond(regexp.getHelp(), respondWithHelpGuidance);
-  robot.respond(regexp.getBotWallet(), (msg) => wallet.botWalletCount(msg, scoreKeeper));
+  robot.respond(regExpCreator.createGiveTokenRegExp(), giveTokenBetweenUsers);
+  robot.respond(regExpCreator.getHelp(), respondWithHelpGuidance);
   robot.respond(new RegExp(/(plusplus version|-v|--version)/, 'i'), (msg) => msg.send(`${helpers.capitalizeFirstLetter(msg.robot.name)} ${pjson.name}, version: ${pjson.version}`));
 
-  // DM only
-  robot.respond(regexp.createLevelUpAccount(), (msg) => wallet.levelUpAccount(msg, scoreKeeper));
-
   // admin
-  robot.respond(regexp.createEraseUserScoreRegExp(), eraseUserScore);
-  robot.respond(/try to map all slack users to db users/, (msg) => mapper.mapUsersToDb(msg, procVars));
-  robot.respond(/try to map more data to all slack users to db users/, (msg) => mapper.mapMoreUserFieldsBySlackId(msg, procVars));
-  robot.respond(/try to map @.* to db users/, (msg) => mapper.mapSingleUserToDb(msg, procVars));
-  robot.respond(/unmap all users/, (msg) => mapper.unmapUsersToDb(msg, procVars));
-
-  // event listeners
-  robot.on('plus-plus', sendPlusPlusNotification);
-  robot.on('plus-plus-failure', sendPlusPlusFalsePositiveNotification);
-  robot.on('plus-plus-spam', logAndNotifySpam);
-  /* eslint-enable */
+  robot.respond(regExpCreator.createEraseUserScoreRegExp(), eraseUserScore);
 
   /**
    * Functions for responding to commands
@@ -124,7 +85,7 @@ module.exports = function plusPlus(robot) {
       });
       return;
     }
-    const increment = operator.match(regexp.positiveOperators) ? 1 : -1;
+    const increment = operator.match(regExpCreator.positiveOperators) ? 1 : -1;
     const { room, mentions } = msg.message;
     const cleanName = helpers.cleanName(name);
     let to = { name: cleanName };
@@ -149,7 +110,7 @@ module.exports = function plusPlus(robot) {
     if (message) {
       msg.send(message);
       robot.emit('plus-plus', {
-        notificationMessage: `<@${fromUser.slackId}> ${operator.match(regexp.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regexp.positiveOperators) ? 'to' : 'from'} <@${toUser.slackId}> in <#${room}>`,
+        notificationMessage: `<@${fromUser.slackId}> ${operator.match(regExpCreator.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regExpCreator.positiveOperators) ? 'to' : 'from'} <@${toUser.slackId}> in <#${room}>`,
         sender: fromUser,
         recipient: toUser,
         direction: operator,
@@ -225,7 +186,7 @@ module.exports = function plusPlus(robot) {
       return;
     }
 
-    const namesArray = names.trim().toLowerCase().split(new RegExp(regexp.multiUserSeparator)).filter(Boolean);
+    const namesArray = names.trim().toLowerCase().split(new RegExp(regExpCreator.multiUserSeparator)).filter(Boolean);
     const from = msg.message.user;
     const { room, mentions } = msg.message;
     let to;
@@ -233,7 +194,7 @@ module.exports = function plusPlus(robot) {
       to = mentions.filter((men) => men.type === 'user');
     }
     const cleanReason = helpers.cleanAndEncode(reason);
-    const increment = operator.match(regexp.positiveOperators) ? 1 : -1;
+    const increment = operator.match(regExpCreator.positiveOperators) ? 1 : -1;
 
     const cleanNames = namesArray
       // Parse names
@@ -271,7 +232,7 @@ module.exports = function plusPlus(robot) {
 
     for (const user of toUsers) {
       robot.emit('plus-plus', {
-        notificationMessage: `<@${fromUser.slackId}> ${operator.match(regexp.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regexp.positiveOperators) ? 'to' : 'from'} <@${user.slackId}> in <#${room}>`,
+        notificationMessage: `<@${fromUser.slackId}> ${operator.match(regExpCreator.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regExpCreator.positiveOperators) ? 'to' : 'from'} <@${user.slackId}> in <#${room}>`,
         sender: fromUser,
         recipient: user,
         direction: operator,
@@ -281,59 +242,6 @@ module.exports = function plusPlus(robot) {
         msg,
       });
     }
-  }
-
-  async function respondWithScore(msg) {
-    const { mentions } = msg.message;
-    const [fullText, premessage, conjunction, name] = msg.match;
-    let to = { name: helpers.cleanName(name) };
-    if (mentions) {
-      const userMentions = mentions.filter((men) => men.type === 'user');
-      to = userMentions.pop();
-      to.name = name;
-    }
-
-    const user = await scoreKeeper.getUser(to);
-
-    let tokenString = '.';
-    if (user.accountLevel > 1) {
-      tokenString = ` (*${user.token} ${helpers.capitalizeFirstLetter(robot.name)} `;
-      tokenString = tokenString.concat(user.token > 1 ? 'Tokens*).' : 'Token*).');
-    }
-    let pointsGiven = 0;
-    // eslint-disable-next-line guard-for-in
-    for (const key in user.pointsGiven) {
-      pointsGiven += parseInt(user.pointsGiven[key], 10);
-    }
-    const scoreStr = user.score > 1 ? 'points' : 'point';
-    let baseString = `<@${user.slackId}> has ${user.score} ${scoreStr}${tokenString}`;
-    baseString += `\nAccount Level: ${user.accountLevel}`;
-    baseString += `\nTotal Points Given: ${pointsGiven}`;
-    if (user[`${robot.name}Day`]) {
-      const dateObj = new Date(user[`${robot.name}Day`]);
-      baseString += `\n:birthday: ${helpers.capitalizeFirstLetter(robot.name)}day is ${moment(dateObj).format('MM-DD-yyyy')}`;
-    }
-    const keys = Object.keys(user.reasons);
-    if (keys.length > 1) {
-      const sampleReasons = {};
-      const maxReasons = keys.length >= 5 ? 5 : keys.length;
-      do {
-        const randomNumber = _.random(0, keys.length - 1);
-        const reason = keys[randomNumber];
-        const value = user.reasons[keys[randomNumber]];
-        sampleReasons[reason] = value;
-      } while (Object.keys(sampleReasons).length < maxReasons);
-
-      const reasonMap = _.reduce(sampleReasons, (memo, val, key) => {
-        const decodedKey = helpers.decode(key);
-        const pointStr = val > 1 ? 'points' : 'point';
-        memo += `\n_${decodedKey}_: ${val} ${pointStr}`;
-        return memo;
-      }, '');
-
-      return msg.send(`${baseString}\n\n:star: Here are some ${procVars.reasonsKeyword} :star:${reasonMap}`);
-    }
-    return msg.send(`${baseString}`);
   }
 
   async function tellHowMuchPointsAreWorth(msg) {
@@ -349,74 +257,6 @@ module.exports = function plusPlus(robot) {
     } catch (e) {
       return msg.send(`Seems like we are having trouble getting some data... Don't worry, though, your ${msg.robot.name} points are still worth nothing!`);
     }
-  }
-
-  async function respondWithLeaderLoserBoard(msg) {
-    const amount = parseInt(msg.match[2], 10) || 10;
-    const topOrBottom = helpers.capitalizeFirstLetter(msg.match[1].trim());
-    const methodName = `get${topOrBottom}Scores`;
-
-    const tops = await scoreKeeper.databaseService[methodName](amount);
-    const message = [];
-    if (tops.length > 0) {
-      for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
-        const person = tops[i].slackId ? `<@${tops[i].slackId}>` : tops[i].name;
-        if (tops[i].accountLevel && tops[i].accountLevel > 1) {
-          const tokenStr = tops[i].token > 1 ? 'Tokens' : 'Token';
-          message.push(`${i + 1}. ${person}: ${tops[i].score} (*${tops[i].token} ${helpers.capitalizeFirstLetter(this.robot.name)} ${tokenStr}*)`);
-        } else {
-          message.push(`${i + 1}. ${person}: ${tops[i].score}`);
-        }
-      }
-    } else {
-      message.push('No scores to keep track of yet!');
-    }
-
-    const graphSize = Math.min(tops.length, Math.min(amount, 20));
-    message.splice(0, 0, clark(_.take(_.map(tops, 'score'), graphSize)));
-
-    return msg.send(message.join('\n'));
-  }
-
-  async function respondWithLeaderLoserTokenBoard(msg) {
-    const amount = parseInt(msg.match[2], 10) || 10;
-    const topOrBottom = helpers.capitalizeFirstLetter(msg.match[1].trim());
-    const methodName = `get${topOrBottom}Tokens`;
-
-    const tops = await scoreKeeper.databaseService[methodName](amount);
-
-    const message = [];
-    if (tops.length > 0) {
-      for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
-        const person = tops[i].slackId ? `<@${tops[i].slackId}>` : tops[i].name;
-        const tokenStr = tops[i].token > 1 ? 'Tokens' : 'Token';
-        const pointStr = tops[i].score > 1 ? 'points' : 'point';
-        message.push(`${i + 1}. ${person}: *${tops[i].token} ${helpers.capitalizeFirstLetter(this.robot.name)} ${tokenStr}* (${tops[i].score} ${pointStr})`);
-      }
-    } else {
-      message.push('No scores to keep track of yet!');
-    }
-
-    const graphSize = Math.min(tops.length, Math.min(amount, 20));
-    message.splice(0, 0, clark(_.take(_.map(tops, 'token'), graphSize)));
-
-    return msg.send(message.join('\n'));
-  }
-
-  async function respondWithUsersBotDay(msg) {
-    let userToLookup = msg.message.user.name;
-    const isMy = msg.match[2].toLowerCase() !== 'my';
-    let messageName = 'Your';
-    robot.logger.debug(`respond with users bot day ${msg.match}`);
-    if (isMy) {
-      userToLookup = helpers.cleanName(msg.match[2]);
-    }
-    const user = await scoreKeeper.databaseService.getUser({ name: userToLookup });
-    if (isMy) {
-      messageName = user.slackId ? `<@${user.slackId}>'s` : `${user.name}'s`;
-    }
-    const dateObj = new Date(user[`${robot.name}Day`]);
-    msg.send(`${messageName} ${robot.name}day is ${moment(dateObj).format('MM-DD-yyyy')}`);
   }
 
   async function eraseUserScore(msg) {
@@ -502,29 +342,5 @@ module.exports = function plusPlus(robot) {
       });
     }
     msg.send(message);
-  }
-
-  function sendPlusPlusNotification(notificationObject) {
-    if (procVars.notificationsRoom) {
-      robot.messageRoom(procVars.notificationsRoom, notificationObject.notificationMessage);
-    }
-  }
-
-  function sendPlusPlusFalsePositiveNotification(notificationObject) {
-    if (procVars.falsePositiveNotificationsRoom) {
-      robot.messageRoom(procVars.falsePositiveNotificationsRoom, notificationObject.notificationMessage);
-    }
-  }
-
-  /**
-   *
-   * @param {object} notificationObject
-   * @param {object} notificationObject.to the user object who was receiving the point
-   * @param {object} notificationObject.from the user object who was sending the point
-   * @param {string} notificationObject.message the message that should be sent to the user
-   * @param {string} notificationObject.reason a reason why the message is being sent
-   */
-  function logAndNotifySpam(notificationObject) {
-    robot.messageRoom(notificationObject.from.slackId, `${notificationObject.message}\n\n${notificationObject.reason}`);
   }
 };
