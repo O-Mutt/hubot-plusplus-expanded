@@ -224,7 +224,7 @@ class DatabaseService {
   async getTopSender(amount) {
     const db = await this.getDb();
     const results = await db.collection(scoresDocumentName)
-      .find({})
+      .find({ totalPointsGiven: { $exists: true } })
       .sort({ totalPointsGiven: -1, accountLevel: -1 })
       .limit(amount)
       .toArray();
@@ -237,8 +237,8 @@ class DatabaseService {
   async getBottomSender(amount) {
     const db = await this.getDb();
     const results = await db.collection(scoresDocumentName)
-      .find({})
-      .sort({ totalPointsGiven: -1, accountLevel: -1 })
+      .find({ totalPointsGiven: { $exists: true } })
+      .sort({ totalPointsGiven: 1, accountLevel: -1 })
       .limit(amount)
       .toArray();
 

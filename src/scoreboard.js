@@ -33,15 +33,11 @@ module.exports = function plusPlus(robot) {
       tokenString = ` (*${user.token} ${helpers.capitalizeFirstLetter(robot.name)} `;
       tokenString = tokenString.concat(user.token > 1 ? 'Tokens*).' : 'Token*).');
     }
-    let pointsGiven = 0;
-    // eslint-disable-next-line guard-for-in
-    for (const key in user.pointsGiven) {
-      pointsGiven += parseInt(user.pointsGiven[key], 10);
-    }
+
     const scoreStr = user.score > 1 ? 'points' : 'point';
     let baseString = `<@${user.slackId}> has ${user.score} ${scoreStr}${tokenString}`;
     baseString += `\nAccount Level: ${user.accountLevel}`;
-    baseString += `\nTotal Points Given: ${pointsGiven}`;
+    baseString += `\nTotal Points Given: ${user.totalPointsGiven}`;
     if (user[`${robot.name}Day`]) {
       const dateObj = new Date(user[`${robot.name}Day`]);
       baseString += `\n:birthday: ${helpers.capitalizeFirstLetter(robot.name)}day is ${moment(dateObj).format('MM-DD-yyyy')}`;
