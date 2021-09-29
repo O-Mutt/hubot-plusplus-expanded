@@ -125,7 +125,7 @@ module.exports = function plusPlus(robot) {
     const amount = parseInt(msg.match[2], 10) || 10;
     const topOrBottom = msg.match[1].trim().toLowerCase();
     const users = await databaseService.getAllUsers();
-    for (const user of users) {
+    for (const user in users) {
       user.totalPointsGiven = 0;
       for (const key in user.pointsGiven) {
         user.totalPointsGiven += parseInt(user.pointsGiven[key], 10);
