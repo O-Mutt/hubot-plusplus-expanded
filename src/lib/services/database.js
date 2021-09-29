@@ -54,6 +54,18 @@ class DatabaseService {
     return dbUser;
   }
 
+  /*
+  * user - the name of the user
+  */
+  async getAllUsers() {
+    const search = { slackId: { $exists: true } };
+    this.robot.logger.debug('getting _all_ users');
+    const db = await this.getDb();
+
+    const dbUsers = await db.collection(scoresDocumentName).find(search);
+    return dbUsers;
+  }
+
   /**
    * Saves the user with a new score
    * @param {object} user the user who is getting a point change

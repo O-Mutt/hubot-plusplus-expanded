@@ -27,10 +27,7 @@
 //
 // Author: O-Mutt
 
-const clark = require('clark');
 const { default: axios } = require('axios');
-const _ = require('lodash');
-const moment = require('moment');
 const tokenBuddy = require('token-buddy');
 
 const pjson = require('../package.json');
@@ -40,12 +37,14 @@ const helpers = require('./lib/helpers');
 // this may need to move or be generic...er
 const token = require('./lib/token.json');
 const decrypt = require('./lib/services/decrypt');
+const DatabaseService = require('./lib/services/database');
 
 module.exports = (robot) => {
   const procVars = helpers.getProcessVariables(process.env);
   const scoreKeeper = new ScoreKeeper({ robot, ...procVars });
+  const databaseService = new DatabaseService({ robot, ...procVars });
 
-  scoreKeeper.databaseService.getMagicSecretStringNumberValue().then((databaseMagicString) => {
+  databaseService.getMagicSecretStringNumberValue().then((databaseMagicString) => {
     const magicMnumber = decrypt(procVars.magicIv, procVars.magicNumber, databaseMagicString);
     tokenBuddy.init({
       index: 0,
