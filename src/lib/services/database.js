@@ -98,8 +98,10 @@ class DatabaseService {
 
   async savePlusPlusLog(to, from, room, reason, incrementValue) {
     const fromId = from.slackId || from.name;
+    const scoreSearch = from.slackId ? { slackId: from.slackId } : { name: from.name };
     const toId = to.slackId || to.name;
     const db = await this.getDb();
+    await db.collection(scoresDocumentName).updateOne(scoreSearch, { $inc: { totalPointsGiven: incrementValue } });
     await db.collection(logDocumentName).insertOne({
       from: fromId,
       to: toId,
@@ -214,7 +216,33 @@ class DatabaseService {
       .limit(amount)
       .toArray();
 
-    this.robot.logger.debug('Trying to find top tokens');
+    this.robot.logger.debug('Trying to find bottom tokens');
+
+    return results;
+  }
+
+  async getTopSender(amount) {
+    const db = await this.getDb();
+    const results = await db.collection(scoresDocumentName)
+      .find({})
+      .sort({ totalPointsGiven: -1, accountLevel: -1 })
+      .limit(amount)
+      .toArray();
+
+    this.robot.logger.debug('Trying to find top sender');
+
+    return results;
+  }
+
+  async getBottomSender(amount) {
+    const db = await this.getDb();
+    const results = await db.collection(scoresDocumentName)
+      .find({})
+      .sort({ totalPointsGiven: -1, accountLevel: -1 })
+      .limit(amount)
+      .toArray();
+
+    this.robot.logger.debug('Trying to find bottom sender');
 
     return results;
   }

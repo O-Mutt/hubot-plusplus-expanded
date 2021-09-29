@@ -123,21 +123,10 @@ module.exports = function plusPlus(robot) {
 
   async function getTopPointSenders(msg) {
     const amount = parseInt(msg.match[2], 10) || 10;
-    const topOrBottom = msg.match[1].trim().toLowerCase();
-    const users = await databaseService.getAllUsers();
-    for (const user in users) {
-      user.totalPointsGiven = 0;
-      for (const key in user.pointsGiven) {
-        user.totalPointsGiven += parseInt(user.pointsGiven[key], 10);
-      }
-    }
+    const topOrBottom = helpers.capitalizeFirstLetter(msg.match[1].trim());
+    const methodName = `get${topOrBottom}Sender`;
+    const tops = await databaseService[methodName](amount);
 
-    const sortedUsers = _.sortBy(users, ['totalPointsGiven', 'score']);
-    if (topOrBottom !== 'top') {
-      _.reverse(sortedUsers);
-    }
-
-    const tops = sortedUsers.slice(0, amount);
     const message = [];
     if (tops.length > 0) {
       for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
