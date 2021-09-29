@@ -62,7 +62,7 @@ class DatabaseService {
     this.robot.logger.debug('getting _all_ users');
     const db = await this.getDb();
 
-    const dbUsers = await db.collection(scoresDocumentName).findMany(search);
+    const dbUsers = await db.collection(scoresDocumentName).find(search).toArray();
     return dbUsers;
   }
 
