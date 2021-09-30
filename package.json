@@ -44,6 +44,7 @@
     "@slack/client": "^5.0.2",
     "axios": "^0.21.1",
     "clark": "^0.0.6",
+    "cron": "^1.8.2",
     "hubot-conversation": "^1.1.1",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",

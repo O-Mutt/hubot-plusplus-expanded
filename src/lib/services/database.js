@@ -292,6 +292,22 @@ class DatabaseService {
     return botWallet;
   }
 
+  async getTopSenderInDuration(amount = 10, days = 7) {
+    const db = await this.getDb();
+    const topSendersForDuration = await db.collection(logDocumentName).aggregate([
+      {
+        $match: { date: { $gt: new Date(new Date().setDate(new Date().getDate() - days)).toISOString() } },
+      },
+      {
+        $group: { _id: '$from', scoreChange: { $sum: '$scoreChange' } },
+      },
+      {
+        $sort: { scoreChange: -1 },
+      }])
+      .limit(10).toArray();
+    return topSendersForDuration;
+  }
+
   /**
    *
    * @param {string} userName the name of the user receiving the points
