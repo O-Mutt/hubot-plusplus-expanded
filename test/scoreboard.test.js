@@ -36,7 +36,7 @@ describe('Scoreboard', function () {
       room.user.say('matt.erickson', '@hubot score for @matt.erickson');
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages[1][1]).to.match(
-        /<@matt\.erickson> has 227 points\.\nAccount Level: 1\nTotal Points Given: 14\n:birthday: Hubotday is 07-09-2020\n\n:star: Here are some reasons :star:(\n.*:.*){5}/,
+        /<@matt\.erickson> has 227 points\.\nAccount Level: 1\nTotal Points Given: 13\n:birthday: Hubotday is 07-09-2020\n\n:star: Here are some reasons :star:(\n.*:.*){5}/,
       );
     });
 

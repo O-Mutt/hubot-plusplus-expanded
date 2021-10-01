@@ -270,6 +270,13 @@ describe('PlusPlus', function () {
       expect(from.token).to.equal(198);
       room.user.say('peter.parker', '@hubot @peter.parker.min + 2');
       await new Promise((resolve) => setTimeout(resolve, 50));
+      const spamCheck = await db.collection('scoreLog').findOne({ from: 'peter.parker' });
+      expect(Object.keys(spamCheck)).to.eql(['_id', 'from', 'to', 'date', 'room', 'reason', 'scoreChange']);
+      spamCheck.date = '123'; // hack to handle date;
+      spamCheck._id = '1';
+      expect(spamCheck).to.deep.include({
+        from: 'peter.parker', to: 'peter.parker.min', reason: null, room: room.name, scoreChange: 2, _id: '1', date: '123',
+      });
       expect(room.messages[3][1]).to.equal("I'm sorry <@peter.parker>, I'm afraid I can't do that.");
     });
   });

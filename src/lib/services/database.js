@@ -97,18 +97,19 @@ class DatabaseService {
   }
 
   async savePlusPlusLog(to, from, room, reason, incrementValue) {
+    const pointsAmount = parseInt(incrementValue, 10);
     const fromId = from.slackId || from.name;
     const scoreSearch = from.slackId ? { slackId: from.slackId } : { name: from.name };
     const toId = to.slackId || to.name;
     const db = await this.getDb();
-    await db.collection(scoresDocumentName).updateOne(scoreSearch, { $inc: { totalPointsGiven: incrementValue } });
+    await db.collection(scoresDocumentName).updateOne(scoreSearch, { $inc: { totalPointsGiven: pointsAmount } });
     await db.collection(logDocumentName).insertOne({
       from: fromId,
       to: toId,
       date: moment().toISOString(),
       room,
       reason,
-      scoreChange: incrementValue,
+      scoreChange: pointsAmount,
     });
   }
 
