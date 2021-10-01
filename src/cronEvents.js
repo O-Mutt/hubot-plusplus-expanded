@@ -60,7 +60,7 @@ module.exports = (robot) => {
       message = [];
       if (topRoom.length > 0) {
         for (let i = 0, end = topRoom.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
-          const person = `<@${topRoom[i]._id}>`;
+          const person = `<#${topRoom[i]._id}>`;
           const pointStr = topRoom[i].scoreChange > 1 ? 'points given' : 'point given';
           message.push(`${i + 1}. ${person} (${topRoom[i].scoreChange} ${pointStr})`);
         }
