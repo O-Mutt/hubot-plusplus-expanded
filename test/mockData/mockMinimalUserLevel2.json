@@ -15,5 +15,6 @@
   "hubotDay" : "2020-07-09T16:55:04.374Z",
   "accountLevel": 2,
   "token": 8,
-  "slackId": "peter.parker.min"
+  "slackId": "peter.parker.min",
+  "totalPointsGiven": -2
 }
