@@ -194,6 +194,8 @@ function getProcessVariables(env) {
   procVars.furtherHelpUrl = env.HUBOT_CRYPTO_FURTHER_HELP_URL || undefined;
   procVars.notificationsRoom = env.HUBOT_PLUSPLUS_NOTIFICATION_ROOM || undefined;
   procVars.falsePositiveNotificationsRoom = env.HUBOT_PLUSPLUS_FALSE_POSITIVE_NOTIFICATION_ROOM || undefined;
+  procVars.monthlyScoreboardCron = env.HUBOT_PLUSPLUS_MONTHLY_SCOREBOARD_CRON || '0 10 1-7 * *';
+  procVars.monthlyScoreboardDayOfWeek = env.HUBOT_PLUSPLUS_MONTHLY_SCOREBOARD_DAY_OF_WEEK || 1; // 0-6 (Sun - Sat)
   return procVars;
 }
 
