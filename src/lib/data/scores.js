@@ -39,6 +39,8 @@ const createNewLevelOneUser = (user, robotName) => {
   }
   if (user.profile && user.profile.email) {
     newUser.slackEmail = user.profile.email;
+  } else if (user.info && user.info.email_address) {
+    newUser.slackEmail = user.info.email_address;
   }
   return newUser;
 };
