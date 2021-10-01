@@ -54,6 +54,18 @@ class DatabaseService {
     return dbUser;
   }
 
+  /*
+  * user - the name of the user
+  */
+  async getAllUsers() {
+    const search = { slackId: { $exists: true } };
+    this.robot.logger.debug('getting _all_ users');
+    const db = await this.getDb();
+
+    const dbUsers = await db.collection(scoresDocumentName).find(search).toArray();
+    return dbUsers;
+  }
+
   /**
    * Saves the user with a new score
    * @param {object} user the user who is getting a point change
@@ -86,8 +98,10 @@ class DatabaseService {
 
   async savePlusPlusLog(to, from, room, reason, incrementValue) {
     const fromId = from.slackId || from.name;
+    const scoreSearch = from.slackId ? { slackId: from.slackId } : { name: from.name };
     const toId = to.slackId || to.name;
     const db = await this.getDb();
+    await db.collection(scoresDocumentName).updateOne(scoreSearch, { $inc: { totalPointsGiven: incrementValue } });
     await db.collection(logDocumentName).insertOne({
       from: fromId,
       to: toId,
@@ -202,7 +216,33 @@ class DatabaseService {
       .limit(amount)
       .toArray();
 
-    this.robot.logger.debug('Trying to find top tokens');
+    this.robot.logger.debug('Trying to find bottom tokens');
+
+    return results;
+  }
+
+  async getTopSender(amount) {
+    const db = await this.getDb();
+    const results = await db.collection(scoresDocumentName)
+      .find({ totalPointsGiven: { $exists: true } })
+      .sort({ totalPointsGiven: -1, accountLevel: -1 })
+      .limit(amount)
+      .toArray();
+
+    this.robot.logger.debug('Trying to find top sender');
+
+    return results;
+  }
+
+  async getBottomSender(amount) {
+    const db = await this.getDb();
+    const results = await db.collection(scoresDocumentName)
+      .find({ totalPointsGiven: { $exists: true } })
+      .sort({ totalPointsGiven: 1, accountLevel: -1 })
+      .limit(amount)
+      .toArray();
+
+    this.robot.logger.debug('Trying to find bottom sender');
 
     return results;
   }
@@ -250,6 +290,54 @@ class DatabaseService {
     const db = await this.getDb();
     const botWallet = await db.collection(botTokenDocumentName).findOne({ name: this.robot.name });
     return botWallet;
+  }
+
+  async getTopSenderInDuration(amount = 10, days = 7) {
+    const db = await this.getDb();
+    const topSendersForDuration = await db.collection(logDocumentName).aggregate([
+      {
+        $match: { date: { $gt: new Date(new Date().setDate(new Date().getDate() - days)).toISOString() } },
+      },
+      {
+        $group: { _id: '$from', scoreChange: { $sum: '$scoreChange' } },
+      },
+      {
+        $sort: { scoreChange: -1 },
+      }])
+      .limit(amount).toArray();
+    return topSendersForDuration;
+  }
+
+  async getTopReceiverInDuration(amount = 10, days = 7) {
+    const db = await this.getDb();
+    const topRecipientForDuration = await db.collection(logDocumentName).aggregate([
+      {
+        $match: { date: { $gt: new Date(new Date().setDate(new Date().getDate() - days)).toISOString() } },
+      },
+      {
+        $group: { _id: '$to', scoreChange: { $sum: '$scoreChange' } },
+      },
+      {
+        $sort: { scoreChange: -1 },
+      }])
+      .limit(amount).toArray();
+    return topRecipientForDuration;
+  }
+
+  async getTopRoomInDuration(amount = 3, days = 7) {
+    const db = await this.getDb();
+    const topRoomForDuration = await db.collection(logDocumentName).aggregate([
+      {
+        $match: { date: { $gt: new Date(new Date().setDate(new Date().getDate() - days)).toISOString() } },
+      },
+      {
+        $group: { _id: '$room', scoreChange: { $sum: '$scoreChange' } },
+      },
+      {
+        $sort: { scoreChange: -1 },
+      }])
+      .limit(amount).toArray();
+    return topRoomForDuration;
   }
 
   /**

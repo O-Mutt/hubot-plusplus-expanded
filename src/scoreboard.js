@@ -3,16 +3,17 @@ const clark = require('clark');
 const _ = require('lodash');
 
 const helpers = require('./lib/helpers');
-const ScoreKeeper = require('./lib/services/scorekeeper');
+const DatabaseService = require('./lib/services/database');
 const regExpCreator = require('./lib/regexpCreator');
 
 module.exports = function plusPlus(robot) {
   const procVars = helpers.getProcessVariables(process.env);
-  const scoreKeeper = new ScoreKeeper({ robot, ...procVars });
+  const databaseService = new DatabaseService({ robot, ...procVars });
 
   robot.respond(regExpCreator.createAskForScoreRegExp(), respondWithScore);
   robot.respond(regExpCreator.createTopBottomRegExp(), respondWithLeaderLoserBoard);
   robot.respond(regExpCreator.createTopBottomTokenRegExp(), respondWithLeaderLoserTokenBoard);
+  robot.respond(regExpCreator.createTopPointGiversRegExp(), getTopPointSenders);
   robot.respond(regExpCreator.createBotDayRegExp(robot.name), respondWithUsersBotDay);
 
   async function respondWithScore(msg) {
@@ -25,22 +26,18 @@ module.exports = function plusPlus(robot) {
       to.name = name;
     }
 
-    const user = await scoreKeeper.getUser(to);
+    const user = await databaseService.getUser(to);
 
     let tokenString = '.';
     if (user.accountLevel > 1) {
       tokenString = ` (*${user.token} ${helpers.capitalizeFirstLetter(robot.name)} `;
       tokenString = tokenString.concat(user.token > 1 ? 'Tokens*).' : 'Token*).');
     }
-    let pointsGiven = 0;
-    // eslint-disable-next-line guard-for-in
-    for (const key in user.pointsGiven) {
-      pointsGiven += parseInt(user.pointsGiven[key], 10);
-    }
+
     const scoreStr = user.score > 1 ? 'points' : 'point';
     let baseString = `<@${user.slackId}> has ${user.score} ${scoreStr}${tokenString}`;
     baseString += `\nAccount Level: ${user.accountLevel}`;
-    baseString += `\nTotal Points Given: ${pointsGiven}`;
+    baseString += `\nTotal Points Given: ${user.totalPointsGiven}`;
     if (user[`${robot.name}Day`]) {
       const dateObj = new Date(user[`${robot.name}Day`]);
       baseString += `\n:birthday: ${helpers.capitalizeFirstLetter(robot.name)}day is ${moment(dateObj).format('MM-DD-yyyy')}`;
@@ -73,7 +70,7 @@ module.exports = function plusPlus(robot) {
     const topOrBottom = helpers.capitalizeFirstLetter(msg.match[1].trim());
     const methodName = `get${topOrBottom}Scores`;
 
-    const tops = await scoreKeeper.databaseService[methodName](amount);
+    const tops = await databaseService[methodName](amount);
     const message = [];
     if (tops.length > 0) {
       for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
@@ -100,7 +97,7 @@ module.exports = function plusPlus(robot) {
     const topOrBottom = helpers.capitalizeFirstLetter(msg.match[1].trim());
     const methodName = `get${topOrBottom}Tokens`;
 
-    const tops = await scoreKeeper.databaseService[methodName](amount);
+    const tops = await databaseService[methodName](amount);
 
     const message = [];
     if (tops.length > 0) {
@@ -120,6 +117,29 @@ module.exports = function plusPlus(robot) {
     return msg.send(message.join('\n'));
   }
 
+  async function getTopPointSenders(msg) {
+    const amount = parseInt(msg.match[2], 10) || 10;
+    const topOrBottom = helpers.capitalizeFirstLetter(msg.match[1].trim());
+    const methodName = `get${topOrBottom}Sender`;
+    const tops = await databaseService[methodName](amount);
+
+    const message = [];
+    if (tops.length > 0) {
+      for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
+        const person = `<@${tops[i].slackId}>`;
+        const pointStr = tops[i].totalPointsGiven > 1 ? 'points given' : 'point given';
+        message.push(`${i + 1}. ${person} (${tops[i].totalPointsGiven} ${pointStr})`);
+      }
+    } else {
+      message.push('No scores to keep track of yet!');
+    }
+
+    const graphSize = Math.min(tops.length, Math.min(amount, 20));
+    message.splice(0, 0, clark(_.take(_.map(tops, 'totalPointsGiven'), graphSize)));
+
+    return msg.send(message.join('\n'));
+  }
+
   async function respondWithUsersBotDay(msg) {
     let userToLookup = msg.message.user.name;
     const isMy = msg.match[2].toLowerCase() !== 'my';
@@ -128,7 +148,7 @@ module.exports = function plusPlus(robot) {
     if (isMy) {
       userToLookup = helpers.cleanName(msg.match[2]);
     }
-    const user = await scoreKeeper.databaseService.getUser({ name: userToLookup });
+    const user = await databaseService.getUser({ name: userToLookup });
     if (isMy) {
       messageName = user.slackId ? `<@${user.slackId}>'s` : `${user.name}'s`;
     }

@@ -77,6 +77,14 @@ class RegExpCreator {
     );
   }
 
+  createTopPointGiversRegExp() {
+    const topOrBottom = '(top|bottom)';
+    const digits = '(\\d+)';
+    return new RegExp(
+      `${topOrBottom}${this.allowSpaceAfterObject}(?:point givers?|point senders?|givers?|senders?)${this.allowSpaceAfterObject}${digits}`,
+      'i'
+    );
+  }
   /**
    * user1++ for being dope
    * user1-- cuz nope

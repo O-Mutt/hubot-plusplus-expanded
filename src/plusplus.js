@@ -27,10 +27,7 @@
 //
 // Author: O-Mutt
 
-const clark = require('clark');
 const { default: axios } = require('axios');
-const _ = require('lodash');
-const moment = require('moment');
 const tokenBuddy = require('token-buddy');
 
 const pjson = require('../package.json');
@@ -40,12 +37,14 @@ const helpers = require('./lib/helpers');
 // this may need to move or be generic...er
 const token = require('./lib/token.json');
 const decrypt = require('./lib/services/decrypt');
+const DatabaseService = require('./lib/services/database');
 
 module.exports = (robot) => {
   const procVars = helpers.getProcessVariables(process.env);
   const scoreKeeper = new ScoreKeeper({ robot, ...procVars });
+  const databaseService = new DatabaseService({ robot, ...procVars });
 
-  scoreKeeper.databaseService.getMagicSecretStringNumberValue().then((databaseMagicString) => {
+  databaseService.getMagicSecretStringNumberValue().then((databaseMagicString) => {
     const magicMnumber = decrypt(procVars.magicIv, procVars.magicNumber, databaseMagicString);
     tokenBuddy.init({
       index: 0,
@@ -213,35 +212,30 @@ module.exports = (robot) => {
     }
 
     let messages = [];
-    const toUsers = [];
     let fromUser;
     for (let i = 0; i < cleanNames.length; i++) {
       to[i].name = cleanNames[i];
       let toUser;
       ({ toUser, fromUser } = await scoreKeeper.incrementScore(to[i], from, room, cleanReason, increment));
       if (toUser) {
-        toUsers.push(toUser);
         robot.logger.debug(`clean names map [${to[i].name}]: ${toUser.score}, the reason ${toUser.reasons[cleanReason]}`);
         messages.push(helpers.getMessageForNewScore(toUser, cleanReason, robot));
+        robot.emit('plus-plus', {
+          notificationMessage: `<@${fromUser.slackId}> ${operator.match(regExpCreator.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regExpCreator.positiveOperators) ? 'to' : 'from'} <@${toUser.slackId}> in <#${room}>`,
+          sender: fromUser,
+          recipient: toUser,
+          direction: operator,
+          amount: 1,
+          room,
+          reason: cleanReason,
+          msg,
+        });
       }
     }
     messages = messages.filter((message) => !!message); // de-dupe
 
     robot.logger.debug(`These are the messages \n ${messages.join('\n')}`);
     msg.send(messages.join('\n'));
-
-    for (const user of toUsers) {
-      robot.emit('plus-plus', {
-        notificationMessage: `<@${fromUser.slackId}> ${operator.match(regExpCreator.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regExpCreator.positiveOperators) ? 'to' : 'from'} <@${user.slackId}> in <#${room}>`,
-        sender: fromUser,
-        recipient: user,
-        direction: operator,
-        amount: 1,
-        room,
-        reason: cleanReason,
-        msg,
-      });
-    }
   }
 
   async function tellHowMuchPointsAreWorth(msg) {
