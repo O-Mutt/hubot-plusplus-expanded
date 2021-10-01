@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/Mutmatt/hubot-plusplus-expanded.git"
+    "url": "git://github.com/O-Mutt/hubot-plusplus-expanded.git"
   },
   "keywords": [
     "hubot",
@@ -32,13 +32,13 @@
     "slack"
   ],
   "author": {
-    "name": "Matt Erickson",
-    "email": "hubot@matterickson.me",
-    "url": "https://github.com/Mutmatt/hubot-plusplus-expanded"
+    "name": "Matt O'Keefe",
+    "email": "hubot@okeefe.dev",
+    "url": "https://github.com/O-Mutt/hubot-plusplus-expanded"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Mutmatt/hubot-plusplus-expanded/issues"
+    "url": "https://github.com/O-Mutt/hubot-plusplus-expanded/issues"
   },
   "dependencies": {
     "@slack/client": "^5.0.2",
