@@ -4,7 +4,7 @@
   "description": "A hubot script for micro praise",
   "main": "index.js",
   "engines": {
-    "node": "^14"
+    "node": "^16"
   },
   "config": {
     "mongodbMemoryServer": {
