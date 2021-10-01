@@ -304,8 +304,40 @@ class DatabaseService {
       {
         $sort: { scoreChange: -1 },
       }])
-      .limit(10).toArray();
+      .limit(amount).toArray();
     return topSendersForDuration;
+  }
+
+  async getTopReceiverInDuration(amount = 10, days = 7) {
+    const db = await this.getDb();
+    const topRecipientForDuration = await db.collection(logDocumentName).aggregate([
+      {
+        $match: { date: { $gt: new Date(new Date().setDate(new Date().getDate() - days)).toISOString() } },
+      },
+      {
+        $group: { _id: '$to', scoreChange: { $sum: '$scoreChange' } },
+      },
+      {
+        $sort: { scoreChange: -1 },
+      }])
+      .limit(amount).toArray();
+    return topRecipientForDuration;
+  }
+
+  async getTopRoomInDuration(amount = 3, days = 7) {
+    const db = await this.getDb();
+    const topRoomForDuration = await db.collection(logDocumentName).aggregate([
+      {
+        $match: { date: { $gt: new Date(new Date().setDate(new Date().getDate() - days)).toISOString() } },
+      },
+      {
+        $group: { _id: '$room', scoreChange: { $sum: '$scoreChange' } },
+      },
+      {
+        $sort: { scoreChange: -1 },
+      }])
+      .limit(amount).toArray();
+    return topRoomForDuration;
   }
 
   /**

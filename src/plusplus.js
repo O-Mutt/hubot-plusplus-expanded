@@ -212,35 +212,30 @@ module.exports = (robot) => {
     }
 
     let messages = [];
-    const toUsers = [];
     let fromUser;
     for (let i = 0; i < cleanNames.length; i++) {
       to[i].name = cleanNames[i];
       let toUser;
       ({ toUser, fromUser } = await scoreKeeper.incrementScore(to[i], from, room, cleanReason, increment));
       if (toUser) {
-        toUsers.push(toUser);
         robot.logger.debug(`clean names map [${to[i].name}]: ${toUser.score}, the reason ${toUser.reasons[cleanReason]}`);
         messages.push(helpers.getMessageForNewScore(toUser, cleanReason, robot));
+        robot.emit('plus-plus', {
+          notificationMessage: `<@${fromUser.slackId}> ${operator.match(regExpCreator.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regExpCreator.positiveOperators) ? 'to' : 'from'} <@${toUser.slackId}> in <#${room}>`,
+          sender: fromUser,
+          recipient: toUser,
+          direction: operator,
+          amount: 1,
+          room,
+          reason: cleanReason,
+          msg,
+        });
       }
     }
     messages = messages.filter((message) => !!message); // de-dupe
 
     robot.logger.debug(`These are the messages \n ${messages.join('\n')}`);
     msg.send(messages.join('\n'));
-
-    for (const user of toUsers) {
-      robot.emit('plus-plus', {
-        notificationMessage: `<@${fromUser.slackId}> ${operator.match(regExpCreator.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regExpCreator.positiveOperators) ? 'to' : 'from'} <@${user.slackId}> in <#${room}>`,
-        sender: fromUser,
-        recipient: user,
-        direction: operator,
-        amount: 1,
-        room,
-        reason: cleanReason,
-        msg,
-      });
-    }
   }
 
   async function tellHowMuchPointsAreWorth(msg) {
