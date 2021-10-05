@@ -141,7 +141,8 @@ module.exports = (robot) => {
       const missingEmailUsers = await db.collection(scoresDocumentName).find({ slackId: { $exists: true }, slackEmail: { $exists: false } });
       const web = new WebClient(robot.adapter.options.token);
 
-      for (const user of missingEmailUsers) {
+      // eslint-disable-next-line guard-for-in
+      for (const user in missingEmailUsers) {
         robot.logger.debug('Map this member', user.slackId, user.name);
         const { slackUser } = await web.users.info({ user: user.slackId });
         user.slackEmail = slackUser.profile.email;
