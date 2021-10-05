@@ -35,16 +35,6 @@ class RegExpCreator {
   }
 
   /**
-   *
-   */
-  createBotDayRegExp(botName) {
-    return new RegExp(
-      `(what\\sday|when|which\\sday|which)\\sis\\s(my|@?\\w+\\.\\w+)(\\s)?('s)?\\s${botName}(\\s)?day(\\?)?`,
-      'i'
-    );
-  }
-
-  /**
    * { user1, user2 }++
    * { user1, user2 }--
    */

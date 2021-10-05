@@ -100,39 +100,4 @@ describe('Scoreboard', function () {
       );
     });
   });
-
-  describe('respondWithUsersBotDay', function respondWithUsersBotDay() {
-    it('should respond with the hubot day when asked', async function () {
-      room.user.say('matt.erickson', 'hubot when is my hubotday?');
-      await new Promise((resolve) => setTimeout(resolve, 45));
-      expect(room.messages[1][1]).to.equal('Your hubotday is 07-09-2020');
-    });
-
-    it('should respond with the hubot day when asked about a different persons hubot day', async function () {
-      room.user.say('phil.bob', 'hubot what day is matt.erickson hubot day?');
-      await new Promise((resolve) => setTimeout(resolve, 45));
-      expect(room.messages[1][1]).to.equal(
-        '<@matt.erickson>\'s hubotday is 07-09-2020',
-      );
-    });
-
-    it('should respond with the hubot day when asked about a different persons (with \') hubot day', async function () {
-      room.user.say('phil.bob', 'hubot what day is matt.erickson\'s hubot day?');
-      await new Promise((resolve) => setTimeout(resolve, 45));
-      expect(room.messages[1][1]).to.equal(
-        '<@matt.erickson>\'s hubotday is 07-09-2020',
-      );
-    });
-
-    it('should respond with the hubot day when asked about a different persons (with space \') hubot day', async function () {
-      room.user.say(
-        'phil.bob',
-        'hubot what day is matt.erickson \'s hubot day?',
-      );
-      await new Promise((resolve) => setTimeout(resolve, 45));
-      expect(room.messages[1][1]).to.equal(
-        '<@matt.erickson>\'s hubotday is 07-09-2020',
-      );
-    });
-  });
 });
