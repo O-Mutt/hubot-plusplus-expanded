@@ -138,13 +138,18 @@ module.exports = (robot) => {
     const db = await databaseService.getDb();
 
     try {
-      const missingEmailUsers = await db.collection(scoresDocumentName).find({ slackId: { $exists: true }, slackEmail: { $exists: false } });
+      const missingEmailUsers = await db.collection(scoresDocumentName).find({ slackId: { $exists: true }, slackEmail: { $exists: false } }).toArray();
       const web = new WebClient(robot.adapter.options.token);
 
-      // eslint-disable-next-line guard-for-in
-      for (const user in missingEmailUsers) {
+      for (const user of missingEmailUsers) {
         robot.logger.debug('Map this member', user.slackId, user.name);
-        const { slackUser } = await web.users.info({ user: user.slackId });
+        let slackUser;
+        try {
+          slackUser = (await web.users.info({ user: user.slackId })).user;
+        } catch (e) {
+          robot.logger.error(`error retrieving user: ${user.slackId} ${user.name}`);
+          continue;
+        }
         user.slackEmail = slackUser.profile.email;
         await db.collection(scoresDocumentName).replaceOne({ slackId: user.slackId }, user);
         msg.send(`Mapping completed for ${user.name}: { name: ${user.name}, slackId: <@${user.slackId}>, email: ${user.slackEmail} }`);
