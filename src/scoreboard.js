@@ -1,3 +1,18 @@
+// Description:
+//  Hubot scoreboard for hubot-plusplus-expanded.
+//
+// Commands:
+//  @hubot score for @user - displays a snap shot of the user requested
+//  @hubot top scores 10 - displays top 10 (or any number) scores of all time
+//  @hubot bottom scores 5 - displays bottom 5 (or any number) scores of all time
+//  @hubot top tokens 7 - displays top 7 (or any number) tokens of all time
+//  @hubot bottom tokens 2 - displays top 2 (or any number) tokens of all time
+//  @hubot top scores 10 - displays top 10 scores of all time
+//  @hubot top scores 10 - displays top 10 scores of all time
+//
+// Author:
+//  O'Mutt (Matt@OKeefe.dev)
+
 const moment = require('moment');
 const clark = require('clark');
 const _ = require('lodash');
@@ -14,7 +29,6 @@ module.exports = function plusPlus(robot) {
   robot.respond(regExpCreator.createTopBottomRegExp(), respondWithLeaderLoserBoard);
   robot.respond(regExpCreator.createTopBottomTokenRegExp(), respondWithLeaderLoserTokenBoard);
   robot.respond(regExpCreator.createTopPointGiversRegExp(), getTopPointSenders);
-  robot.respond(regExpCreator.createBotDayRegExp(robot.name), respondWithUsersBotDay);
 
   async function respondWithScore(msg) {
     const { mentions } = msg.message;
@@ -138,21 +152,5 @@ module.exports = function plusPlus(robot) {
     message.splice(0, 0, clark(_.take(_.map(tops, 'totalPointsGiven'), graphSize)));
 
     return msg.send(message.join('\n'));
-  }
-
-  async function respondWithUsersBotDay(msg) {
-    let userToLookup = msg.message.user.name;
-    const isMy = msg.match[2].toLowerCase() !== 'my';
-    let messageName = 'Your';
-    robot.logger.debug(`respond with users bot day ${msg.match}`);
-    if (isMy) {
-      userToLookup = helpers.cleanName(msg.match[2]);
-    }
-    const user = await databaseService.getUser({ name: userToLookup });
-    if (isMy) {
-      messageName = user.slackId ? `<@${user.slackId}>'s` : `${user.name}'s`;
-    }
-    const dateObj = new Date(user[`${robot.name}Day`]);
-    msg.send(`${messageName} ${robot.name}day is ${moment(dateObj).format('MM-DD-yyyy')}`);
   }
 };
