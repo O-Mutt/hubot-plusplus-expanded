@@ -148,10 +148,11 @@ module.exports = (robot) => {
           slackUser = (await web.users.info({ user: user.slackId })).user;
         } catch (e) {
           robot.logger.error(`error retrieving user: ${user.slackId} ${user.name}`);
-          continue;
         }
-        user.slackEmail = slackUser.profile.email;
-        await db.collection(scoresDocumentName).replaceOne({ slackId: user.slackId }, user);
+        if (slackUser.profile && slackUser.profile.email) {
+          user.slackEmail = slackUser.profile.email;
+          await db.collection(scoresDocumentName).replaceOne({ slackId: user.slackId }, user);
+        }
         msg.send(`Mapping completed for ${user.name}: { name: ${user.name}, slackId: <@${user.slackId}>, email: ${user.slackEmail} }`);
       }
     } catch (er) {
