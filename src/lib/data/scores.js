@@ -1,3 +1,4 @@
+const { WebClient } = require('@slack/client');
 /*
  * Scores Object
  * --------------------------------
@@ -23,7 +24,7 @@
  */
 const scoresDocumentName = 'scores';
 
-const createNewLevelOneUser = (user, robotName) => {
+async function createNewLevelOneUser(user, robot) {
   const userName = user.name ? user.name : user;
 
   const newUser = {
@@ -31,18 +32,31 @@ const createNewLevelOneUser = (user, robotName) => {
     score: 0,
     reasons: { },
     pointsGiven: { },
-    [`${robotName}Day`]: new Date(),
+    [`${robot.name}Day`]: new Date(),
     accountLevel: 1,
+    totalPointsGiven: 0,
   };
   if (user.id) {
     newUser.slackId = user.id;
   }
-  if (user.profile && user.profile.email) {
-    newUser.slackEmail = user.profile.email;
-  } else if (user.info && user.info.email_address) {
-    newUser.slackEmail = user.info.email_address;
+  newUser.slackEmail = getEmail(user);
+
+  if (newUser.slackId && !newUser.slackEmail) {
+    const web = new WebClient(robot.adapter.options.token);
+    const { slackUser } = await web.users.info({ user: newUser.slackId });
+    newUser.slackEmail = getEmail(slackUser);
   }
+
   return newUser;
-};
+}
+
+function getEmail(user) {
+  if (user.profile && user.profile.email) {
+    return user.profile.email;
+  } else if (user.info && user.info.email_address) {
+    return user.info.email_address;
+  }
+  return undefined;
+}
 
 module.exports = { scoresDocumentName, createNewLevelOneUser };

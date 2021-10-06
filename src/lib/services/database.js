@@ -49,7 +49,7 @@ class DatabaseService {
 
     if (!dbUser) {
       this.robot.logger.debug('creating a new user', user);
-      const newUser = createNewLevelOneUser(user, this.robot.name);
+      const newUser = await createNewLevelOneUser(user, this.robot);
       return newUser;
     }
     return dbUser;

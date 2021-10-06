@@ -96,7 +96,7 @@ module.exports = (robot) => {
 
     try {
       robot.logger.debug('Map this member', JSON.stringify(user));
-      const localMember = await databaseService.getUser(user.name);
+      const localMember = await databaseService.getUser(user);
       localMember.slackId = user.id;
       // eslint-disable-next-line no-underscore-dangle
       if (localMember._id) {
