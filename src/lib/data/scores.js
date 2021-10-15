@@ -35,7 +35,6 @@ async function createNewLevelOneUser(createUser, robot) {
     [`${robot.name}Day`]: new Date(),
     accountLevel: 1,
     totalPointsGiven: 0,
-    token: 0,
   };
   if (createUser.id) {
     newUser.slackId = createUser.id;
