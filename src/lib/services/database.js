@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 const { MongoClient } = require('mongodb');
 const moment = require('moment');
-const { scoresDocumentName, createNewLevelOneUser } = require('../data/scores');
+const scores = require('../data/scores');
 const logDocumentName = require('../data/scoreLog');
 const botTokenDocumentName = require('../data/botToken');
 const helpers = require('../helpers');
@@ -42,14 +42,14 @@ class DatabaseService {
     this.robot.logger.debug(`trying to find user ${JSON.stringify(search)}`);
     const db = await this.getDb();
 
-    const dbUser = await db.collection(scoresDocumentName).findOne(
+    const dbUser = await db.collection(scores.scoresDocumentName).findOne(
       search,
       { sort: { score: -1 } },
     );
 
     if (!dbUser) {
       this.robot.logger.debug('creating a new user', user);
-      const newUser = await createNewLevelOneUser(user, this.robot);
+      const newUser = await scores.createNewLevelOneUser(user, this.robot);
       return newUser;
     }
     return dbUser;
@@ -63,7 +63,7 @@ class DatabaseService {
     this.robot.logger.debug('getting _all_ users');
     const db = await this.getDb();
 
-    const dbUsers = await db.collection(scoresDocumentName).find(search).toArray();
+    const dbUsers = await db.collection(scores.scoresDocumentName).find(search).toArray();
     return dbUsers;
   }
 
@@ -77,7 +77,7 @@ class DatabaseService {
     const search = user.slackId ? { slackId: user.slackId } : { name: userName };
     const db = await this.getDb();
 
-    const result = await db.collection(scoresDocumentName)
+    const result = await db.collection(scores.scoresDocumentName)
       .findOneAndUpdate(
         search,
         {
@@ -103,7 +103,7 @@ class DatabaseService {
     const scoreSearch = from.slackId ? { slackId: from.slackId } : { name: from.name };
     const toId = to.slackId || to.name;
     const db = await this.getDb();
-    await db.collection(scoresDocumentName).updateOne(scoreSearch, { $inc: { totalPointsGiven: pointsAmount } });
+    await db.collection(scores.scoresDocumentName).updateOne(scoreSearch, { $inc: { totalPointsGiven: pointsAmount } });
     await db.collection(logDocumentName).insertOne({
       from: fromId,
       to: toId,
@@ -148,7 +148,7 @@ class DatabaseService {
     const oldScore = fromUser.pointsGiven[cleanName] ? fromUser.pointsGiven[cleanName] : 0;
     // even if they are down voting them they should still get a tally as they ++/-- the same person
     fromUser.pointsGiven[cleanName] = (oldScore + 1);
-    const result = await db.collection(scoresDocumentName)
+    const result = await db.collection(scores.scoresDocumentName)
       .findOneAndUpdate(
         fromSearch,
         { $set: fromUser },
@@ -169,7 +169,7 @@ class DatabaseService {
 
   async getTopScores(amount) {
     const db = await this.getDb();
-    const results = await db.collection(scoresDocumentName)
+    const results = await db.collection(scores.scoresDocumentName)
       .find({})
       .sort({ score: -1, accountLevel: -1 })
       .limit(amount)
@@ -182,7 +182,7 @@ class DatabaseService {
 
   async getBottomScores(amount) {
     const db = await this.getDb();
-    const results = await db.collection(scoresDocumentName)
+    const results = await db.collection(scores.scoresDocumentName)
       .find({})
       .sort({ score: 1, accountLevel: -1 })
       .limit(amount)
@@ -195,7 +195,7 @@ class DatabaseService {
 
   async getTopTokens(amount) {
     const db = await this.getDb();
-    const results = await db.collection(scoresDocumentName)
+    const results = await db.collection(scores.scoresDocumentName)
       .find({
         accountLevel: { $gte: 2 },
       })
@@ -210,7 +210,7 @@ class DatabaseService {
 
   async getBottomTokens(amount) {
     const db = await this.getDb();
-    const results = await db.collection(scoresDocumentName)
+    const results = await db.collection(scores.scoresDocumentName)
       .find({
         accountLevel: { $gte: 2 },
       })
@@ -225,7 +225,7 @@ class DatabaseService {
 
   async getTopSender(amount) {
     const db = await this.getDb();
-    const results = await db.collection(scoresDocumentName)
+    const results = await db.collection(scores.scoresDocumentName)
       .find({ totalPointsGiven: { $exists: true } })
       .sort({ totalPointsGiven: -1, accountLevel: -1 })
       .limit(amount)
@@ -238,7 +238,7 @@ class DatabaseService {
 
   async getBottomSender(amount) {
     const db = await this.getDb();
-    const results = await db.collection(scoresDocumentName)
+    const results = await db.collection(scores.scoresDocumentName)
       .find({ totalPointsGiven: { $exists: true } })
       .sort({ totalPointsGiven: 1, accountLevel: -1 })
       .limit(amount)
@@ -256,12 +256,12 @@ class DatabaseService {
 
     let result;
     if (reason) {
-      const oldUser = await db.collection(scoresDocumentName).findOne(search);
+      const oldUser = await db.collection(scores.scoresDocumentName).findOne(search);
       const newScore = oldUser.score - oldUser.reasons[reason];
-      result = await db.collection(scoresDocumentName)
+      result = await db.collection(scores.scoresDocumentName)
         .updateOne(search, { $set: { score: newScore, reasons: { [`${reason}`]: 0 } } });
     } else {
-      result = await db.collection(scoresDocumentName)
+      result = await db.collection(scores.scoresDocumentName)
         .deleteOne(search, { $set: { score: 0 } });
     }
 
@@ -273,7 +273,7 @@ class DatabaseService {
     const search = user.slackId ? { slackId: user.slackId } : { name: userName };
     const db = await this.getDb();
     let tokensAdded = 0;
-    const foundUser = await db.collection(scoresDocumentName).findOne(search);
+    const foundUser = await db.collection(scores.scoresDocumentName).findOne(search);
     // we are leveling up from 0 (which is level 1) -> 2 or 2 -> 3
     if (foundUser.accountLevel && foundUser.accountLevel === 2) {
       // this is a weird case and shouldn't really happen... not sure about this...
@@ -283,7 +283,7 @@ class DatabaseService {
     foundUser.accountLevel = 2;
     foundUser.token = 0;
     tokensAdded = foundUser.score;
-    await db.collection(scoresDocumentName).updateOne(search, { $set: foundUser });
+    await db.collection(scores.scoresDocumentName).updateOne(search, { $set: foundUser });
     const newScore = await this.transferScoreFromBotToUser(user, tokensAdded);
     return newScore;
   }
@@ -355,7 +355,7 @@ class DatabaseService {
 
     const db = await this.getDb();
     this.robot.logger.info(`We are transferring ${scoreChange} ${helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName} from ${from ? from.name : helpers.capitalizeFirstLetter(this.robot.name)}`);
-    const result = await db.collection(scoresDocumentName).findOneAndUpdate(
+    const result = await db.collection(scores.scoresDocumentName).findOneAndUpdate(
       search,
       {
         $inc:
@@ -371,7 +371,7 @@ class DatabaseService {
     // If this isn't a level up and the score is larger than 1 (tipping aka level 3)
     if (from && from.name && (scoreChange > 1 || scoreChange < -1)) {
       const fromSearch = from.slackId ? { slackId: from.slackId } : { name: from.name };
-      await db.collection(scoresDocumentName).updateOne(fromSearch, { $inc: { token: -scoreChange } });
+      await db.collection(scores.scoresDocumentName).updateOne(fromSearch, { $inc: { token: -scoreChange } });
     }
     return result.value;
   }

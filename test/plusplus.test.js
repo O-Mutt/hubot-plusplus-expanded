@@ -7,6 +7,8 @@ const { expect } = chai;
 const { MongoClient } = require('mongodb');
 const mongoUnit = require('mongo-unit');
 const Helper = require('hubot-test-helper');
+const SlackClient = require('@slack/client');
+const DatabaseService = require('../src/lib/services/database');
 
 const helpers = require('../src/lib/helpers');
 const pjson = require('../package.json');
@@ -31,14 +33,22 @@ describe('PlusPlus', function () {
     plusPlusHelper = new Helper('../src/plusplus.js');
   });
 
+  after(async function () {
+    sinon.restore();
+  });
+
   beforeEach(async function () {
-    sandbox = sinon.createSandbox();
+    sinon.stub(SlackClient, 'WebClient').withArgs('token').returns({
+      users: {
+        info: sinon.stub().returns({ user: { profile: { email: 'test@email.com' } } }),
+      },
+    });
     room = plusPlusHelper.createRoom();
     return mongoUnit.load(testData);
   });
 
   afterEach(async function () {
-    sandbox.restore();
+    sinon.restore();
     room.destroy();
     return mongoUnit.drop();
   });
@@ -108,7 +118,7 @@ describe('PlusPlus', function () {
       });
 
       it('should add a point when a user that is already in the db is ++\'d', async function () {
-        room.user.say('derp', '@matt.erickson++');
+        room.user.say('matt.erickson.min', '@matt.erickson++');
         await new Promise((resolve) => setTimeout(resolve, 45));
         expect(room.messages[1][1]).to.match(/<@matt.erickson> has 228 points\./);
         const user = await db
@@ -144,7 +154,7 @@ describe('PlusPlus', function () {
       });
 
       it('should add a point to user with reason', async function () {
-        room.user.say('derp', '@matt.erickson++ for being awesome');
+        room.user.say('matt.erickson.min', '@matt.erickson++ for being awesome');
         await new Promise((resolve) => setTimeout(resolve, 60));
         expect(room.messages[1][1]).to.match(
           /<@matt\.erickson> has 228 points, 2 of which are for being awesome./,
@@ -153,7 +163,7 @@ describe('PlusPlus', function () {
 
       it('should add a point to user with (sans) conjunction reason', async function () {
         const emitSpy = sinon.spy(room.robot, 'emit');
-        room.user.say('derp', '@matt.erickson++ gawd you\'re awesome');
+        room.user.say('matt.erickson.min', '@matt.erickson++ gawd you\'re awesome');
         await new Promise((resolve) => setTimeout(resolve, 60));
         expect(room.messages[1][1]).to.match(
           /<@matt\.erickson> has 228 points, 1 of which is for gawd you're awesome./,
@@ -175,19 +185,19 @@ describe('PlusPlus', function () {
           .collection('scores')
           .findOne({ name: 'matt.erickson.min' });
         expect(user.score).to.equal(8);
-        room.user.say('derp', '@matt.erickson.min--');
+        room.user.say('matt.erickson', '@matt.erickson.min--');
         await new Promise((resolve) => setTimeout(resolve, 45));
         expect(room.messages[1][1]).to.match(/<@matt.erickson.min> has 7 points\./);
-        user = await db.collection('scores').findOne({ name: 'matt.erickson' });
-        expect(user.score).to.equal(227);
+        user = await db.collection('scores').findOne({ name: 'matt.erickson.min' });
+        expect(user.score).to.equal(7);
       });
 
       it('should subtract a point when a user is :thumbsdown:\'d', async function () {
-        room.user.say('matt.erickson', '@derp :thumbsdown: for being the best');
+        room.user.say('matt.erickson', '@matt.erickson.min :thumbsdown: for being the best');
         await new Promise((resolve) => setTimeout(resolve, 50));
-        expect(room.messages[1][1]).to.equal('derp has -1 point for being the best.\n:birthday: Today is derp\'s hubotday! :birthday:');
-        const user = await db.collection('scores').findOne({ name: 'derp' });
-        expect(user.score).to.equal(-1);
+        expect(room.messages[1][1]).to.equal('<@matt.erickson.min> has 7 points, -1 of which is for being the best.');
+        const user = await db.collection('scores').findOne({ name: 'matt.erickson.min' });
+        expect(user.score).to.equal(7);
       });
 
       it('shouldn\'t remove a point when a user is ++\'d with pre-text and no conjunction', async function () {
@@ -308,7 +318,7 @@ describe('PlusPlus', function () {
     it('should respond with hubot usage guidance and further URL if env var is set', async function () {
       const url = 'https://derp.com';
       room.destroy();
-      sandbox.stub(process.env, 'HUBOT_CRYPTO_FURTHER_HELP_URL').value(url);
+      process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = url;
       room = plusPlusHelper.createRoom();
       room.user.say('peter.nguyen', '@hubot -h');
       await new Promise((resolve) => setTimeout(resolve, 45));

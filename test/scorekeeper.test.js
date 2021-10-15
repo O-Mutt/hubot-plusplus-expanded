@@ -6,29 +6,16 @@ const forEach = require('mocha-each');
 const { expect } = chai;
 
 const { MongoClient } = require('mongodb');
+const SlackClient = require('@slack/client');
 const mongoUnit = require('mongo-unit');
 
 const helpers = require('../src/lib/helpers');
 const ScoreKeeper = require('../src/lib/services/scorekeeper');
+const { robotStub } = require('./testhelpers');
 
 const peerFeedbackUrl = '\'Small Improvements\' (company.small-improvements.com)';
 const spamMessage = 'Please slow your roll.';
-const robotStub = {
-  brain: {
-    data: { },
-    on() {},
-    emit() {},
-    save() {},
-  },
-  logger: {
-    debug() {},
-    info() {},
-    error() {},
-  },
-  emit: (not) => not,
-  name: 'hubot',
-  messageRoom: (message) => message,
-};
+
 const defaultData = {
   scores: [
     {},
@@ -37,23 +24,37 @@ const defaultData = {
     {},
   ],
 };
-const msgSpy = sinon.spy(robotStub, 'messageRoom');
-const emitSpy = sinon.spy(robotStub, 'emit');
 
 describe('ScoreKeeper', function scorekeeperTest() {
   let scoreKeeper;
+  let msgSpy;
+  let emitSpy;
   before(async function () {
     await mongoUnit.start();
     const url = mongoUnit.getUrl();
     scoreKeeper = new ScoreKeeper({
       robot: robotStub, mongoUri: url, peerFeedbackUrl, spamMessage, furtherFeedbackSuggestedScore: 10, spamTimeLimit: 1,
     });
+
     return true;
   });
 
-  beforeEach(async function () { return mongoUnit.load(defaultData); });
+  beforeEach(async function () {
+    msgSpy = sinon.spy(robotStub, 'messageRoom');
+    emitSpy = sinon.spy(robotStub, 'emit');
+    sinon.stub(SlackClient, 'WebClient').withArgs('token').returns({
+      users: {
+        info: sinon.stub().returns({ user: { profile: { email: 'test@email.com' } } }),
+      },
+    });
+    return mongoUnit.load(defaultData);
+  });
 
-  afterEach(async function () { msgSpy.resetHistory(); return mongoUnit.drop(); });
+  afterEach(async function () {
+    sinon.restore();
+    msgSpy.resetHistory();
+    return mongoUnit.drop();
+  });
 
   describe('adding', function () {
     forEach([
@@ -76,11 +77,11 @@ describe('ScoreKeeper', function scorekeeperTest() {
       });
 
     it('does not allow spamming points', async function () {
-      const to = { name: 'mahMainBuddy', id: 'mahMainBuddyId' };
+      const to = { name: 'matt.erickson', id: 'matt.erickson' };
       // empty score to start
       const beforeUser = await scoreKeeper.getUser(to);
       expect(beforeUser.score).to.be.equal(0);
-      const { toUser: r } = await scoreKeeper.incrementScore(to, { name: 'from', id: '123' }, 'room', 'because points', 1);
+      const { toUser: r } = await scoreKeeper.incrementScore(to, { name: 'matt.erickson.min', id: '123' }, 'room', 'because points', 1);
       expect(r).to.be.an('object');
       expect(r.score).to.equal(1);
       expect(r.reasons['because points']).to.equal(1);
