@@ -135,7 +135,7 @@ module.exports = (robot) => {
     const cleanName = helpers.cleanName(name);
     let to = { name: cleanName };
     if (mentions) {
-      to = mentions.filter((men) => men.type === 'user').shift();
+      to = mentions.filter((men) => men.type === 'user').pop();
       to.name = cleanName;
     }
     const cleanReason = helpers.cleanAndEncode(reason);
