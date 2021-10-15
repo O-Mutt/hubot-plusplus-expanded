@@ -135,7 +135,12 @@ module.exports = (robot) => {
     const cleanName = helpers.cleanName(name);
     let to = { name: cleanName };
     if (mentions) {
-      to = mentions.filter((men) => men.type === 'user').pop();
+      if (mentions.filter((men) => men.type === 'user').length > 1) {
+        // shift off the first mention (most likely @qrafty)
+        robot.logger.debug('We are shifting off the first mention', mentions.filter((men) => men.type === 'user'));
+        mentions.filter((men) => men.type === 'user').shift();
+      }
+      to = mentions.filter((men) => men.type === 'user').shift();
       to.name = cleanName;
     }
     const cleanReason = helpers.cleanAndEncode(reason);
