@@ -35,7 +35,7 @@ class ScoreKeeper {
     try {
       toUser = await this.getUser(to);
       fromUser = await this.getUser(from);
-      if ((await this.isSpam(toUser, fromUser)) || this.isSendingToSelf(toUser, fromUser) || this.isBotInDm(from, room)) {
+      if ((await this.isSpam(toUser, fromUser)) || this.isSendingToSelf(toUser, fromUser) || this.isBot(from, room)) {
         throw new Error(`I'm sorry <@${fromUser.slackId}>, I'm afraid I can't do that.`);
       }
       toUser.score = parseInt(toUser.score, 10) + parseInt(incrementValue, 10);
@@ -69,7 +69,7 @@ class ScoreKeeper {
       toUser = await this.getUser(to);
       fromUser = await this.getUser(from);
       if (toUser.accountLevel >= 2 && fromUser.accountLevel >= 2) {
-        if ((await this.isSpam(toUser, fromUser)) || this.isSendingToSelf(toUser, fromUser) || this.isBotInDm(from, room)) {
+        if ((await this.isSpam(toUser, fromUser)) || this.isSendingToSelf(toUser, fromUser) || this.isBot(from, room)) {
           throw new Error(`I'm sorry <@${fromUser.slackId}>, I'm afraid I can't do that.`);
         }
         if (fromUser.token >= parseInt(numberOfTokens, 10)) {
@@ -158,13 +158,11 @@ class ScoreKeeper {
   * from - object from the msg.message.user
   * return {boolean} true if it is a bot
   */
-  isBotInDm(from, room) {
+  isBot(from, room) {
     let isBot = false;
-    if (from.is_bot && helpers.isPrivateMessage(room)) {
+    if (from.is_bot) {
       isBot = true;
       this.robot.logger.error('A bot is sending points in DM');
-    }
-    if (isBot) {
       this.robot.emit('plus-plus-spam', {
         to: undefined,
         from,
