@@ -160,6 +160,7 @@ class ScoreKeeper {
   */
   isBot(from, room) {
     let isBot = false;
+    this.robot.logger.debug('checking the from user for is robot', from, from.is_bot);
     if (from.is_bot) {
       isBot = true;
       this.robot.logger.error('A bot is sending points in DM');
