@@ -1,7 +1,7 @@
-const helpers = require('./lib/helpers');
+const Helpers = require('./lib/Helpers');
 
 module.exports = (robot) => {
-  const procVars = helpers.getProcessVariables(process.env);
+  const procVars = Helpers.getProcessVariables(process.env);
 
   robot.on('plus-plus', sendPlusPlusNotification);
   robot.on('plus-plus-failure', sendPlusPlusFalsePositiveNotification);

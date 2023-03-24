@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const mongoUnit = require('mongo-unit');
 const Helper = require('hubot-test-helper');
 
-const testData = require('./mockData');
+const testData = require('../test/mockData');
 
 const { expect } = chai;
 

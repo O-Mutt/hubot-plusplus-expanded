@@ -1,10 +1,10 @@
 const { WebClient } = require('@slack/client');
 const DatabaseService = require('./lib/services/database');
 const { scoresDocumentName } = require('./lib/data/scores');
-const helpers = require('./lib/helpers');
+const Helpers = require('./lib/Helpers');
 
 module.exports = (robot) => {
-  const procVars = helpers.getProcessVariables(process.env);
+  const procVars = Helpers.getProcessVariables(process.env);
 
   robot.respond(/try to map all slack users to db users/, mapUsersToDb);
   robot.respond(/try to map more data to all slack users to db users/, mapMoreUserFieldsBySlackId);

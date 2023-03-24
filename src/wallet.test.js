@@ -7,9 +7,9 @@ const mongoUnit = require('mongo-unit');
 
 const { expect } = chai;
 
-const helpers = require('../src/lib/helpers');
+const Helpers = require('./lib/Helpers');
 
-const testData = require('./mockData');
+const testData = require('../test/mockData');
 
 describe('PlusPlus', function () {
   let room;
@@ -45,10 +45,10 @@ describe('PlusPlus', function () {
     it('should respond with message and level up account', async function () {
       room.name = 'D123';
       await room.user.say('matt.erickson', '@hubot upgrade my account');
-      await new Promise((resolve) => setTimeout(resolve, 45));
+      await new Promise((resolve) => setTimeout(resolve, 55));
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
-        `@matt.erickson matt.erickson, we are going to level up your account to Level 2! This means you will start getting ${helpers.capitalizeFirstLetter(room.robot.name)} Tokens as well as points!`,
+        `@matt.erickson matt.erickson, we are going to level up your account to Level 2! This means you will start getting ${Helpers.capitalizeFirstLetter(room.robot.name)} Tokens as well as points!`,
       );
       const user = await db.collection('scores').findOne({ name: 'matt.erickson' });
       const bot = await db.collection('botToken').findOne({ name: 'hubot' });

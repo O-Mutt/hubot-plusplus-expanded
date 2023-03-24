@@ -3,11 +3,11 @@ const moment = require('moment');
 const _ = require('lodash');
 const { CronJob } = require('cron');
 
-const helpers = require('./lib/helpers');
+const Helpers = require('./lib/Helpers');
 const DatabaseService = require('./lib/services/database');
 
 module.exports = (robot) => {
-  const procVars = helpers.getProcessVariables(process.env);
+  const procVars = Helpers.getProcessVariables(process.env);
   const databaseService = new DatabaseService({ robot, ...procVars });
 
   if (!procVars.notificationsRoom) {

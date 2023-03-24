@@ -4,8 +4,7 @@
   "description": "A hubot script for micro praise",
   "main": "index.js",
   "engines": {
-    "node": "^14.x.x",
-    "npm": "^6.x.x"
+    "node": "^18.x.x"
   },
   "config": {
     "mongodbMemoryServer": {
@@ -13,8 +12,8 @@
     }
   },
   "scripts": {
-    "test": "mocha --timeout 35000 **/*.test.* --exit",
-    "test:watch": "mocha --watch **/*.test.*",
+    "test": "mocha",
+    "test:watch": "npm run test -- --watch true",
     "lint": "eslint src --fix",
     "snyk-protect": "snyk protect",
     "prepare": "npm run snyk-protect"

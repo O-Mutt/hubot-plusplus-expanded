@@ -8,12 +8,12 @@ const { MongoClient } = require('mongodb');
 const mongoUnit = require('mongo-unit');
 const Helper = require('hubot-test-helper');
 const SlackClient = require('@slack/client');
-const DatabaseService = require('../src/lib/services/database');
+const DatabaseService = require('./lib/services/database');
 
-const helpers = require('../src/lib/helpers');
+const Helpers = require('./lib/Helpers');
 const pjson = require('../package.json');
 
-const testData = require('./mockData');
+const testData = require('../test/mockData');
 
 describe('PlusPlus', function () {
   let room;
@@ -353,7 +353,7 @@ describe('PlusPlus', function () {
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
-        `${helpers.capitalizeFirstLetter(room.robot.name)} ${pjson.name}, version: ${pjson.version}`,
+        `${Helpers.capitalizeFirstLetter(room.robot.name)} ${pjson.name}, version: ${pjson.version}`,
       );
     });
 
@@ -362,7 +362,7 @@ describe('PlusPlus', function () {
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
-        `${helpers.capitalizeFirstLetter(room.robot.name)} ${pjson.name}, version: ${pjson.version}`,
+        `${Helpers.capitalizeFirstLetter(room.robot.name)} ${pjson.name}, version: ${pjson.version}`,
       );
     });
 
@@ -371,7 +371,7 @@ describe('PlusPlus', function () {
       await new Promise((resolve) => setTimeout(resolve, 45));
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
-        `${helpers.capitalizeFirstLetter(room.robot.name)} ${pjson.name}, version: ${pjson.version}`,
+        `${Helpers.capitalizeFirstLetter(room.robot.name)} ${pjson.name}, version: ${pjson.version}`,
       );
     });
   });

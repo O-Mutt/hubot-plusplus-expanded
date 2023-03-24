@@ -9,9 +9,9 @@ const { MongoClient } = require('mongodb');
 const SlackClient = require('@slack/client');
 const mongoUnit = require('mongo-unit');
 
-const helpers = require('../src/lib/helpers');
-const ScoreKeeper = require('../src/lib/services/scorekeeper');
-const { robotStub } = require('./testhelpers');
+const Helpers = require('../Helpers');
+const ScoreKeeper = require('./scorekeeper');
+const { robotStub } = require('../../../test/testhelpers');
 
 const peerFeedbackUrl = '\'Small Improvements\' (company.small-improvements.com)';
 const spamMessage = 'Please slow your roll.';
@@ -111,7 +111,7 @@ describe('ScoreKeeper', function scorekeeperTest() {
       const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
       const connection = await client.connect();
       const db = connection.db();
-      const encodedName = helpers.cleanAndEncode('derp');
+      const encodedName = Helpers.cleanAndEncode('derp');
       await db.collection('scores').insertOne({ name: 'matt', score: 9, reasons: {}, pointsGiven: { [encodedName]: 9 }, slackId: '123' });
       const { toUser: r } = await scoreKeeper.incrementScore({ name: 'derp' }, { name: 'matt', id: '123' }, 'room', 'because points', 1);
       expect(r).to.be.an('object');

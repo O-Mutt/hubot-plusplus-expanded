@@ -4,7 +4,7 @@ const moment = require('moment');
 const scores = require('../data/scores');
 const logDocumentName = require('../data/scoreLog');
 const botTokenDocumentName = require('../data/botToken');
-const helpers = require('../helpers');
+const Helpers = require('../Helpers');
 
 class DatabaseService {
   constructor(params) {
@@ -141,7 +141,7 @@ class DatabaseService {
   */
   async savePointsGiven(from, to, score) {
     const db = await this.getDb();
-    const cleanName = helpers.cleanAndEncode(to.name);
+    const cleanName = Helpers.cleanAndEncode(to.name);
     const fromUser = await this.getUser(from);
     const fromSearch = fromUser.slackId ? { slackId: fromUser.slackId } : { name: fromUser.name };
 
@@ -354,7 +354,7 @@ class DatabaseService {
     const search = user.slackId ? { slackId: user.slackId } : { name: userName };
 
     const db = await this.getDb();
-    this.robot.logger.info(`We are transferring ${scoreChange} ${helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName} from ${from ? from.name : helpers.capitalizeFirstLetter(this.robot.name)}`);
+    this.robot.logger.info(`We are transferring ${scoreChange} ${Helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName} from ${from ? from.name : Helpers.capitalizeFirstLetter(this.robot.name)}`);
     const result = await db.collection(scores.scoresDocumentName).findOneAndUpdate(
       search,
       {
