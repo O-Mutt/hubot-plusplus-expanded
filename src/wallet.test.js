@@ -10,6 +10,7 @@ const { expect } = chai;
 const Helpers = require('./lib/Helpers');
 
 const testData = require('../test/mockData');
+const { wait } = require('../test/test_helpers');
 
 describe('PlusPlus', () => {
   let room;
@@ -45,7 +46,7 @@ describe('PlusPlus', () => {
     it('should respond with message and level up account', async () => {
       room.name = 'D123';
       await room.user.say('matt.erickson', '@hubot upgrade my account');
-      await new Promise((resolve) => setTimeout(resolve, 55));
+      await wait(35);
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
         `@matt.erickson matt.erickson, we are going to level up your account to Level 2! This means you will start getting ${Helpers.capitalizeFirstLetter(room.robot.name)} Tokens as well as points!`,
