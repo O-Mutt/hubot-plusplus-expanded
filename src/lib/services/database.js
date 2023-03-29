@@ -1,6 +1,6 @@
-/* eslint-disable no-restricted-syntax */
 const { MongoClient } = require('mongodb');
-const moment = require('moment');
+const { formatISO, subMinutes } = require('date-fns');
+
 const scores = require('../data/scores');
 const logDocumentName = require('../data/scoreLog');
 const botTokenDocumentName = require('../data/botToken');
@@ -107,18 +107,25 @@ class DatabaseService {
     await db.collection(logDocumentName).insertOne({
       from: fromId,
       to: toId,
-      date: moment().toISOString(),
+      date: formatISO(new Date()),
       room,
       reason,
       scoreChange: pointsAmount,
     });
   }
 
+  /**
+   * Checks to see if the user has sent a point to the same user in a given time period
+   * the time period is defined on the `process.env.SPAM_TIME_LIMIT` and defaults to 5 in minutes
+   * @param {object} to the user who is receiving the point
+   * @param {object} from the user who is sending the point
+   * @returns {boolean} true if the user has sent a point to the same user in the time period
+   * @returns {boolean} false if the user has not sent a point to the same user in the time period
+   */
   async isSpam(to, from) {
     this.robot.logger.debug('spam check');
     const db = await this.getDb();
-    let fiveMinutesAgo = moment();
-    fiveMinutesAgo = fiveMinutesAgo.subtract(this.spamTimeLimit, 'minutes').toISOString();
+    const fiveMinutesAgo = formatISO(subMinutes(new Date(), this.spamTimeLimit));
     const previousScoreExists = await db.collection(logDocumentName)
       .countDocuments({
         from,
@@ -167,6 +174,11 @@ class DatabaseService {
     }
   }
 
+  /**
+   * Get the top {n} scores
+   * @param {number} amount - the amount of scores to return
+   * @returns {Promise<Array>} - the scores
+   */
   async getTopScores(amount) {
     const db = await this.getDb();
     const results = await db.collection(scores.scoresDocumentName)
@@ -180,6 +192,11 @@ class DatabaseService {
     return results;
   }
 
+  /**
+   * Get the bottom {n} scores
+   * @param {number} amount - the amount of scores to return
+   * @returns {Promise<Array>} - the scores
+   */
   async getBottomScores(amount) {
     const db = await this.getDb();
     const results = await db.collection(scores.scoresDocumentName)
@@ -193,6 +210,11 @@ class DatabaseService {
     return results;
   }
 
+  /**
+   * Get the top {n} token holders
+   * @param {number} amount - the amount of tokens to return
+   * @returns {Promise<Array>} - the tokens
+   */
   async getTopTokens(amount) {
     const db = await this.getDb();
     const results = await db.collection(scores.scoresDocumentName)
@@ -208,6 +230,11 @@ class DatabaseService {
     return results;
   }
 
+  /**
+   * Get the bottom {n} token holders
+   * @param {number} amount - the amount of tokens to return
+   * @returns {Promise<Array>} - the tokens
+   */
   async getBottomTokens(amount) {
     const db = await this.getDb();
     const results = await db.collection(scores.scoresDocumentName)
@@ -223,6 +250,11 @@ class DatabaseService {
     return results;
   }
 
+  /**
+   * Get the top {n} point senders
+   * @param {number} amount - the amount of senders to return
+   * @returns {Promise<Array>} - the senders
+   */
   async getTopSender(amount) {
     const db = await this.getDb();
     const results = await db.collection(scores.scoresDocumentName)
@@ -236,6 +268,11 @@ class DatabaseService {
     return results;
   }
 
+  /**
+   * Get the bottom {n} point senders
+   * @param {number} amount - the amount of senders to return
+   * @returns {Promise<Array>} - the senders
+   */
   async getBottomSender(amount) {
     const db = await this.getDb();
     const results = await db.collection(scores.scoresDocumentName)

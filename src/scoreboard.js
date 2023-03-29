@@ -13,7 +13,6 @@
 // Author:
 //  O'Mutt (Matt@OKeefe.dev)
 
-const moment = require('moment');
 const clark = require('clark');
 const _ = require('lodash');
 
@@ -44,6 +43,7 @@ module.exports = function plusPlus(robot) {
     const user = await databaseService.getUser(to);
 
     const scoreString = MessageFactory.BuildScoreLookup(user, robot.name, procVars);
+    console.log(scoreString);
     msg.send(scoreString);
   }
 

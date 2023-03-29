@@ -1,10 +1,19 @@
-const moment = require('moment');
+const { format, parseISO, toDate, parseJSON, parse } = require('date-fns');
 const _ = require('lodash');
 
 const Helpers = require('./Helpers');
 const { upsideDownChars, nonSequiturs } = require('./static/a1');
 
 module.exports = class MessageFactory {
+  /**
+   * Builds a message for the user's score
+   * @param {object} user - The user object
+   * @param {string} robotName - The name of the robot
+   * @param {object} procVars - The process variables
+   * @returns {string} - The message
+   * @memberof MessageFactory
+   * @static
+   */
   static BuildScoreLookup(user, robotName, procVars) {
     let tokenString = '.';
     if (user.accountLevel > 1) {
@@ -16,9 +25,10 @@ module.exports = class MessageFactory {
     let baseString = `<@${user.slackId}> has ${user.score} ${scoreStr}${tokenString}`;
     baseString += `\nAccount Level: ${user.accountLevel}`;
     baseString += `\nTotal Points Given: ${user.totalPointsGiven}`;
+
     if (user[`${robotName}Day`]) {
-      const dateObj = new Date(user[`${robotName}Day`]);
-      baseString += `\n:birthday: ${Helpers.capitalizeFirstLetter(robotName)}day is ${moment(dateObj).format('MM-DD-yyyy')}`;
+      const dateObj = parseISO(user[`${robotName}Day`]);
+      baseString += `\n:birthday: ${Helpers.capitalizeFirstLetter(robotName)}day is ${format(dateObj, 'MMM. do yyyy')}`;
     }
     const keys = Object.keys(user.reasons);
     if (keys.length > 1) {
@@ -40,9 +50,19 @@ module.exports = class MessageFactory {
 
       return `${baseString}\n\n:star: Here are some ${procVars.reasonsKeyword} :star:${reasonMap}`;
     }
-    return `${baseString}`;
+
+    return baseString;
   }
 
+  /**
+   * Builds a message for the user's score
+   * @param {object} user - The user object
+   * @param {string} reason - The reason for the score
+   * @param {string} robotName - The name of the robot
+   * @returns {string} - The message
+   * @memberof MessageFactory
+   * @static
+   */
   static BuildNewScoreMessage(user, reason, robotName) {
     if (!user) {
       return '';
@@ -98,6 +118,15 @@ module.exports = class MessageFactory {
     return normalMessage;
   }
 
+  /**
+   * Builds a message for the user's score
+   * @param {object} user - The user object
+   * @param {string} reason - The reason for the score
+   * @param {string} robotName - The name of the robot
+   * @returns {string} - The message
+   * @memberof MessageFactory
+   * @static
+   */
   static GetA1DayMessage(originalMessage, robotName, randomIndex = Math.floor(Math.random() * 7), force = false) {
     const a0opt = [
       (message) => message.replace(/[aeiouy]/ig, '').replace('  ', ' '),

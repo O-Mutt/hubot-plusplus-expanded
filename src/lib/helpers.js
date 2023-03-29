@@ -1,4 +1,18 @@
-const moment = require('moment');
+const {
+  differenceInYears,
+  format,
+  getDate,
+  getWeekOfMonth,
+  isSunday,
+  isMonday,
+  isTuesday,
+  isWednesday,
+  isThursday,
+  isFriday,
+  isSaturday,
+  isSameDay,
+  isSameWeek,
+} = require('date-fns');
 const regExpCreator = require('./regexpCreator');
 
 module.exports = class Helpers {
@@ -28,9 +42,9 @@ module.exports = class Helpers {
 
   static isCakeDay(dateObject, robot) {
     try {
-      const robotDay = moment(dateObject);
-      const today = moment();
-      if (robotDay.date() === today.date() && robotDay.month() === today.month()) {
+      const robotDay = new Date(dateObject);
+      const today = new Date();
+      if (isSameWeek(robotDay, today) && isSameDay(robotDay, today)) {
         return true;
       }
     } catch (e) {
@@ -42,7 +56,7 @@ module.exports = class Helpers {
   static getYearsAsString(dateObj) {
     const robotDay = new Date(dateObj);
     const today = new Date();
-    const years = today.getFullYear() - robotDay.getFullYear();
+    const years = differenceInYears(today, robotDay);
     const lastDigit = years.toString().split('').pop();
     if (years === 0) {
       return '';
@@ -66,7 +80,9 @@ module.exports = class Helpers {
     const toTag = to.slackId ? `<@${to.slackId}>` : to.name;
     const fromTag = from.slackId ? `<@${from.slackId}>` : from.name;
 
-    const scoreStr = `${fromTag} transferred *${number}* ${robot.name} Tokens to ${toTag}.\n${toTag} now has ${to.token} token${Helpers.getEsOnEndOfWord(to.token)}`;
+    const scoreStr = `${fromTag} transferred *${number}* ${robot.name} Tokens to ${toTag}.\n${toTag} now has ${
+      to.token
+    } token${Helpers.getEsOnEndOfWord(to.token)}`;
     let reasonStr = '.';
     let cakeDayStr = '';
 
@@ -89,22 +105,35 @@ module.exports = class Helpers {
       const yearsAsString = Helpers.getYearsAsString(to[`${robot.name}Day`]);
       cakeDayStr = `\n:birthday: Today is ${toTag}'s ${yearsAsString}${robot.name}day! :birthday:`;
     }
-    return `${scoreStr}${reasonStr}${cakeDayStr}\n_${fromTag} has ${from.token} token${Helpers.getEsOnEndOfWord(from.token)}_`;
+    return `${scoreStr}${reasonStr}${cakeDayStr}\n_${fromTag} has ${from.token} token${Helpers.getEsOnEndOfWord(
+      from.token,
+    )}_`;
   }
 
+  /**
+   * @param {string} name - The name to clean
+   * @returns {string} - The cleaned name
+   * @static
+   *
+   */
   static cleanName(name) {
     if (name) {
       let trimmedName = name.trim().toLowerCase();
       if (trimmedName.charAt(0) === ':') {
-        trimmedName = (trimmedName.replace(/(^\s*['"@])|([,'"\s]*$)/gi, ''));
+        trimmedName = trimmedName.replace(/(^\s*['"@])|([,'"\s]*$)/gi, '');
       } else {
-        trimmedName = (trimmedName.replace(/(^\s*['"@])|([,:'"\s]*$)/gi, ''));
+        trimmedName = trimmedName.replace(/(^\s*['"@])|([,:'"\s]*$)/gi, '');
       }
       return trimmedName;
     }
     return name;
   }
 
+  /**
+   * @param {string} str - The string to clean and encode
+   * @returns {string} - The cleaned and encoded string
+   * @static
+   */
   static cleanAndEncode(str) {
     if (!str) {
       return undefined;
@@ -118,11 +147,14 @@ module.exports = class Helpers {
   }
 
   /*
-* checks if the message is in DM
-* room - {string} name of the room
-*/
+    * Checks if the room is a private message
+    * @param {string} room - The room to check
+    * @returns {boolean} - True if the room is a private message
+    * @static
+    *
+    */
   static isPrivateMessage(room) {
-  // "Shell" is the adapter for running in the terminal
+    // "Shell" is the adapter for running in the terminal
     return room[0] === 'D' || room === 'Shell';
   }
 
@@ -137,9 +169,15 @@ module.exports = class Helpers {
     procVars.spamMessage = env.HUBOT_SPAM_MESSAGE || 'Looks like you hit the spam filter. Please slow your roll.';
     procVars.spamTimeLimit = parseInt(env.SPAM_TIME_LIMIT, 10) || 5;
     procVars.companyName = env.HUBOT_COMPANY_NAME || 'Company Name';
-    procVars.peerFeedbackUrl = env.HUBOT_PEER_FEEDBACK_URL || `praise in Lattice (https://${procVars.companyName}.latticehq.com/)`;
+    procVars.peerFeedbackUrl = env.HUBOT_PEER_FEEDBACK_URL
+      || `praise in Lattice (https://${procVars.companyName}.latticehq.com/)`;
     procVars.furtherFeedbackSuggestedScore = parseInt(env.HUBOT_FURTHER_FEEDBACK_SCORE, 10) || 10;
-    procVars.mongoUri = env.MONGODB_URI || env.MONGO_URI || env.MONGODB_URL || env.MONGOLAB_URI || env.MONGOHQ_URL || 'mongodb://localhost/plusPlus';
+    procVars.mongoUri = env.MONGODB_URI
+      || env.MONGO_URI
+      || env.MONGODB_URL
+      || env.MONGOLAB_URI
+      || env.MONGOHQ_URL
+      || 'mongodb://localhost/plusPlus';
     procVars.cryptoRpcProvider = env.HUBOT_CRYPTO_RPC_PROVIDER || '';
     procVars.magicNumber = env.HUBOT_UNIMPORTANT_MAGIC_NUMBER || 'nope';
     procVars.magicIv = env.HUBOT_UNIMPORTANT_MAGIC_IV || 'yup';
@@ -152,10 +190,64 @@ module.exports = class Helpers {
   }
 
   static isA1Day() {
-    const isDay = moment().format('DM');
+    const isDay = format(new Date(), 'dM');
     if (isDay === '14') {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Checks if the current day of the week is the same as the configured day of the week
+   * @param {Object} robot - Hubot robot object
+   * @param {Number} monthlyScoreboardDayOfWeek - The day of the week to run the cron on
+   * @returns {Boolean} - True if the current day of the week is the same as the configured day of the week
+   * @static
+   * @example
+   * const isScoreboardDay = Helpers.isScoreboardDayOfWeek(robot, monthlyScoreboardDayOfWeek);
+   * if (isScoreboardDay) {
+   *  // Do something
+   * }
+   */
+  static isScoreboardDayOfWeek(robot, monthlyScoreboardDayOfWeek) {
+    const today = new Date();
+    let isScoreboardDay = false;
+    // Only run the cron on the first week of the month
+    if (getWeekOfMonth(today) === 1) {
+      // Check if the day of the week is the same as the configured day of the week
+      switch (monthlyScoreboardDayOfWeek) {
+        case 0:
+          isScoreboardDay = isSunday(today);
+          break;
+        case 1:
+          isScoreboardDay = isMonday(today);
+          break;
+        case 2:
+          isScoreboardDay = isTuesday(today);
+          break;
+        case 3:
+          isScoreboardDay = isWednesday(today);
+          break;
+        case 4:
+          isScoreboardDay = isThursday(today);
+          break;
+        case 5:
+          isScoreboardDay = isFriday(today);
+          break;
+        case 6:
+          isScoreboardDay = isSaturday(today);
+          break;
+        default:
+          isScoreboardDay = false;
+      }
+    }
+    robot.logger.debug(
+      `Run the cron but lets check what day it is Moment day: [${getDate(
+        today,
+      )}], Configured Day of Week: [${monthlyScoreboardDayOfWeek}], isThatDay: [${
+        getDate(today) === monthlyScoreboardDayOfWeek
+      }]`,
+    );
+    return isScoreboardDay;
   }
 };

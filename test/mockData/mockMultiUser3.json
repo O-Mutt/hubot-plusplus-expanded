@@ -1,0 +1,12 @@
+{
+	"name" : "tank",
+	"score" : 1,
+	"reasons" : {
+	},
+	"pointsGiven" : {
+	},
+	"hubotDay" : "2020-01-09T16:55:04.374Z",
+	"accountLevel": 1,
+	"slackId": "tank",
+	"totalPointsGiven": 0
+}

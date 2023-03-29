@@ -1,7 +1,7 @@
 const chai = require('chai');
 chai.use(require('sinon-chai'));
 const sinon = require('sinon');
-const Helper = require('hubot-test-helper');
+const TestHelper = require('hubot-test-helper');
 const { MongoClient } = require('mongodb');
 const mongoUnit = require('mongo-unit');
 
@@ -11,12 +11,12 @@ const Helpers = require('./lib/Helpers');
 
 const testData = require('../test/mockData');
 
-describe('PlusPlus', function () {
+describe('PlusPlus', () => {
   let room;
   let db;
   let wallet;
   let sandbox;
-  before(async function () {
+  before(async () => {
     const url = await mongoUnit.start();
     const client = new MongoClient(url, {
       useNewUrlParser: true,
@@ -26,23 +26,23 @@ describe('PlusPlus', function () {
     db = connection.db();
     process.env.MONGODB_URI = url;
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
-    wallet = new Helper('../src/wallet.js');
+    wallet = new TestHelper('./wallet.js');
   });
 
-  beforeEach(async function () {
+  beforeEach(async () => {
     sandbox = sinon.createSandbox();
     room = wallet.createRoom();
     return mongoUnit.load(testData);
   });
 
-  afterEach(async function () {
+  afterEach(async () => {
     sandbox.restore();
     room.destroy();
     return mongoUnit.drop();
   });
 
-  describe('upgrade my account', function () {
-    it('should respond with message and level up account', async function () {
+  describe('upgrade my account', () => {
+    it('should respond with message and level up account', async () => {
       room.name = 'D123';
       await room.user.say('matt.erickson', '@hubot upgrade my account');
       await new Promise((resolve) => setTimeout(resolve, 55));
