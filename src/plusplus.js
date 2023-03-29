@@ -179,12 +179,10 @@ module.exports = (robot) => {
 
   async function multipleUsersVote(msg) {
     const [fullText, premessage, names, operator, conjunction, reason] = msg.match;
-    console.log('multi match', names);
     if (!names) {
       return;
     }
     if (Helpers.isKnownFalsePositive(premessage, conjunction, reason, operator)) {
-      console.log('known false positive');
       // circuit break a plus plus
       robot.emit('plus-plus-failure', {
         notificationMessage: `False positive detected in <#${msg.message.room}> from <@${msg.message.user.id}>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
@@ -215,8 +213,6 @@ module.exports = (robot) => {
     const cleanReason = Helpers.cleanAndEncode(reason);
     const increment = operator.match(regExpCreator.positiveOperators) ? 1 : -1;
 
-    console.log('cleaned names', cleanNames, to);
-    console.log('check len', cleanNames.length !== to.length);
     if (cleanNames.length !== to.length) {
       msg.send('We are having trouble mapping your multi-user plusplus. Please try again and only include @ mentions.');
       return;
@@ -226,7 +222,6 @@ module.exports = (robot) => {
     let fromUser;
     for (let i = 0; i < cleanNames.length; i++) {
       to[i].name = cleanNames[i];
-      console.log('loop em', to[i].name, cleanNames[i]);
       let toUser;
       ({ toUser, fromUser } = await scoreKeeper.incrementScore(to[i], from, room, cleanReason, increment));
       if (toUser) {

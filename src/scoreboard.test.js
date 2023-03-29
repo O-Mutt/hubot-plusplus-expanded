@@ -69,9 +69,7 @@ describe('Scoreboard', () => {
     it('should respond with bottom 2 losers on the scoreboard', async () => {
       room.user.say('matt.erickson', '@hubot bottom 2');
       await new Promise((resolve) => setTimeout(resolve, 45));
-      expect(room.messages[1][1]).to.include(
-        '\n1. <@peter.parker.min>: 8 (*8 Hubot Tokens*)\n2. <@matt.erickson.min>: 8',
-      );
+      expect(room.messages[1][1]).to.equal('▁▇\n1. <@greg>: -10\n2. <@darf>: -2');
     });
 
     it('should respond with top 2 leaders on the scoreboard if account level of one user is level 2', async () => {

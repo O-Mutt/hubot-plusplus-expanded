@@ -43,7 +43,6 @@ module.exports = function plusPlus(robot) {
     const user = await databaseService.getUser(to);
 
     const scoreString = MessageFactory.BuildScoreLookup(user, robot.name, procVars);
-    console.log(scoreString);
     msg.send(scoreString);
   }
 

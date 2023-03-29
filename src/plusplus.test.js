@@ -127,29 +127,22 @@ describe('PlusPlus', () => {
       });
 
       describe('multi user vote', () => {
-        it.only('should add a point to each user in the multi-user plus plus', async () => {
-          room.user.say('derp', '{ @darf, @greg, @tank }++');
+        it('should add a point to each user in the multi-user plus plus', async () => {
+          room.user.say('matt.erickson', '{ @darf, @greg, @tank }++');
           await new Promise((resolve) => setTimeout(resolve, 50));
-          console.log("mes", room.messages);
-          expect(room.messages[1][1]).to.match(
-            /darf has 1 point\.\n:birthday: Today is darf's hubotday! :birthday:\ngreg has 1 point\.\n:birthday: Today is greg's hubotday! :birthday:\ntank has 1 point\.\n:birthday: Today is tank's hubotday! :birthday:/,
-          );
+          expect(room.messages[1][1]).to.equal('<@darf> has -1 points.\n<@greg> has -9 points.\n<@tank> has 2 points.');
         });
 
         it('should add a point to each user in the multi-user plus plus with text before it', async () => {
-          room.user.say('derp', 'hello world! { @darf, @greg, @tank }++');
+          room.user.say('matt.erickson', 'hello world! { @darf, @greg, @tank }++');
           await new Promise((resolve) => setTimeout(resolve, 50));
-          expect(room.messages[1][1]).to.match(
-            /darf has 1 point\.\n:birthday: Today is darf's hubotday! :birthday:\ngreg has 1 point\.\n:birthday: Today is greg's hubotday! :birthday:\ntank has 1 point\.\n:birthday: Today is tank's hubotday! :birthday:/,
-          );
+          expect(room.messages[1][1]).to.equal('<@darf> has -1 points.\n<@greg> has -9 points.\n<@tank> has 2 points.');
         });
 
         it('should add a point to each user in the multi-user plus plus with periods in their names', async () => {
-          room.user.say('derp', '{ @darf.arg, @pirate.jack123, @ted.phil } ++');
+          room.user.say('matt.erickson', '{ @darf.arg, @pirate.jack123, @ted.phil } ++');
           await new Promise((resolve) => setTimeout(resolve, 50));
-          expect(room.messages[1][1]).to.match(
-            /darf.arg has 1 point\.\n:birthday: Today is darf.arg's hubotday! :birthday:\npirate.jack123 has 1 point\.\n:birthday: Today is pirate.jack123's hubotday! :birthday:\nted.phil has 1 point\.\n:birthday: Today is ted.phil's hubotday! :birthday:/,
-          );
+          expect(room.messages[1][1]).to.equal('<@darf.arg> has 2 points.\n<@pirate.jack123> has 2 points.\n<@ted.phil> has 2 points.');
         });
       });
 
