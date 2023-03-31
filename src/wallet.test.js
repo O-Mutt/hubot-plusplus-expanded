@@ -1,22 +1,23 @@
 const chai = require('chai');
 chai.use(require('sinon-chai'));
 const sinon = require('sinon');
-const Helper = require('hubot-test-helper');
+const TestHelper = require('hubot-test-helper');
 const { MongoClient } = require('mongodb');
 const mongoUnit = require('mongo-unit');
 
 const { expect } = chai;
 
-const helpers = require('../src/lib/helpers');
+const Helpers = require('./lib/Helpers');
 
-const testData = require('./mockData');
+const testData = require('../test/mockData');
+const { wait } = require('../test/test_helpers');
 
-describe('PlusPlus', function () {
+describe('PlusPlus', () => {
   let room;
   let db;
   let wallet;
   let sandbox;
-  before(async function () {
+  before(async () => {
     const url = await mongoUnit.start();
     const client = new MongoClient(url, {
       useNewUrlParser: true,
@@ -26,29 +27,29 @@ describe('PlusPlus', function () {
     db = connection.db();
     process.env.MONGODB_URI = url;
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
-    wallet = new Helper('../src/wallet.js');
+    wallet = new TestHelper('./wallet.js');
   });
 
-  beforeEach(async function () {
+  beforeEach(async () => {
     sandbox = sinon.createSandbox();
     room = wallet.createRoom();
     return mongoUnit.load(testData);
   });
 
-  afterEach(async function () {
+  afterEach(async () => {
     sandbox.restore();
     room.destroy();
     return mongoUnit.drop();
   });
 
-  describe('upgrade my account', function () {
-    it('should respond with message and level up account', async function () {
+  describe('upgrade my account', () => {
+    it('should respond with message and level up account', async () => {
       room.name = 'D123';
       await room.user.say('matt.erickson', '@hubot upgrade my account');
-      await new Promise((resolve) => setTimeout(resolve, 45));
+      await wait(55);
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
-        `@matt.erickson matt.erickson, we are going to level up your account to Level 2! This means you will start getting ${helpers.capitalizeFirstLetter(room.robot.name)} Tokens as well as points!`,
+        `@matt.erickson matt.erickson, we are going to level up your account to Level 2! This means you will start getting ${Helpers.capitalizeFirstLetter(room.robot.name)} Tokens as well as points!`,
       );
       const user = await db.collection('scores').findOne({ name: 'matt.erickson' });
       const bot = await db.collection('botToken').findOne({ name: 'hubot' });

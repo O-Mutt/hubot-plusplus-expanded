@@ -33,14 +33,15 @@ const tokenBuddy = require('token-buddy');
 const pjson = require('../package.json');
 const regExpCreator = require('./lib/regexpCreator');
 const ScoreKeeper = require('./lib/services/scorekeeper');
-const helpers = require('./lib/helpers');
+const Helpers = require('./lib/Helpers');
 // this may need to move or be generic...er
 const token = require('./lib/token.json');
 const decrypt = require('./lib/services/decrypt');
 const DatabaseService = require('./lib/services/database');
+const MessageFactory = require('./lib/MessageFactory');
 
 module.exports = (robot) => {
-  const procVars = helpers.getProcessVariables(process.env);
+  const procVars = Helpers.getProcessVariables(process.env);
   const scoreKeeper = new ScoreKeeper({ robot, ...procVars });
   const databaseService = new DatabaseService({ robot, ...procVars });
 
@@ -65,7 +66,7 @@ module.exports = (robot) => {
   // listen for bot tag/ping
   robot.respond(regExpCreator.createGiveTokenRegExp(), giveTokenBetweenUsers);
   robot.respond(regExpCreator.getHelp(), respondWithHelpGuidance);
-  robot.respond(new RegExp(/(plusplus version|-v|--version)/, 'i'), (msg) => msg.send(`${helpers.capitalizeFirstLetter(msg.robot.name)} ${pjson.name}, version: ${pjson.version}`));
+  robot.respond(new RegExp(/(plusplus version|-v|--version)/, 'i'), (msg) => msg.send(`${Helpers.capitalizeFirstLetter(msg.robot.name)} ${pjson.name}, version: ${pjson.version}`));
 
   // admin
   robot.respond(regExpCreator.createEraseUserScoreRegExp(), eraseUserScore);
@@ -76,7 +77,7 @@ module.exports = (robot) => {
   async function upOrDownVote(msg) {
     const [fullText, premessage, name, operator, conjunction, reason] = msg.match;
 
-    if (helpers.isKnownFalsePositive(premessage, conjunction, reason, operator)) {
+    if (Helpers.isKnownFalsePositive(premessage, conjunction, reason, operator)) {
       // circuit break a plus plus
       robot.emit('plus-plus-failure', {
         notificationMessage: `False positive detected in <#${msg.message.room}> from <@${msg.message.user.id}>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
@@ -86,13 +87,13 @@ module.exports = (robot) => {
     }
     const increment = operator.match(regExpCreator.positiveOperators) ? 1 : -1;
     const { room, mentions } = msg.message;
-    const cleanName = helpers.cleanName(name);
+    const cleanName = Helpers.cleanName(name);
     let to = { name: cleanName };
     if (mentions) {
       to = mentions.filter((men) => men.type === 'user').shift();
       to.name = cleanName;
     }
-    const cleanReason = helpers.cleanAndEncode(reason);
+    const cleanReason = Helpers.cleanAndEncode(reason);
     const from = msg.message.user;
 
     robot.logger.debug(`${increment} score for [${to.name}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
@@ -104,12 +105,12 @@ module.exports = (robot) => {
       return;
     }
 
-    const message = helpers.getMessageForNewScore(toUser, cleanReason, robot);
+    const message = MessageFactory.BuildNewScoreMessage(toUser, cleanReason, robot.name);
 
     if (message) {
       msg.send(message);
       robot.emit('plus-plus', {
-        notificationMessage: `<@${fromUser.slackId}> ${operator.match(regExpCreator.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regExpCreator.positiveOperators) ? 'to' : 'from'} <@${toUser.slackId}> in <#${room}>`,
+        notificationMessage: `<@${fromUser.slackId}> ${operator.match(regExpCreator.positiveOperators) ? 'sent' : 'removed'} a ${Helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regExpCreator.positiveOperators) ? 'to' : 'from'} <@${toUser.slackId}> in <#${room}>`,
         sender: fromUser,
         recipient: toUser,
         direction: operator,
@@ -132,7 +133,7 @@ module.exports = (robot) => {
       return;
     }
     const { room, mentions } = msg.message;
-    const cleanName = helpers.cleanName(name);
+    const cleanName = Helpers.cleanName(name);
     let to = { name: cleanName };
     if (mentions) {
       if (mentions.filter((men) => men.type === 'user').length > 1) {
@@ -143,7 +144,7 @@ module.exports = (robot) => {
       to = mentions.filter((men) => men.type === 'user').shift();
       to.name = cleanName;
     }
-    const cleanReason = helpers.cleanAndEncode(reason);
+    const cleanReason = Helpers.cleanAndEncode(reason);
     const from = msg.message.user;
 
     robot.logger.debug(`${number} score for [${mentions}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
@@ -155,7 +156,7 @@ module.exports = (robot) => {
       return;
     }
 
-    const message = helpers.getMessageForTokenTransfer(robot,
+    const message = Helpers.getMessageForTokenTransfer(robot,
       response.toUser,
       response.fromUser,
       number,
@@ -164,7 +165,7 @@ module.exports = (robot) => {
     if (message) {
       msg.send(message);
       robot.emit('plus-plus', {
-        notificationMessage: `<@${response.fromUser.slackId}> sent ${number} ${helpers.capitalizeFirstLetter(robot.name)} point${parseInt(number, 10) > 1 ? 's' : ''} to <@${response.toUser.slackId}> in <#${room}>`,
+        notificationMessage: `<@${response.fromUser.slackId}> sent ${number} ${Helpers.capitalizeFirstLetter(robot.name)} point${parseInt(number, 10) > 1 ? 's' : ''} to <@${response.toUser.slackId}> in <#${room}>`,
         recipient: response.toUser,
         sender: response.fromUser,
         direction: '++',
@@ -181,7 +182,7 @@ module.exports = (robot) => {
     if (!names) {
       return;
     }
-    if (helpers.isKnownFalsePositive(premessage, conjunction, reason, operator)) {
+    if (Helpers.isKnownFalsePositive(premessage, conjunction, reason, operator)) {
       // circuit break a plus plus
       robot.emit('plus-plus-failure', {
         notificationMessage: `False positive detected in <#${msg.message.room}> from <@${msg.message.user.id}>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
@@ -191,25 +192,26 @@ module.exports = (robot) => {
     }
 
     const namesArray = names.trim().toLowerCase().split(new RegExp(regExpCreator.multiUserSeparator)).filter(Boolean);
-    const from = msg.message.user;
-    const { room, mentions } = msg.message;
-    let to;
-    if (mentions) {
-      to = mentions.filter((men) => men.type === 'user');
-    }
-    const cleanReason = helpers.cleanAndEncode(reason);
-    const increment = operator.match(regExpCreator.positiveOperators) ? 1 : -1;
 
     const cleanNames = namesArray
       // Parse names
       .map((name) => {
-        const cleanedName = helpers.cleanName(name);
+        const cleanedName = Helpers.cleanName(name);
         return cleanedName;
       })
       // Remove empty ones: {,,,}++
       .filter((name) => !!name.length)
       // Remove duplicates: {user1,user1}++
       .filter((name, pos, self) => self.indexOf(name) === pos);
+
+    const from = msg.message.user;
+    const { room, mentions } = msg.message;
+    let to = cleanNames.map((cn) => ({ name: cn }));
+    if (mentions) {
+      to = mentions.filter((men) => men.type === 'user');
+    }
+    const cleanReason = Helpers.cleanAndEncode(reason);
+    const increment = operator.match(regExpCreator.positiveOperators) ? 1 : -1;
 
     if (cleanNames.length !== to.length) {
       msg.send('We are having trouble mapping your multi-user plusplus. Please try again and only include @ mentions.');
@@ -224,9 +226,9 @@ module.exports = (robot) => {
       ({ toUser, fromUser } = await scoreKeeper.incrementScore(to[i], from, room, cleanReason, increment));
       if (toUser) {
         robot.logger.debug(`clean names map [${to[i].name}]: ${toUser.score}, the reason ${toUser.reasons[cleanReason]}`);
-        messages.push(helpers.getMessageForNewScore(toUser, cleanReason, robot));
+        messages.push(MessageFactory.BuildNewScoreMessage(toUser, cleanReason, robot));
         robot.emit('plus-plus', {
-          notificationMessage: `<@${fromUser.slackId}> ${operator.match(regExpCreator.positiveOperators) ? 'sent' : 'removed'} a ${helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regExpCreator.positiveOperators) ? 'to' : 'from'} <@${toUser.slackId}> in <#${room}>`,
+          notificationMessage: `<@${fromUser.slackId}> ${operator.match(regExpCreator.positiveOperators) ? 'sent' : 'removed'} a ${Helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(regExpCreator.positiveOperators) ? 'to' : 'from'} <@${toUser.slackId}> in <#${room}>`,
           sender: fromUser,
           recipient: toUser,
           direction: operator,
@@ -265,9 +267,9 @@ module.exports = (robot) => {
     const { user } = msg.envelope;
     const { room, mentions } = msg.message;
 
-    const cleanReason = helpers.cleanAndEncode(reason);
+    const cleanReason = Helpers.cleanAndEncode(reason);
     let to = mentions.filter((men) => men.type === 'user').shift();
-    const cleanName = helpers.cleanName(name);
+    const cleanName = Helpers.cleanName(name);
     if (!to) {
       to = { name: cleanName };
     } else {
@@ -284,7 +286,7 @@ module.exports = (robot) => {
     }
 
     if (erased) {
-      const decodedReason = helpers.decode(cleanReason);
+      const decodedReason = Helpers.decode(cleanReason);
       const message = !decodedReason ? `Erased the following reason from ${to.name}: ${decodedReason}` : `Erased points for ${to.name}`;
       msg.send(message);
     }

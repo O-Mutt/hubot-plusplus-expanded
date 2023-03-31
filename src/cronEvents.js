@@ -1,13 +1,12 @@
 const clark = require('clark');
-const moment = require('moment');
 const _ = require('lodash');
 const { CronJob } = require('cron');
 
-const helpers = require('./lib/helpers');
+const Helpers = require('./lib/Helpers');
 const DatabaseService = require('./lib/services/database');
 
 module.exports = (robot) => {
-  const procVars = helpers.getProcessVariables(process.env);
+  const procVars = Helpers.getProcessVariables(process.env);
   const databaseService = new DatabaseService({ robot, ...procVars });
 
   if (!procVars.notificationsRoom) {
@@ -16,7 +15,7 @@ module.exports = (robot) => {
 
   const { monthlyScoreboardCron, monthlyScoreboardDayOfWeek } = procVars;
   const job = new CronJob(monthlyScoreboardCron, async () => {
-    if (isScoreboardDayOfWeek()) {
+    if (Helpers.isScoreboardDayOfWeek(robot, monthlyScoreboardCron)) {
       robot.logger.debug('running the cron job');
 
       // Senders
@@ -75,10 +74,4 @@ module.exports = (robot) => {
     }
   }, null, true, 'America/Chicago');
   job.start();
-
-  function isScoreboardDayOfWeek() {
-    robot.logger.debug(`Run the cron but lets check what day it is Moment day: [${moment().day()}], Configured Day of Week: [${monthlyScoreboardDayOfWeek}], isThatDay: [${moment().day() === monthlyScoreboardDayOfWeek}]`);
-    const isToday = moment().day() === monthlyScoreboardDayOfWeek;
-    return isToday;
-  }
 };

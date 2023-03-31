@@ -1,37 +1,33 @@
 {
-    "env": {
-        "browser": true,
-        "commonjs": true,
-        "es6": true,
-        "mocha": true
-    },
-    "extends": [
-        "airbnb-base",
-        "plugin:mocha/recommended"
-    ],
-    "globals": {
-        "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
-    },
-    "parserOptions": {
-        "ecmaVersion": 2018
-    },
-    "rules": {
-        "max-len": "off",
-        "func-names": [ "off" ],
-        "prefer-arrow-callback": "off",
-        "new-cap": "off",
-        "no-unused-vars": "warn",
-        "no-await-in-loop": "off",
-        "no-restricted-syntax": "off",
-        "no-param-reassign": "off",
-        "no-plusplus": "off",
-        "no-else-return": "off",
-        "mocha/no-setup-in-describe": "off",
-        "no-underscore-dangle": "off",
-        "no-use-before-define": "off"
-    },
-    "plugins": [
-        "mocha"
-    ]
+	"env": {
+		"browser": true,
+		"commonjs": true,
+		"es6": true,
+		"mocha": true
+	},
+	"extends": ["airbnb-base", "plugin:mocha/recommended"],
+	"globals": {
+		"Atomics": "readonly",
+		"SharedArrayBuffer": "readonly"
+	},
+	"parserOptions": {
+		"ecmaVersion": 2018
+	},
+	"rules": {
+		"func-names": ["off"],
+		"max-len": "off",
+		"mocha/no-mocha-arrows": "off",
+		"mocha/no-setup-in-describe": "warn",
+		"new-cap": "off",
+		"no-await-in-loop": "off",
+		"no-else-return": "off",
+		"no-param-reassign": "off",
+		"no-plusplus": "off",
+		"no-restricted-syntax": "warn",
+		"no-underscore-dangle": "off",
+		"no-unused-vars": "warn",
+		"no-use-before-define": "warn",
+		"prefer-arrow-callback": "warn"
+	},
+	"plugins": ["mocha"]
 }

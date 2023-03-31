@@ -13,16 +13,16 @@
 // Author:
 //  O'Mutt (Matt@OKeefe.dev)
 
-const moment = require('moment');
 const clark = require('clark');
 const _ = require('lodash');
 
-const helpers = require('./lib/helpers');
+const Helpers = require('./lib/Helpers');
 const DatabaseService = require('./lib/services/database');
 const regExpCreator = require('./lib/regexpCreator');
+const MessageFactory = require('./lib/MessageFactory');
 
 module.exports = function plusPlus(robot) {
-  const procVars = helpers.getProcessVariables(process.env);
+  const procVars = Helpers.getProcessVariables(process.env);
   const databaseService = new DatabaseService({ robot, ...procVars });
 
   robot.respond(regExpCreator.createAskForScoreRegExp(), respondWithScore);
@@ -33,7 +33,7 @@ module.exports = function plusPlus(robot) {
   async function respondWithScore(msg) {
     const { mentions } = msg.message;
     const [fullText, premessage, conjunction, name] = msg.match;
-    let to = { name: helpers.cleanName(name) };
+    let to = { name: Helpers.cleanName(name) };
     if (mentions) {
       const userMentions = mentions.filter((men) => men.type === 'user');
       to = userMentions.pop();
@@ -42,46 +42,13 @@ module.exports = function plusPlus(robot) {
 
     const user = await databaseService.getUser(to);
 
-    let tokenString = '.';
-    if (user.accountLevel > 1) {
-      tokenString = ` (*${user.token} ${helpers.capitalizeFirstLetter(robot.name)} `;
-      tokenString = tokenString.concat(user.token > 1 ? 'Tokens*).' : 'Token*).');
-    }
-
-    const scoreStr = user.score > 1 ? 'points' : 'point';
-    let baseString = `<@${user.slackId}> has ${user.score} ${scoreStr}${tokenString}`;
-    baseString += `\nAccount Level: ${user.accountLevel}`;
-    baseString += `\nTotal Points Given: ${user.totalPointsGiven}`;
-    if (user[`${robot.name}Day`]) {
-      const dateObj = new Date(user[`${robot.name}Day`]);
-      baseString += `\n:birthday: ${helpers.capitalizeFirstLetter(robot.name)}day is ${moment(dateObj).format('MM-DD-yyyy')}`;
-    }
-    const keys = Object.keys(user.reasons);
-    if (keys.length > 1) {
-      const sampleReasons = {};
-      const maxReasons = keys.length >= 5 ? 5 : keys.length;
-      do {
-        const randomNumber = _.random(0, keys.length - 1);
-        const reason = keys[randomNumber];
-        const value = user.reasons[keys[randomNumber]];
-        sampleReasons[reason] = value;
-      } while (Object.keys(sampleReasons).length < maxReasons);
-
-      const reasonMap = _.reduce(sampleReasons, (memo, val, key) => {
-        const decodedKey = helpers.decode(key);
-        const pointStr = val > 1 ? 'points' : 'point';
-        memo += `\n_${decodedKey}_: ${val} ${pointStr}`;
-        return memo;
-      }, '');
-
-      return msg.send(`${baseString}\n\n:star: Here are some ${procVars.reasonsKeyword} :star:${reasonMap}`);
-    }
-    return msg.send(`${baseString}`);
+    const scoreString = MessageFactory.BuildScoreLookup(user, robot.name, procVars);
+    msg.send(scoreString);
   }
 
   async function respondWithLeaderLoserBoard(msg) {
     const amount = parseInt(msg.match[2], 10) || 10;
-    const topOrBottom = helpers.capitalizeFirstLetter(msg.match[1].trim());
+    const topOrBottom = Helpers.capitalizeFirstLetter(msg.match[1].trim());
     const methodName = `get${topOrBottom}Scores`;
 
     const tops = await databaseService[methodName](amount);
@@ -91,7 +58,7 @@ module.exports = function plusPlus(robot) {
         const person = tops[i].slackId ? `<@${tops[i].slackId}>` : tops[i].name;
         if (tops[i].accountLevel && tops[i].accountLevel > 1) {
           const tokenStr = tops[i].token > 1 ? 'Tokens' : 'Token';
-          message.push(`${i + 1}. ${person}: ${tops[i].score} (*${tops[i].token} ${helpers.capitalizeFirstLetter(this.robot.name)} ${tokenStr}*)`);
+          message.push(`${i + 1}. ${person}: ${tops[i].score} (*${tops[i].token} ${Helpers.capitalizeFirstLetter(this.robot.name)} ${tokenStr}*)`);
         } else {
           message.push(`${i + 1}. ${person}: ${tops[i].score}`);
         }
@@ -108,7 +75,7 @@ module.exports = function plusPlus(robot) {
 
   async function respondWithLeaderLoserTokenBoard(msg) {
     const amount = parseInt(msg.match[2], 10) || 10;
-    const topOrBottom = helpers.capitalizeFirstLetter(msg.match[1].trim());
+    const topOrBottom = Helpers.capitalizeFirstLetter(msg.match[1].trim());
     const methodName = `get${topOrBottom}Tokens`;
 
     const tops = await databaseService[methodName](amount);
@@ -119,7 +86,7 @@ module.exports = function plusPlus(robot) {
         const person = tops[i].slackId ? `<@${tops[i].slackId}>` : tops[i].name;
         const tokenStr = tops[i].token > 1 ? 'Tokens' : 'Token';
         const pointStr = tops[i].score > 1 ? 'points' : 'point';
-        message.push(`${i + 1}. ${person}: *${tops[i].token} ${helpers.capitalizeFirstLetter(this.robot.name)} ${tokenStr}* (${tops[i].score} ${pointStr})`);
+        message.push(`${i + 1}. ${person}: *${tops[i].token} ${Helpers.capitalizeFirstLetter(this.robot.name)} ${tokenStr}* (${tops[i].score} ${pointStr})`);
       }
     } else {
       message.push('No scores to keep track of yet!');
@@ -133,7 +100,7 @@ module.exports = function plusPlus(robot) {
 
   async function getTopPointSenders(msg) {
     const amount = parseInt(msg.match[2], 10) || 10;
-    const topOrBottom = helpers.capitalizeFirstLetter(msg.match[1].trim());
+    const topOrBottom = Helpers.capitalizeFirstLetter(msg.match[1].trim());
     const methodName = `get${topOrBottom}Sender`;
     const tops = await databaseService[methodName](amount);
 

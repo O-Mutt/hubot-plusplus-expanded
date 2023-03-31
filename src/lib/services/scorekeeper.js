@@ -1,6 +1,6 @@
 /* eslint-disable guard-for-in */
 /* eslint-disable no-restricted-syntax */
-const helpers = require('../helpers');
+const Helpers = require('../Helpers');
 const DatabaseService = require('./database');
 
 class ScoreKeeper {

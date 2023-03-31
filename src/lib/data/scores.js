@@ -24,6 +24,15 @@ const SlackClient = require('@slack/client');
  */
 const scoresDocumentName = 'scores';
 
+function getEmail(user) {
+  if (user.profile && user.profile.email) {
+    return user.profile.email;
+  } else if (user.info && user.info.email_address) {
+    return user.info.email_address;
+  }
+  return undefined;
+}
+
 async function createNewLevelOneUser(createUser, robot) {
   const userName = createUser.name ? createUser.name : createUser;
 
@@ -48,15 +57,6 @@ async function createNewLevelOneUser(createUser, robot) {
   }
 
   return newUser;
-}
-
-function getEmail(user) {
-  if (user.profile && user.profile.email) {
-    return user.profile.email;
-  } else if (user.info && user.info.email_address) {
-    return user.info.email_address;
-  }
-  return undefined;
 }
 
 module.exports = { scoresDocumentName, createNewLevelOneUser };

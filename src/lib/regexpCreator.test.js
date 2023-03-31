@@ -6,7 +6,7 @@ const forEach = require('mocha-each');
 
 const { expect } = chai;
 
-const regExpCreator = require('../src/lib/regexpCreator');
+const regExpCreator = require('./regexpCreator');
 
 describe('regexp', function () {
   describe('createGiveTokenRegExp', function () {

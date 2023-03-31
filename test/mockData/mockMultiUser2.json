@@ -1,0 +1,13 @@
+
+{
+	"name" : "greg",
+	"score" : -10,
+	"reasons" : {
+	},
+	"pointsGiven" : {
+	},
+	"hubotDay" : "2023-01-09T16:55:04.374Z",
+	"accountLevel": 1,
+	"slackId": "greg",
+	"totalPointsGiven": 0
+}
