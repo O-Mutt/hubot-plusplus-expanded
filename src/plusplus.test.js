@@ -57,8 +57,10 @@ describe('PlusPlus', () => {
     describe('adding points', () => {
       it('should add a point when a user is ++\'d', async () => {
         room.user.say('matt.erickson', '@derp++');
-        await wait(35);
-        expect(room.messages[1][1]).to.match(/derp has 1 point\./);
+        await wait(55);
+        expect(room.messages.length).to.equal(2);
+        expect(room.messages[1].length).to.equal(2);
+        expect(room.messages[1][1]).to.equal('derp has 1 point.\n:birthday: Today is derp\'s hubotday! :birthday:');
         const user = await db.collection('scores').findOne({ name: 'derp' });
         expect(user.score).to.equal(1);
       });
@@ -66,8 +68,10 @@ describe('PlusPlus', () => {
       it('should add a point when a user is ++\'d with pre-text', async () => {
         const emitSpy = sinon.spy(room.robot, 'emit');
         room.user.say('matt.erickson', 'where are you d00d @derp++');
-        await wait(35);
-        expect(room.messages[1][1]).to.match(/derp has 1 point\.\n:birthday: Today is derp's hubotday! :birthday:/);
+        await wait(55);
+        expect(room.messages.length).to.equal(2);
+        expect(room.messages[1].length).to.equal(2);
+        expect(room.messages[1][1]).to.equal('derp has 1 point.\n:birthday: Today is derp\'s hubotday! :birthday:');
         expect(emitSpy).not.to.have.been.calledWith('plus-plus-failure', {
           notificationMessage: 'False positive detected in <#room1> from <@matt.erickson>:\n'
             + 'Pre-Message text: [true].\n'
@@ -85,7 +89,9 @@ describe('PlusPlus', () => {
       it('should add a point when a user is ++\'d without a conjunction', async () => {
         const emitSpy = sinon.spy(room.robot, 'emit');
         room.user.say('matt.erickson', '@derp++ winning the business');
-        await wait(35);
+        await wait(55);
+        expect(room.messages.length).to.equal(2);
+        expect(room.messages[1].length).to.equal(2);
         expect(room.messages[1][1]).to.match(/derp has 1 point for winning the business\.\n:birthday: Today is derp's hubotday! :birthday:/);
         expect(emitSpy).not.to.have.been.calledWith('plus-plus-failure', {
           notificationMessage: 'False positive detected in <#room1> from <@matt.erickson>:\n'
@@ -103,7 +109,9 @@ describe('PlusPlus', () => {
 
       it('should add a point when a user is :clap:\'d', async () => {
         room.user.say('matt.erickson', '@derp :clap:');
-        await wait(35);
+        await wait(55);
+        expect(room.messages.length).to.equal(2);
+        expect(room.messages[1].length).to.equal(2);
         expect(room.messages[1][1]).to.match(/derp has 1 point\./);
         const user = await db.collection('scores').findOne({ name: 'derp' });
         expect(user.score).to.equal(1);
@@ -111,7 +119,9 @@ describe('PlusPlus', () => {
 
       it('should add a point when a user is :thumbsup:\'d', async () => {
         room.user.say('matt.erickson', '@derp :thumbsup: for being the best');
-        await wait(35);
+        await wait(55);
+        expect(room.messages.length).to.equal(2);
+        expect(room.messages[1].length).to.equal(2);
         expect(room.messages[1][1]).to.match(/derp has 1 point for being the best\./);
         const user = await db.collection('scores').findOne({ name: 'derp' });
         expect(user.score).to.equal(1);
@@ -119,8 +129,10 @@ describe('PlusPlus', () => {
 
       it('should add a point when a user that is already in the db is ++\'d', async () => {
         room.user.say('matt.erickson.min', '@matt.erickson++');
-        await wait(35);
-        expect(room.messages[1][1]).to.match(/<@matt.erickson> has 228 points\./);
+        await wait(55);
+        expect(room.messages.length).to.equal(2);
+        expect(room.messages[1].length).to.equal(2);
+        expect(room.messages[1][1]).to.equal('<@matt.erickson> has 228 points.');
         const user = await db
           .collection('scores')
           .findOne({ name: 'matt.erickson' });
@@ -130,38 +142,52 @@ describe('PlusPlus', () => {
       describe('multi user vote', () => {
         it('should add a point to each user in the multi-user plus plus', async () => {
           room.user.say('matt.erickson', '{ @darf, @greg, @tank }++');
-          await wait(40);
-          expect(room.messages[1][1]).to.equal('<@darf> has -1 point.\n<@greg> has -9 points.\n<@tank> has 2 points.');
+          await wait(55);
+          expect(room.messages.length).to.equal(2);
+          expect(room.messages[1].length).to.equal(2);
+          expect(room.messages[1][1]).to.equal(
+            '<@darf> has -1 point.'
+            + '\n<@greg> has -9 points.'
+            + '\n<@tank> has 2 points.',
+          );
         });
 
         it('should add a point to each user in the multi-user plus plus with text before it', async () => {
           room.user.say('matt.erickson', 'hello world! { @darf, @greg, @tank }++');
-          await wait(35);
-          expect(room.messages[1][1]).to.equal('<@darf> has -1 point.\n<@greg> has -9 points.\n<@tank> has 2 points.');
+          await wait(55);
+          expect(room.messages.length).to.equal(2);
+          expect(room.messages[1].length).to.equal(2);
+          expect(room.messages[1][1]).to.equal(
+            '<@darf> has -1 point.'
+            + '\n<@greg> has -9 points.'
+            + '\n<@tank> has 2 points.',
+          );
         });
 
         it('should add a point to each user in the multi-user plus plus with periods in their names', async () => {
           room.user.say('matt.erickson', '{ @darf.arg, @pirate.jack123, @ted.phil } ++');
-          await wait(35);
+          await wait(55);
+          expect(room.messages.length).to.equal(2);
+          expect(room.messages[1].length).to.equal(2);
           expect(room.messages[1][1]).to.equal('<@darf.arg> has 2 points.\n<@pirate.jack123> has 2 points.\n<@ted.phil> has 2 points.');
         });
       });
 
       it('should add a point to user with reason', async () => {
         room.user.say('matt.erickson.min', '@matt.erickson++ for being awesome');
-        await wait(35);
-        expect(room.messages[1][1]).to.match(
-          /<@matt\.erickson> has 228 points, 2 of which are for being awesome./,
-        );
+        await wait(55);
+        expect(room.messages.length).to.equal(2);
+        expect(room.messages[1].length).to.equal(2);
+        expect(room.messages[1][1]).to.equal('<@matt.erickson> has 228 points, 2 of which are for being awesome.');
       });
 
       it('should add a point to user with (sans) conjunction reason', async () => {
         const emitSpy = sinon.spy(room.robot, 'emit');
         room.user.say('matt.erickson.min', '@matt.erickson++ gawd you\'re awesome');
-        await wait(35);
-        expect(room.messages[1][1]).to.match(
-          /<@matt\.erickson> has 228 points, 1 of which is for gawd you're awesome./,
-        );
+        await wait(55);
+        expect(room.messages.length).to.equal(2);
+        expect(room.messages[1].length).to.equal(2);
+        expect(room.messages[1][1]).to.equal('<@matt\.erickson> has 228 points, 1 of which is for gawd you\'re awesome.');
         expect(emitSpy).not.to.have.been.calledWith('plus-plus-failure', {
           notificationMessage: 'False positive detected in <#room1> from <@derp>:\n'
             + 'Pre-Message text: [false].\n'
@@ -180,15 +206,19 @@ describe('PlusPlus', () => {
           .findOne({ name: 'matt.erickson.min' });
         expect(user.score).to.equal(8);
         room.user.say('matt.erickson', '@matt.erickson.min--');
-        await wait(35);
-        expect(room.messages[1][1]).to.match(/<@matt.erickson.min> has 7 points\./);
+        await wait(55);
+        expect(room.messages.length).to.equal(2);
+        expect(room.messages[1].length).to.equal(2);
+        expect(room.messages[1][1]).to.equal('<@matt.erickson.min> has 7 points.');
         user = await db.collection('scores').findOne({ name: 'matt.erickson.min' });
         expect(user.score).to.equal(7);
       });
 
       it('should subtract a point when a user is :thumbsdown:\'d', async () => {
         room.user.say('matt.erickson', '@matt.erickson.min :thumbsdown: for being the best');
-        await wait(35);
+        await wait(55);
+        expect(room.messages.length).to.equal(2);
+        expect(room.messages[1].length).to.equal(2);
         expect(room.messages[1][1]).to.equal('<@matt.erickson.min> has 7 points, -1 of which is for being the best.');
         const user = await db.collection('scores').findOne({ name: 'matt.erickson.min' });
         expect(user.score).to.equal(7);
@@ -197,7 +227,7 @@ describe('PlusPlus', () => {
       it('shouldn\'t remove a point when a user is ++\'d with pre-text and no conjunction', async () => {
         const emitSpy = sinon.spy(room.robot, 'emit');
         room.user.say('matt.erickson', 'hello, @derp -- i have no idea what you are doing');
-        await wait(35);
+        await wait(55);
         expect(emitSpy).to.have.been.calledWith('plus-plus-failure', {
           notificationMessage: 'False positive detected in <#room1> from <@matt.erickson>:\n'
             + 'Pre-Message text: [true].\n'
@@ -216,8 +246,14 @@ describe('PlusPlus', () => {
   describe('giveTokenBetweenUsers', () => {
     it('should add a X points when a user is + #\'d', async () => {
       room.user.say('peter.parker', '@hubot @peter.parker.min + 5');
-      await wait(35);
-      expect(room.messages[1][1]).to.equal('<@peter.parker> transferred *5* hubot Tokens to <@peter.parker.min>.\n<@peter.parker.min> now has 13 tokens.\n_<@peter.parker> has 195 tokens_');
+      await wait(55);
+      expect(room.messages.length).to.equal(2);
+      expect(room.messages[1].length).to.equal(2);
+      expect(room.messages[1][1]).to.equal(
+        '<@peter.parker> transferred *5* hubot Tokens to <@peter.parker.min>.'
+        + '\n<@peter.parker.min> now has 13 tokens.'
+        + '\n_<@peter.parker> has 195 tokens_',
+      );
       const to = await db.collection('scores').findOne({ name: 'peter.parker.min' });
       expect(to.score).to.equal(8);
       expect(to.token).to.equal(13);
@@ -228,7 +264,9 @@ describe('PlusPlus', () => {
 
     it('should error and message if sender is short on tokens', async () => {
       room.user.say('peter.parker.min', '@hubot @peter.parker + 55');
-      await wait(35);
+      await wait(55);
+      expect(room.messages.length).to.equal(2);
+      expect(room.messages[1].length).to.equal(2);
       expect(room.messages[1][1]).to.match(/You don't have enough tokens to send 55 to peter.parker/);
       const to = await db.collection('scores').findOne({ name: 'peter.parker' });
       expect(to.score).to.equal(200);
@@ -240,8 +278,10 @@ describe('PlusPlus', () => {
 
     it('should error and message if sender is not level 2', async () => {
       room.user.say('matt.erickson.min', '@hubot @peter.parker + 55');
-      await wait(35);
-      expect(room.messages[1][1]).to.match(/In order to send tokens to peter\.parker you both must be, at least, level 2\./);
+      await wait(55);
+      expect(room.messages.length).to.equal(2);
+      expect(room.messages[1].length).to.equal(2);
+      expect(room.messages[1][1]).to.equal('In order to send tokens to peter.parker you both must be, at least, level 2.');
       const to = await db.collection('scores').findOne({ name: 'peter.parker' });
       expect(to.score).to.equal(200);
       expect(to.token).to.equal(200);
@@ -252,8 +292,10 @@ describe('PlusPlus', () => {
 
     it('should error and message if recipient is not level 2', async () => {
       room.user.say('peter.parker', '@hubot @matt.erickson + 55');
-      await wait(35);
-      expect(room.messages[1][1]).to.match(/In order to send tokens to matt\.erickson you both must be, at least, level 2\./);
+      await wait(55);
+      expect(room.messages.length).to.equal(2);
+      expect(room.messages[1].length).to.equal(2);
+      expect(room.messages[1][1]).to.equal('In order to send tokens to matt.erickson you both must be, at least, level 2.');
       const to = await db.collection('scores').findOne({ name: 'matt.erickson' });
       expect(to.score).to.equal(227);
       expect(to.token).to.equal(undefined);
@@ -264,8 +306,14 @@ describe('PlusPlus', () => {
 
     it('should error on second point (for spam check)', async () => {
       room.user.say('peter.parker', '@hubot @peter.parker.min + 2');
-      await wait(35);
-      expect(room.messages[1][1]).to.equal('<@peter.parker> transferred *2* hubot Tokens to <@peter.parker.min>.\n<@peter.parker.min> now has 10 tokens.\n_<@peter.parker> has 198 tokens_');
+      await wait(55);
+      expect(room.messages.length).to.equal(2);
+      expect(room.messages[1].length).to.equal(2);
+      expect(room.messages[1][1]).to.equal(
+        '<@peter.parker> transferred *2* hubot Tokens to <@peter.parker.min>.'
+        + '\n<@peter.parker.min> now has 10 tokens.'
+        + '\n_<@peter.parker> has 198 tokens_',
+      );
       const to = await db.collection('scores').findOne({ name: 'peter.parker.min' });
       expect(to.score).to.equal(8);
       expect(to.token).to.equal(10);
@@ -273,7 +321,7 @@ describe('PlusPlus', () => {
       expect(from.score).to.equal(200);
       expect(from.token).to.equal(198);
       room.user.say('peter.parker', '@hubot @peter.parker.min + 2');
-      await wait(35);
+      await wait(55);
       const spamCheck = await db.collection('scoreLog').findOne({ from: 'peter.parker' });
       expect(Object.keys(spamCheck)).to.eql(['_id', 'from', 'to', 'date', 'room', 'reason', 'scoreChange']);
       spamCheck.date = '123'; // hack to handle date;
@@ -288,7 +336,9 @@ describe('PlusPlus', () => {
   describe('respondWithHubotGuidance', () => {
     it('should respond with hubot usage guidance', async () => {
       room.user.say('peter.nguyen', '@hubot help');
-      await wait(35);
+      await wait(55);
+      expect(room.messages.length).to.equal(2);
+      expect(room.messages[1].length).to.equal(2);
       const message = room.messages[1][1];
       const { blocks } = message.attachments[0];
       expect(blocks.length).to.equal(3);
@@ -315,7 +365,9 @@ describe('PlusPlus', () => {
       process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = url;
       room = plusPlusHelper.createRoom();
       room.user.say('peter.nguyen', '@hubot -h');
-      await wait(35);
+      await wait(55);
+      expect(room.messages.length).to.equal(2);
+      expect(room.messages[1].length).to.equal(2);
       const message = room.messages[1][1];
       const { blocks } = message.attachments[0];
       expect(blocks.length).to.equal(4);
@@ -344,8 +396,9 @@ describe('PlusPlus', () => {
   describe('version', () => {
     it('should respond with the name and version of the package when asked --version', async () => {
       await room.user.say('matt.erickson', '@hubot --version');
-      await wait(35);
+      await wait(55);
       expect(room.messages.length).to.equal(2);
+      expect(room.messages[1].length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
         `${Helpers.capitalizeFirstLetter(room.robot.name)} ${pjson.name}, version: ${pjson.version}`,
       );
@@ -353,8 +406,9 @@ describe('PlusPlus', () => {
 
     it('should respond with the name and version of the package when asked -v', async () => {
       await room.user.say('matt.erickson', '@hubot -v');
-      await wait(35);
+      await wait(55);
       expect(room.messages.length).to.equal(2);
+      expect(room.messages[1].length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
         `${Helpers.capitalizeFirstLetter(room.robot.name)} ${pjson.name}, version: ${pjson.version}`,
       );
@@ -362,8 +416,9 @@ describe('PlusPlus', () => {
 
     it('should respond with the name and version of the package when asked `plusplus version`', async () => {
       await room.user.say('matt.erickson', '@hubot plusplus version');
-      await wait(35);
+      await wait(55);
       expect(room.messages.length).to.equal(2);
+      expect(room.messages[1].length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
         `${Helpers.capitalizeFirstLetter(room.robot.name)} ${pjson.name}, version: ${pjson.version}`,
       );

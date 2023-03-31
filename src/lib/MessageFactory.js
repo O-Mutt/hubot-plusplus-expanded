@@ -15,13 +15,14 @@ module.exports = class MessageFactory {
    * @static
    */
   static BuildScoreLookup(user, robotName, procVars) {
+    if (_.isEmpty(user) || _.isEmpty(robotName) || _.isEmpty(procVars)) return '';
     let tokenString = '.';
     if (user.accountLevel > 1) {
       tokenString = ` (*${user.token} ${Helpers.capitalizeFirstLetter(robotName)} `;
       tokenString = tokenString.concat(user.token > 1 ? 'Tokens*).' : 'Token*).');
     }
 
-    const scoreStr = user.score > 1 ? 'points' : 'point';
+    const scoreStr = user.score === 1 || user.score === -1 ? 'point' : 'points';
     let baseString = `<@${user.slackId}> has ${user.score} ${scoreStr}${tokenString}`;
     baseString += `\nAccount Level: ${user.accountLevel}`;
     baseString += `\nTotal Points Given: ${user.totalPointsGiven}`;
@@ -30,7 +31,7 @@ module.exports = class MessageFactory {
       const dateObj = parseISO(user[`${robotName}Day`]);
       baseString += `\n:birthday: ${Helpers.capitalizeFirstLetter(robotName)}day is ${format(dateObj, 'MMM. do yyyy')}`;
     }
-    const keys = Object.keys(user.reasons);
+    const keys = Object.keys(user.reasons || {});
     if (keys.length > 1) {
       const sampleReasons = {};
       const maxReasons = keys.length >= 5 ? 5 : keys.length;

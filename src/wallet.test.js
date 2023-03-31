@@ -46,7 +46,7 @@ describe('PlusPlus', () => {
     it('should respond with message and level up account', async () => {
       room.name = 'D123';
       await room.user.say('matt.erickson', '@hubot upgrade my account');
-      await wait(35);
+      await wait(55);
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
         `@matt.erickson matt.erickson, we are going to level up your account to Level 2! This means you will start getting ${Helpers.capitalizeFirstLetter(room.robot.name)} Tokens as well as points!`,
