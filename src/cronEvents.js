@@ -1,3 +1,13 @@
+// Description:
+//   Cron event that sends out monthly scoreboards to a slack channel
+//
+// Commands:
+//   None
+//
+//
+// Author:
+//  O'Mutt (Matt@OKeefe.dev)
+
 const clark = require('clark');
 const _ = require('lodash');
 const { CronJob } = require('cron');
@@ -5,7 +15,7 @@ const { CronJob } = require('cron');
 const Helpers = require('./lib/Helpers');
 const DatabaseService = require('./lib/services/database');
 
-module.exports = (robot) => {
+module.exports = function cron(robot) {
   const procVars = Helpers.getProcessVariables(process.env);
   const databaseService = new DatabaseService({ robot, ...procVars });
 
@@ -15,7 +25,7 @@ module.exports = (robot) => {
 
   const { monthlyScoreboardCron, monthlyScoreboardDayOfWeek } = procVars;
   const job = new CronJob(monthlyScoreboardCron, async () => {
-    if (Helpers.isScoreboardDayOfWeek(robot, monthlyScoreboardCron)) {
+    if (Helpers.isScoreboardDayOfWeek(robot, monthlyScoreboardDayOfWeek)) {
       robot.logger.debug('running the cron job');
 
       // Senders

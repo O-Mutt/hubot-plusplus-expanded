@@ -1,3 +1,4 @@
+/* eslint-disable */
 db.scores.find({ slackId: { $exists: true } }).forEach((user) => {
   let total = 0;
   for (const key in user.pointsGiven) {

@@ -1,9 +1,23 @@
-const { WebClient } = require('@slack/client');
-const DatabaseService = require('./lib/services/database');
-const { scoresDocumentName } = require('./lib/data/scores');
-const Helpers = require('./lib/Helpers');
+// Description:
+//   Admin handlers for mapping slack users to existing hubot users
+//
+// Commands:
+//   @hubot try to map all slack users to db users - tries to map all users to the db
+//   @hubot try to map more data to all slack users to db users - tries to map more data to all users to the db
+//   @hubot try to map @.* to db users - tries to map a single user to the db
+//   @hubot unmap all users - unmaps all users from the db
+//   @hubot map all slackIds to slackEmail - maps all slackIds to slackEmail
+//
+//
+// Author:
+//  O'Mutt (Matt@OKeefe.dev)
 
-module.exports = (robot) => {
+const { WebClient } = require('@slack/client');
+const DatabaseService = require('../lib/services/database');
+const { scoresDocumentName } = require('../lib/data/scores');
+const Helpers = require('../lib/Helpers');
+
+module.exports = function migrations(robot) {
   const procVars = Helpers.getProcessVariables(process.env);
 
   robot.respond(/try to map all slack users to db users/, mapUsersToDb);

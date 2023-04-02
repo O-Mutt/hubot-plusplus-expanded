@@ -13,7 +13,7 @@ const {
   isSameDay,
   isSameWeek,
 } = require('date-fns');
-const regExpCreator = require('./regexpCreator');
+const RegExpPlusPlus = require('./RegExpPlusPlus');
 
 module.exports = class Helpers {
   static getEsOnEndOfWord(number) {
@@ -159,7 +159,7 @@ module.exports = class Helpers {
   }
 
   static isKnownFalsePositive(premessage, conjunction, reason, operator) {
-    const falsePositive = premessage && !conjunction && reason && operator.match(regExpCreator.negativeOperators);
+    const falsePositive = premessage && !conjunction && reason && operator.match(RegExpPlusPlus.negativeOperators);
     return falsePositive;
   }
 

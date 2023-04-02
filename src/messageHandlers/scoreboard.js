@@ -2,13 +2,9 @@
 //  Hubot scoreboard for hubot-plusplus-expanded.
 //
 // Commands:
-//  @hubot score for @user - displays a snap shot of the user requested
-//  @hubot top scores 10 - displays top 10 (or any number) scores of all time
-//  @hubot bottom scores 5 - displays bottom 5 (or any number) scores of all time
-//  @hubot top tokens 7 - displays top 7 (or any number) tokens of all time
-//  @hubot bottom tokens 2 - displays top 2 (or any number) tokens of all time
-//  @hubot top scores 10 - displays top 10 scores of all time
-//  @hubot top scores 10 - displays top 10 scores of all time
+//  @hubot score @<name> - Display the score for a name and some of the reasons
+//  @hubot top <amount> - Display the top scoring <amount>
+//  @hubot bottom <amount> - Display the bottom scoring <amount>
 //
 // Author:
 //  O'Mutt (Matt@OKeefe.dev)
@@ -16,19 +12,19 @@
 const clark = require('clark');
 const _ = require('lodash');
 
-const Helpers = require('./lib/Helpers');
-const DatabaseService = require('./lib/services/database');
-const regExpCreator = require('./lib/regexpCreator');
-const MessageFactory = require('./lib/MessageFactory');
+const Helpers = require('../lib/Helpers');
+const DatabaseService = require('../lib/services/database');
+const RegExpPlusPlus = require('../lib/RegExpPlusPlus');
+const MessageFactory = require('../lib/MessageFactory');
 
-module.exports = function plusPlus(robot) {
+module.exports = function scoreboard(robot) {
   const procVars = Helpers.getProcessVariables(process.env);
   const databaseService = new DatabaseService({ robot, ...procVars });
 
-  robot.respond(regExpCreator.createAskForScoreRegExp(), respondWithScore);
-  robot.respond(regExpCreator.createTopBottomRegExp(), respondWithLeaderLoserBoard);
-  robot.respond(regExpCreator.createTopBottomTokenRegExp(), respondWithLeaderLoserTokenBoard);
-  robot.respond(regExpCreator.createTopPointGiversRegExp(), getTopPointSenders);
+  robot.respond(RegExpPlusPlus.createAskForScoreRegExp(), respondWithScore);
+  robot.respond(RegExpPlusPlus.createTopBottomRegExp(), respondWithLeaderLoserBoard);
+  robot.respond(RegExpPlusPlus.createTopBottomTokenRegExp(), respondWithLeaderLoserTokenBoard);
+  robot.respond(RegExpPlusPlus.createTopPointGiversRegExp(), getTopPointSenders);
 
   async function respondWithScore(msg) {
     const { mentions } = msg.message;
