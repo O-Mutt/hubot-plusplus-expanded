@@ -4,8 +4,8 @@ const sinon = require('sinon');
 const mongoUnit = require('mongo-unit');
 const TestHelper = require('hubot-test-helper');
 
-const testData = require('../test/mockData');
-const { wait } = require('../test/test_helpers');
+const testData = require('../../test/mockData');
+const { wait } = require('../../test/test_helpers');
 
 const { expect } = chai;
 
@@ -17,7 +17,7 @@ describe('Scoreboard', () => {
     const url = await mongoUnit.start();
     process.env.MONGODB_URI = url;
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
-    scoreboard = new TestHelper('./scoreboard.js');
+    scoreboard = new TestHelper('./messageHandlers/scoreboard.js');
   });
 
   beforeEach(async () => {

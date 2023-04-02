@@ -7,10 +7,10 @@ const mongoUnit = require('mongo-unit');
 
 const { expect } = chai;
 
-const Helpers = require('./lib/Helpers');
+const Helpers = require('../lib/Helpers');
 
-const testData = require('../test/mockData');
-const { wait } = require('../test/test_helpers');
+const testData = require('../../test/mockData');
+const { wait } = require('../../test/test_helpers');
 
 describe('PlusPlus', () => {
   let room;
@@ -27,7 +27,7 @@ describe('PlusPlus', () => {
     db = connection.db();
     process.env.MONGODB_URI = url;
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
-    wallet = new TestHelper('./wallet.js');
+    wallet = new TestHelper('./messageHandlers/wallet.js');
   });
 
   beforeEach(async () => {

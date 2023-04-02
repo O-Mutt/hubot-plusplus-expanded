@@ -11,10 +11,9 @@ const mongoUnit = require('mongo-unit');
 
 const Helpers = require('../Helpers');
 const ScoreKeeper = require('./scorekeeper');
-const { robotStub } = require('../../../test/test_helpers');
+const { robotStub, mockScoreKeeper } = require('../../../test/test_helpers');
 
-const peerFeedbackUrl = '\'Formal Praise\' (company.formal-praise.com)';
-const spamMessage = 'Please slow your roll.';
+
 
 const defaultData = {
   scores: [
@@ -32,9 +31,7 @@ describe('ScoreKeeper', () => {
   before(async () => {
     await mongoUnit.start();
     const url = mongoUnit.getUrl();
-    scoreKeeper = new ScoreKeeper({
-      robot: robotStub, mongoUri: url, peerFeedbackUrl, spamMessage, furtherFeedbackSuggestedScore: 10, spamTimeLimit: 1,
-    });
+    scoreKeeper = mockScoreKeeper(url);
 
     return true;
   });
@@ -132,7 +129,7 @@ describe('ScoreKeeper', () => {
         expect(r.score).to.equal(1);
         expect(r.reasons['because points']).to.equal(1);
         expect(msgSpy.called).to.equal(true);
-        expect(msgSpy).to.have.been.calledWith('123', `Looks like you've given derp quite a few points, maybe you should look at submitting ${peerFeedbackUrl}`);
+        expect(msgSpy).to.have.been.calledWith('123', `Looks like you've given derp quite a few points, maybe you should look at submitting ${scoreKeeper.peerFeedbackUrl}`);
       });
     });
 

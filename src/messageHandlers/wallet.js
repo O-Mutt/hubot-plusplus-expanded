@@ -7,23 +7,24 @@
 //
 // Author:
 //  O'Mutt (Matt@OKeefe.dev)
+
 const _ = require('lodash');
 const Conversation = require('hubot-conversation');
 const tokenBuddy = require('token-buddy');
 
-const Helpers = require('./lib/Helpers');
-const regExpCreator = require('./lib/regexpCreator');
-const DatabaseService = require('./lib/services/database');
+const Helpers = require('../lib/Helpers');
+const RegExpPlusPlus = require('../lib/RegExpPlusPlus');
+const DatabaseService = require('../lib/services/database');
 
-module.exports = (robot) => {
+module.exports = function wallet(robot) {
   const procVars = Helpers.getProcessVariables(process.env);
   const databaseService = new DatabaseService({ robot, ...procVars });
 
   // message @robot.name
-  robot.respond(regExpCreator.getBotWallet(), botWalletCount);
+  robot.respond(RegExpPlusPlus.getBotWallet(), botWalletCount);
 
   // DM only
-  robot.respond(regExpCreator.createLevelUpAccount(), levelUpAccount);
+  robot.respond(RegExpPlusPlus.createLevelUpAccount(), levelUpAccount);
 
   async function levelUpAccount(msg) {
     const switchBoard = new Conversation(msg.robot);

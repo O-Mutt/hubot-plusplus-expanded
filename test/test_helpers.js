@@ -1,3 +1,7 @@
+const sinon = require('sinon');
+
+const ScoreKeeper = require('../src/lib/services/scorekeeper');
+
 const robotStub = {
   brain: {
     data: { },
@@ -8,10 +12,11 @@ const robotStub = {
   logger: {
     debug() {},
     info() {},
+    warning() {},
     error() {},
   },
   emit: (not) => not,
-  name: 'hubot',
+  name: 'mockHubot',
   messageRoom: (message) => message,
   adapter: {
     options: {
@@ -26,4 +31,12 @@ function wait(ms) {
   });
 }
 
-module.exports = { robotStub, wait };
+function mockScoreKeeper(mongoUri) {
+  const peerFeedbackUrl = '\'Formal Praise\' (company.formal-praise.com)';
+  const spamMessage = 'Please slow your roll.';
+  return new ScoreKeeper({
+    robot: robotStub, mongoUri, peerFeedbackUrl, spamMessage, furtherFeedbackSuggestedScore: 10, spamTimeLimit: 1,
+  });
+}
+
+module.exports = { robotStub, wait, mockScoreKeeper };

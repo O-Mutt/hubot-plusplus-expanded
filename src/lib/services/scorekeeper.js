@@ -1,9 +1,8 @@
 /* eslint-disable guard-for-in */
 /* eslint-disable no-restricted-syntax */
-const Helpers = require('../Helpers');
 const DatabaseService = require('./database');
 
-class ScoreKeeper {
+module.exports = class ScoreKeeper {
   /*
   * params.robot
   * params.peerFeedbackUrl
@@ -173,6 +172,4 @@ class ScoreKeeper {
     }
     return isBot;
   }
-}
-
-module.exports = ScoreKeeper;
+};

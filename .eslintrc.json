@@ -23,10 +23,10 @@
 		"no-else-return": "off",
 		"no-param-reassign": "off",
 		"no-plusplus": "off",
-		"no-restricted-syntax": "warn",
+		"no-restricted-syntax": "off",
 		"no-underscore-dangle": "off",
 		"no-unused-vars": "warn",
-		"no-use-before-define": "warn",
+		"no-use-before-define": "off",
 		"prefer-arrow-callback": "warn"
 	},
 	"plugins": ["mocha"]

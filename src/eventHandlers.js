@@ -1,6 +1,16 @@
+// Description:
+//   This is strictly an event handler that sends notifications to a room when a plusplus event occurs
+//
+// Commands:
+//   None
+//
+//
+// Author:
+//  O'Mutt (Matt@OKeefe.dev)
+
 const Helpers = require('./lib/Helpers');
 
-module.exports = (robot) => {
+module.exports = function events(robot) {
   const procVars = Helpers.getProcessVariables(process.env);
 
   robot.on('plus-plus', sendPlusPlusNotification);

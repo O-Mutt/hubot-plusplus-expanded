@@ -99,6 +99,6 @@ module.exports = {
     'Is it hot in here, or is it just me?',
     'I heard that if you say "bloody Mary" three times in front of a mirror, a ghost appears',
     'Have you heard about the new restaurant called Karma? There\'s no menu. You get what you deserve.',
-    'I once ate an entire pizza by myself. It was a personal record.'
+    'I once ate an entire pizza by myself. It was a personal record.',
   ],
 };

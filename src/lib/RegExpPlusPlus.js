@@ -1,18 +1,20 @@
 const scoreKeyword = process.env.HUBOT_PLUSPLUS_KEYWORD || 'score|scores|karma';
 const reasonConjunctions = process.env.HUBOT_PLUSPLUS_CONJUNCTIONS || 'for|because|cause|cuz|as|porque|just|thanks for';
 
-class RegExpCreator {
-  votedObject = '[\\-\\w.-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]+(?<![+-])';
-  captureVoted = `@(${this.votedObject})`;
-  nonCaptureVoted = `@(?:${this.votedObject})`;
-  multiUserSeparator= '(?:\\,|\\s|(?:\\s)?\\:(?:\\s)?)';
-  // allow for spaces after the thing being upvoted (@user ++)
-  allowSpaceAfterObject = '\\s*';
-  positiveOperators = '\\+\\+|:clap:(?::skin-tone-[0-9]:)?|:thumbsup:(?::skin-tone-[0-9]:)?|:thumbsup_all:|:\+\1:(?::skin-tone-[0-9]:)?';
-  negativeOperators = '--|—|\u2013|\u2014|:thumbsdown:(?::skin-tone-[0-9]:)?';
-  operator = `(${this.positiveOperators}|${this.negativeOperators})`;
-  reasonForVote = `(?:\\s+(${reasonConjunctions})?\\s*(.+))?`;
-  eol = '$';
+class RegExpPlusPlus {
+  constructor() {
+    this.votedObject = '[\\-\\w.-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]+(?<![+-])';
+    this.captureVoted = `@(${this.votedObject})`;
+    this.nonCaptureVoted = `@(?:${this.votedObject})`;
+    this.multiUserSeparator = '(?:\\,|\\s|(?:\\s)?\\:(?:\\s)?)';
+    // allow for spaces after the thing being upvoted (@user ++)
+    this.allowSpaceAfterObject = '\\s*';
+    this.positiveOperators = '\\+\\+|:clap:(?::skin-tone-[0-9]:)?|:thumbsup:(?::skin-tone-[0-9]:)?|:thumbsup_all:|:\\+1:(?::skin-tone-[0-9]:)?';
+    this.negativeOperators = '--|—|\u2013|\u2014|:thumbsdown:(?::skin-tone-[0-9]:)?';
+    this.operator = `(${this.positiveOperators}|${this.negativeOperators})`;
+    this.reasonForVote = `(?:\\s+(${reasonConjunctions})?\\s*(.+))?`;
+    this.eol = '$';
+  }
 
   /**
    * botName score for user1
@@ -30,7 +32,7 @@ class RegExpCreator {
 
     return new RegExp(
       `(.*)?${eraseClause}${this.allowSpaceAfterObject}${this.captureVoted}${this.allowSpaceAfterObject}${this.reasonForVote}${this.eol}`,
-      'i'
+      'i',
     );
   }
 
@@ -44,7 +46,7 @@ class RegExpCreator {
 
     return new RegExp(
       `${multiUserVotedObject}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.eol}`,
-      'i'
+      'i',
     );
   }
 
@@ -63,7 +65,7 @@ class RegExpCreator {
     const digits = '(\\d+)';
     return new RegExp(
       `${topOrBottom}${this.allowSpaceAfterObject}tokens${this.allowSpaceAfterObject}${digits}`,
-      'i'
+      'i',
     );
   }
 
@@ -72,9 +74,10 @@ class RegExpCreator {
     const digits = '(\\d+)';
     return new RegExp(
       `${topOrBottom}${this.allowSpaceAfterObject}(?:point givers?|point senders?|givers?|senders?)${this.allowSpaceAfterObject}${digits}`,
-      'i'
+      'i',
     );
   }
+
   /**
    * user1++ for being dope
    * user1-- cuz nope
@@ -83,7 +86,7 @@ class RegExpCreator {
   createUpDownVoteRegExp() {
     return new RegExp(
       `(.*)?${this.captureVoted}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.eol}`,
-      'i'
+      'i',
     );
   }
 
@@ -94,7 +97,7 @@ class RegExpCreator {
   createGiveTokenRegExp() {
     const reg = new RegExp(
       `(.*)?${this.captureVoted}${this.allowSpaceAfterObject}\\+${this.allowSpaceAfterObject}([0-9]{1,})${this.reasonForVote}${this.eol}`,
-      'i'
+      'i',
     );
     return reg;
   }
@@ -102,6 +105,7 @@ class RegExpCreator {
   /**
    * @hubot level me up
    */
+  // eslint-disable-next-line class-methods-use-this
   createLevelUpAccount() {
     return new RegExp(/(level (me )?up|upgrade (my account|me))/, 'i');
   }
@@ -109,17 +113,18 @@ class RegExpCreator {
   /**
    * @hubot help
    */
+  // eslint-disable-next-line class-methods-use-this
   getHelp() {
-    return new RegExp(`(help|-h|--help)${this.eol}`, 'i');
+    return new RegExp('(help|-h|--help)', 'i');
   }
 
   /**
    * @hubot hot-wallet or hot wallet or hotwallet
    */
+  // eslint-disable-next-line class-methods-use-this
   getBotWallet() {
     return new RegExp(/hot( |-)?wallet/, 'i');
   }
 }
 
-const localReg = new RegExpCreator();
-module.exports = localReg;
+module.exports = new RegExpPlusPlus();

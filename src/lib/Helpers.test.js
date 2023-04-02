@@ -8,8 +8,8 @@ const { expect } = chai;
 
 const Helpers = require('./Helpers');
 
-describe('Helpers', function () {
-  describe('cleanName', function () {
+describe('Helpers', () => {
+  describe('cleanName', () => {
     forEach([
       ['@matt', 'matt'],
       ['hello @derp', 'hello @derp'],
@@ -22,7 +22,7 @@ describe('Helpers', function () {
     });
   });
 
-  describe('cleanAndEncodeReason', function () {
+  describe('cleanAndEncodeReason', () => {
     forEach([
       ['You are the best!', new Buffer.from('you are the best!').toString('base64')],
       ['this.should.work', new Buffer.from('this.should.work').toString('base64')],
@@ -36,7 +36,7 @@ describe('Helpers', function () {
     });
   });
 
-  describe('decodeReason', function () {
+  describe('decodeReason', () => {
     forEach([
       [new Buffer.from('you are the best!').toString('base64'), 'you are the best!'],
       [new Buffer.from('this.should.work').toString('base64'), 'this.should.work'],
