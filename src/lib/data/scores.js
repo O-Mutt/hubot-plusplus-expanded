@@ -50,7 +50,7 @@ async function createNewLevelOneUser(createUser, robot) {
   }
   newUser.slackEmail = getEmail(createUser);
 
-  if (newUser.slackId && !newUser.slackEmail) {
+  if (newUser.slackId && !newUser.slackEmail && robot.adapter && robot.adapter.options && robot.adapter.options.token) {
     const web = new SlackClient.WebClient(robot.adapter.options.token);
     const result = await web.users.info({ user: newUser.slackId });
     newUser.slackEmail = getEmail(result.user);
