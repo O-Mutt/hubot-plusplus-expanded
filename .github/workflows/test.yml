@@ -5,7 +5,7 @@ on:
     # The branches below must be a subset of the branches above
     branches: [main]
 
-name: Test Node.js 18
+name: Test Node
 
 jobs:
 
@@ -19,9 +19,9 @@ jobs:
         os: [ubuntu-latest]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         
