@@ -124,7 +124,9 @@ module.exports = function plusplus(robot) {
     const { room, mentions } = msg.message;
     let to = cleanNames.map((cn) => ({ name: cn }));
     if (mentions) {
-      to = mentions.filter((men) => men.type === 'user');
+      to = mentions
+        .filter((men) => men.type === 'user')
+        .filter((men, pos, self) => self.indexOf(s => s.name === men.name) === pos);
     }
     const cleanReason = Helpers.cleanAndEncode(reason);
     const increment = operator.match(RegExpPlusPlus.positiveOperators) ? 1 : -1;
