@@ -76,8 +76,7 @@
 		"mocha-each": "^2.0.1",
 		"mock-env": "^0.2.0",
 		"mongo-unit": "^3.3.0",
-		"sinon": "^15.0.2",
-		"sinon-chai": "^3.7.0"
+		"sinon": "^15.0.2"
 	},
 	"contributors": [],
 	"snyk": true
