@@ -12,8 +12,9 @@
 		}
 	},
 	"scripts": {
-		"test": "HUBOT_LOG_LEVEL=error mocha",
-		"test:watch": "npm run test -- --watch",
+		"test": "rimraf TestResults && HUBOT_LOG_LEVEL=error mocha",
+		"test:watch": "rimraf TestResults && npm run test -- --watch",
+		"test:ci": "npm run test",
 		"lint": "eslint src --fix",
 		"snyk-protect": "snyk-protect",
 		"prepare": "npm run snyk-protect"

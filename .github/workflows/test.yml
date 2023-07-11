@@ -1,4 +1,4 @@
-on: 
+on:
   push:
     branches: [main]
   pull_request:
@@ -15,18 +15,31 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [18.x, 20.x]
         os: [ubuntu-latest]
 
     steps:
     - uses: actions/checkout@v3
+
+    - uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ matrix.os }}-node-${{ matrix.node-version }}-npm-${{ hashFiles('package-lock.json') }}
+        restore-keys: ${{ matrix.os }}-node-${{ matrix.node-version }}-npm-
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-        
-    - name: npm install, build, and test
-      run: |
-        npm install
-        npm run build --if-present
-        npm test
+
+    - name: Install deps
+      run: npm ci
+
+    - name: build
+      run: npm run build --if-present
+
+    - name: lint
+      run: npm run lint
+
+    - name: test
+      run: npm test
