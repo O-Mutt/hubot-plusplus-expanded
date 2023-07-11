@@ -1,9 +1,7 @@
 const chai = require('chai');
 const sinon = require('sinon');
-chai.use(require('sinon-chai'));
 const forEach = require('mocha-each');
 const { subYears, addDays } = require('date-fns');
-const { wait } = require('../../test/test_helpers');
 
 const Helpers = require('./Helpers');
 const MessageFactory = require('./MessageFactory');

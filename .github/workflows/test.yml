@@ -33,7 +33,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - name: Install deps
-      run: npm ci
+      run: npm ci --omit=dev
 
     - name: build
       run: npm run build --if-present
@@ -43,3 +43,23 @@ jobs:
 
     - name: test
       run: npm test
+
+    - name: Check Test File Exists
+      if: success() || failure()
+      id: hasTests
+      run: |
+        if compgen -G "TestResults/*" > /dev/null; then
+          hasTest=true
+        else
+          hasTest=false
+        fi
+        echo "hasTests=$hasTest" >> $GITHUB_OUTPUT
+    - name: Test Reporter
+      id: test-report
+      if: ${{ steps.hasTests.outputs.hasTests == 'true' }}
+      uses: phoenix-actions/test-reporting@v12
+      with:
+        name: ${{ github.event.repository.full_name }} Test Results
+        path: TestResults/test.xml
+        reporter: jest-junit
+        output-to: step-summary

@@ -1,5 +1,4 @@
 const chai = require('chai');
-chai.use(require('sinon-chai'));
 const sinon = require('sinon');
 const TestHelper = require('hubot-test-helper');
 const { MongoClient } = require('mongodb');

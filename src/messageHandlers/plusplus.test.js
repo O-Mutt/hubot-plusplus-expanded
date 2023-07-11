@@ -1,5 +1,4 @@
 const chai = require('chai');
-chai.use(require('sinon-chai'));
 const sinon = require('sinon');
 
 const { expect } = chai;
@@ -70,14 +69,11 @@ describe('PlusPlus', () => {
         expect(room.messages.length).to.equal(2);
         expect(room.messages[1].length).to.equal(2);
         expect(room.messages[1][1]).to.equal('derp has 1 point.\n:birthday: Today is derp\'s hubotday! :birthday:');
-        expect(emitSpy).not.to.have.been.calledWith('plus-plus-failure', {
-          notificationMessage: 'False positive detected in <#room1> from <@matt.erickson>:\n'
-            + 'Pre-Message text: [true].\n'
-            + 'Missing Conjunction: [false]\n'
-            + '\n'
-            + 'where are you d00d @derp++',
-          room: 'room1',
-        });
+        const { args } = emitSpy.getCall(0);
+        expect(args.length).to.equal(2);
+        expect(args[0]).to.equal('plus-plus');
+        expect(args[1].notificationMessage).to.equal('<@matt.erickson> sent a Hubot point to <@undefined> in <#room1>');
+        expect(args[1].room).to.equal('room1');
 
         const user = await db.collection('scores').findOne({ name: 'derp' });
         expect(user).not.to.equal(undefined);
@@ -91,14 +87,11 @@ describe('PlusPlus', () => {
         expect(room.messages.length).to.equal(2);
         expect(room.messages[1].length).to.equal(2);
         expect(room.messages[1][1]).to.match(/derp has 1 point for winning the business\.\n:birthday: Today is derp's hubotday! :birthday:/);
-        expect(emitSpy).not.to.have.been.calledWith('plus-plus-failure', {
-          notificationMessage: 'False positive detected in <#room1> from <@matt.erickson>:\n'
-            + 'Pre-Message text: [false].\n'
-            + 'Missing Conjunction: [true]\n'
-            + '\n'
-            + '@derp++ winning the business',
-          room: 'room1',
-        });
+        const { args } = emitSpy.getCall(0);
+        expect(args.length).to.equal(2);
+        expect(args[0]).to.equal('plus-plus');
+        expect(args[1].notificationMessage).to.equal('<@matt.erickson> sent a Hubot point to <@undefined> in <#room1>');
+        expect(args[1].room).to.equal('room1');
 
         const user = await db.collection('scores').findOne({ name: 'derp' });
         expect(user).not.to.equal(undefined);
@@ -185,15 +178,12 @@ describe('PlusPlus', () => {
         await wait(55);
         expect(room.messages.length).to.equal(2);
         expect(room.messages[1].length).to.equal(2);
-        expect(room.messages[1][1]).to.equal('<@matt\.erickson> has 228 points, 1 of which is for gawd you\'re awesome.');
-        expect(emitSpy).not.to.have.been.calledWith('plus-plus-failure', {
-          notificationMessage: 'False positive detected in <#room1> from <@derp>:\n'
-            + 'Pre-Message text: [false].\n'
-            + 'Missing Conjunction: [true]\n'
-            + '\n'
-            + "@matt.erickson++ gawd you're awesome",
-          room: 'room1',
-        });
+        expect(room.messages[1][1]).to.equal('<@matt.erickson> has 228 points, 1 of which is for gawd you\'re awesome.');
+        const { args } = emitSpy.getCall(0);
+        expect(args.length).to.equal(2);
+        expect(args[0]).to.equal('plus-plus');
+        expect(args[1].notificationMessage).to.equal('<@matt.erickson.min> sent a Hubot point to <@matt.erickson> in <#room1>');
+        expect(args[1].room).to.equal('room1');
       });
     });
 
@@ -226,17 +216,57 @@ describe('PlusPlus', () => {
         const emitSpy = sinon.spy(room.robot, 'emit');
         room.user.say('matt.erickson', 'hello, @derp -- i have no idea what you are doing');
         await wait(55);
-        expect(emitSpy).to.have.been.calledWith('plus-plus-failure', {
+        const { args } = emitSpy.getCall(0);
+        expect(args.length).to.equal(2);
+        expect(args[0]).to.equal('plus-plus-failure');
+        expect(args[1]).to.deep.equal({
           notificationMessage: 'False positive detected in <#room1> from <@matt.erickson>:\n'
-            + 'Pre-Message text: [true].\n'
-            + 'Missing Conjunction: [true]\n'
-            + '\n'
-            + 'hello, @derp -- i have no idea what you are doing',
+          + 'Pre-Message text: [true].\n'
+          + 'Missing Conjunction: [true]\n'
+          + '\n'
+          + 'hello, @derp -- i have no idea what you are doing',
           room: 'room1',
         });
 
         const user = await db.collection('scores').findOne({ name: 'derp' });
         expect(user).to.equal(null);
+      });
+    });
+
+    describe('emit object', () => {
+      it('should add a point when a user is ++\'d', async () => {
+        const emitSpy = sinon.spy(room.robot, 'emit');
+        room.user.say('matt.erickson', '@derp++');
+        await wait(55);
+        expect(room.messages.length).to.equal(2);
+        expect(room.messages[1].length).to.equal(2);
+        expect(room.messages[1][1]).to.equal('derp has 1 point.\n:birthday: Today is derp\'s hubotday! :birthday:');
+
+        const { args } = emitSpy.getCall(0);
+        expect(args.length).to.equal(2);
+        expect(args[0]).to.equal('plus-plus');
+        expect(Object.keys(args[1]).length).to.equal(8);
+        expect(Object.keys(args[1])).to.have.members([
+          'notificationMessage',
+          'sender',
+          'recipient',
+          'direction',
+          'amount',
+          'room',
+          'reason',
+          'msg',
+        ]);
+        expect(args[1].notificationMessage).to.equal('<@matt.erickson> sent a Hubot point to <@undefined> in <#room1>');
+        expect(Object.keys(args[1].sender)).to.have.members(['_id', 'name', 'score', 'reasons', 'pointsGiven', 'hubotDay', 'accountLevel', 'slackId', 'totalPointsGiven']);
+        expect(Object.keys(args[1].recipient)).to.have.members(['_id', 'name', 'score', 'reasons', 'pointsGiven', 'hubotDay', 'accountLevel', 'slackEmail', 'totalPointsGiven']);
+        expect(args[1].direction).to.equal('++');
+        expect(args[1].amount).to.equal(1);
+        expect(args[1].room).to.equal('room1');
+        expect(args[1].reason).to.equal(undefined);
+        expect(args[1].msg).to.not.equal(undefined);
+
+        const user = await db.collection('scores').findOne({ name: 'derp' });
+        expect(user.score).to.equal(1);
       });
     });
   });

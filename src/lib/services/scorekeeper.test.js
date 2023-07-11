@@ -1,6 +1,5 @@
 const chai = require('chai');
 const sinon = require('sinon');
-chai.use(require('sinon-chai'));
 const forEach = require('mocha-each');
 
 const { expect } = chai;
@@ -104,7 +103,9 @@ describe('ScoreKeeper', () => {
       expect(spamScore).to.not.equal(2);
 
       expect(emitSpy.called).to.equal(true);
-      expect(emitSpy).to.have.been.calledWith('plus-plus-spam');
+
+      const { args } = emitSpy.getCall(0);
+      expect(args[0]).to.equal('plus-plus-spam');
     });
 
     describe('special increment value response', () => {
@@ -129,7 +130,10 @@ describe('ScoreKeeper', () => {
         expect(r.score).to.equal(1);
         expect(r.reasons['because points']).to.equal(1);
         expect(msgSpy.called).to.equal(true);
-        expect(msgSpy).to.have.been.calledWith('123', `Looks like you've given derp quite a few points, maybe you should look at submitting ${scoreKeeper.peerFeedbackUrl}`);
+        const { args } = msgSpy.getCall(0);
+        expect(args.length).to.equal(2);
+        expect(args[0]).to.equal('123');
+        expect(args[1]).to.equal(`Looks like you've given derp quite a few points, maybe you should look at submitting ${scoreKeeper.peerFeedbackUrl}`);
       });
     });
 
@@ -190,7 +194,8 @@ describe('ScoreKeeper', () => {
       expect(spamScore).to.not.equal(-2);
 
       expect(emitSpy.called).to.equal(true);
-      expect(emitSpy).to.have.been.calledWith('plus-plus-spam');
+      const { args } = emitSpy.getCall(0);
+      expect(args[0]).to.equal('plus-plus-spam');
     });
 
     it('subtracts more points from a user for a reason', async () => {

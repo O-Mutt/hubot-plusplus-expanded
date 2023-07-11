@@ -1,5 +1,4 @@
 const chai = require('chai');
-chai.use(require('sinon-chai'));
 const sinon = require('sinon');
 const TestHelper = require('hubot-test-helper');
 
@@ -97,7 +96,7 @@ describe('help', () => {
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1].length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
-        `${Helpers.capitalizeFirstLetter(room.robot.name)} [${pjson.name}](${pjson.repository.url}): [v${pjson.version}](https://www.npmjs.com/package/${pjson.name}).`,
+        `${Helpers.capitalizeFirstLetter(room.robot.name)} is running <${pjson.repository.url}|${pjson.name}>: <https://www.npmjs.com/package/${pjson.name}|v${pjson.version}>.`,
       );
     });
 
@@ -107,7 +106,7 @@ describe('help', () => {
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1].length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
-        `${Helpers.capitalizeFirstLetter(room.robot.name)} [${pjson.name}](${pjson.repository.url}): [v${pjson.version}](https://www.npmjs.com/package/${pjson.name}).`,
+        `${Helpers.capitalizeFirstLetter(room.robot.name)} is running <${pjson.repository.url}|${pjson.name}>: <https://www.npmjs.com/package/${pjson.name}|v${pjson.version}>.`,
       );
     });
 
@@ -117,7 +116,7 @@ describe('help', () => {
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1].length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
-        `${Helpers.capitalizeFirstLetter(room.robot.name)} [${pjson.name}](${pjson.repository.url}): [v${pjson.version}](https://www.npmjs.com/package/${pjson.name}).`,
+        `${Helpers.capitalizeFirstLetter(room.robot.name)} is running <${pjson.repository.url}|${pjson.name}>: <https://www.npmjs.com/package/${pjson.name}|v${pjson.version}>.`,
       );
     });
   });
