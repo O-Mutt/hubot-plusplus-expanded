@@ -20,8 +20,8 @@ module.exports = function help(robot) {
   const procVars = Helpers.getProcessVariables(process.env);
 
   robot.respond(RegExpPlusPlus.getHelp(), respondWithHelpGuidance);
-  robot.respond(new RegExp(/(plusplus version|-v|--version)/, 'i'), (msg) => {
-    msg.send(`${Helpers.capitalizeFirstLetter(msg.robot.name)} [${pjson.name}](${pjson.repository.url}): [v${pjson.version}](https://www.npmjs.com/package/${pjson.name}).`);
+  robot.respond(new RegExp(/(plusplus version|-v|--version|version)/, 'i'), (msg) => {
+    msg.send(`${Helpers.capitalizeFirstLetter(msg.robot.name)} is running <${pjson.repository.url}|${pjson.name}>: <https://www.npmjs.com/package/${pjson.name}|v${pjson.version}>.`);
   });
 
   robot.hear(new RegExp('how much .*point.*', 'i'), tellHowMuchPointsAreWorth);

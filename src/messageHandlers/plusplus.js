@@ -126,7 +126,7 @@ module.exports = function plusplus(robot) {
     if (mentions) {
       to = mentions
         .filter((men) => men.type === 'user')
-        .filter((men, pos, self) => self.indexOf(s => s.name === men.name) === pos);
+        .filter((men, pos, self) => self.indexOf((s) => s.id === men.id) === pos);
     }
     const cleanReason = Helpers.cleanAndEncode(reason);
     const increment = operator.match(RegExpPlusPlus.positiveOperators) ? 1 : -1;
