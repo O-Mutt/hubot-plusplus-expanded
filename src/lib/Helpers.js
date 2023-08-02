@@ -44,11 +44,15 @@ module.exports = class Helpers {
     try {
       const robotDay = new Date(dateObject);
       const today = new Date();
-      if (isSameWeek(robotDay, today) && isSameDay(robotDay, today)) {
+      if (Helpers.isSameDayOfYear(robotDay, today)) {
         return true;
       }
     } catch (e) {
-      robot.logger.debug('There was an error in the isCakeDay function', e);
+      if (robot) {
+        robot.logger.debug('There was an error in the isCakeDay function', e);
+      } else {
+        console.log('There was an error in the isCakeDay function', e);
+      }
     }
     return false;
   }
@@ -80,7 +84,9 @@ module.exports = class Helpers {
     const toTag = to.slackId ? `<@${to.slackId}>` : to.name;
     const fromTag = from.slackId ? `<@${from.slackId}>` : from.name;
 
-    const scoreStr = `${fromTag} transferred *${number}* ${robot.name} Tokens to ${toTag}.\n${toTag} now has ${
+    const scoreStr = `${fromTag} transferred *${number}* ${
+      robot.name
+    } Tokens to ${toTag}.\n${toTag} now has ${
       to.token
     } token${Helpers.getEsOnEndOfWord(to.token)}`;
     let reasonStr = '.';
@@ -105,9 +111,9 @@ module.exports = class Helpers {
       const yearsAsString = Helpers.getYearsAsString(to[`${robot.name}Day`]);
       cakeDayStr = `\n:birthday: Today is ${toTag}'s ${yearsAsString}${robot.name}day! :birthday:`;
     }
-    return `${scoreStr}${reasonStr}${cakeDayStr}\n_${fromTag} has ${from.token} token${Helpers.getEsOnEndOfWord(
-      from.token,
-    )}_`;
+    return `${scoreStr}${reasonStr}${cakeDayStr}\n_${fromTag} has ${
+      from.token
+    } token${Helpers.getEsOnEndOfWord(from.token)}_`;
   }
 
   /**
@@ -147,45 +153,58 @@ module.exports = class Helpers {
   }
 
   /*
-    * Checks if the room is a private message
-    * @param {string} room - The room to check
-    * @returns {boolean} - True if the room is a private message
-    * @static
-    *
-    */
+   * Checks if the room is a private message
+   * @param {string} room - The room to check
+   * @returns {boolean} - True if the room is a private message
+   * @static
+   *
+   */
   static isPrivateMessage(room) {
     // "Shell" is the adapter for running in the terminal
     return room[0] === 'D' || room === 'Shell';
   }
 
   static isKnownFalsePositive(premessage, conjunction, reason, operator) {
-    const falsePositive = premessage && !conjunction && reason && operator.match(RegExpPlusPlus.negativeOperators);
+    const falsePositive =
+      premessage &&
+      !conjunction &&
+      reason &&
+      operator.match(RegExpPlusPlus.negativeOperators);
     return falsePositive;
   }
 
   static getProcessVariables(env) {
     const procVars = {};
     procVars.reasonsKeyword = env.HUBOT_PLUSPLUS_REASONS || 'reasons';
-    procVars.spamMessage = env.HUBOT_SPAM_MESSAGE || 'Looks like you hit the spam filter. Please slow your roll.';
+    procVars.spamMessage =
+      env.HUBOT_SPAM_MESSAGE ||
+      'Looks like you hit the spam filter. Please slow your roll.';
     procVars.spamTimeLimit = parseInt(env.SPAM_TIME_LIMIT, 10) || 5;
     procVars.companyName = env.HUBOT_COMPANY_NAME || 'Company Name';
-    procVars.peerFeedbackUrl = env.HUBOT_PEER_FEEDBACK_URL
-      || `praise in Lattice (https://${procVars.companyName}.latticehq.com/)`;
-    procVars.furtherFeedbackSuggestedScore = parseInt(env.HUBOT_FURTHER_FEEDBACK_SCORE, 10) || 10;
-    procVars.mongoUri = env.MONGODB_URI
-      || env.MONGO_URI
-      || env.MONGODB_URL
-      || env.MONGOLAB_URI
-      || env.MONGOHQ_URL
-      || 'mongodb://localhost/plusPlus';
+    procVars.peerFeedbackUrl =
+      env.HUBOT_PEER_FEEDBACK_URL ||
+      `praise in Lattice (https://${procVars.companyName}.latticehq.com/)`;
+    procVars.furtherFeedbackSuggestedScore =
+      parseInt(env.HUBOT_FURTHER_FEEDBACK_SCORE, 10) || 10;
+    procVars.mongoUri =
+      env.MONGODB_URI ||
+      env.MONGO_URI ||
+      env.MONGODB_URL ||
+      env.MONGOLAB_URI ||
+      env.MONGOHQ_URL ||
+      'mongodb://localhost/plusPlus';
     procVars.cryptoRpcProvider = env.HUBOT_CRYPTO_RPC_PROVIDER || '';
     procVars.magicNumber = env.HUBOT_UNIMPORTANT_MAGIC_NUMBER || 'nope';
     procVars.magicIv = env.HUBOT_UNIMPORTANT_MAGIC_IV || 'yup';
     procVars.furtherHelpUrl = env.HUBOT_CRYPTO_FURTHER_HELP_URL || undefined;
-    procVars.notificationsRoom = env.HUBOT_PLUSPLUS_NOTIFICATION_ROOM || undefined;
-    procVars.falsePositiveNotificationsRoom = env.HUBOT_PLUSPLUS_FALSE_POSITIVE_NOTIFICATION_ROOM || undefined;
-    procVars.monthlyScoreboardCron = env.HUBOT_PLUSPLUS_MONTHLY_SCOREBOARD_CRON || '0 10 1-7 * *';
-    procVars.monthlyScoreboardDayOfWeek = parseInt(env.HUBOT_PLUSPLUS_MONTHLY_SCOREBOARD_DAY_OF_WEEK, 10) || 1; // 0-6 (Sun - Sat)
+    procVars.notificationsRoom =
+      env.HUBOT_PLUSPLUS_NOTIFICATION_ROOM || undefined;
+    procVars.falsePositiveNotificationsRoom =
+      env.HUBOT_PLUSPLUS_FALSE_POSITIVE_NOTIFICATION_ROOM || undefined;
+    procVars.monthlyScoreboardCron =
+      env.HUBOT_PLUSPLUS_MONTHLY_SCOREBOARD_CRON || '0 10 1-7 * *';
+    procVars.monthlyScoreboardDayOfWeek =
+      parseInt(env.HUBOT_PLUSPLUS_MONTHLY_SCOREBOARD_DAY_OF_WEEK, 10) || 1; // 0-6 (Sun - Sat)
     return procVars;
   }
 
@@ -249,5 +268,16 @@ module.exports = class Helpers {
       }]`,
     );
     return isScoreboardDay;
+  }
+
+  static getDayOfYear(date) {
+    const startOfYear = new Date(date.getFullYear(), 0, 0);
+    const diff = date - startOfYear;
+    const oneDay = 1000 * 60 * 60 * 24;
+    return Math.floor(diff / oneDay);
+  }
+
+  static isSameDayOfYear(date1, date2) {
+    return Helpers.getDayOfYear(date1) === Helpers.getDayOfYear(date2);
   }
 };

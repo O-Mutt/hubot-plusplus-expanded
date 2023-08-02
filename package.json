@@ -1,83 +1,82 @@
 {
-	"name": "hubot-plusplus-expanded",
-	"version": "3.4.13",
-	"description": "A hubot script for micro praise",
-	"main": "index.js",
-	"engines": {
-		"node": "^18.x.x"
-	},
-	"config": {
-		"mongodbMemoryServer": {
-			"version": "5.1.0"
-		}
-	},
-	"scripts": {
-		"test": "HUBOT_LOG_LEVEL=error mocha",
-		"test:watch": "npm run test -- --watch",
-		"lint": "eslint src --fix",
-		"snyk-protect": "snyk-protect",
-		"prepare": "npm run snyk-protect"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git://github.com/O-Mutt/hubot-plusplus-expanded.git"
-	},
-	"keywords": [
-		"hubot",
-		"points",
-		"plus",
-		"karma",
-		"micro-praise",
-		"bot",
-		"slack",
-		"github",
-		"campfire",
-		"micro",
-		"praise",
-		"++",
-		"plusplus"
-	],
-	"author": {
-		"name": "Matt O'Keefe",
-		"email": "hubot@okeefe.dev",
-		"url": "https://github.com/O-Mutt/hubot-plusplus-expanded"
-	},
-	"license": "MIT",
-	"bugs": {
-		"url": "https://github.com/O-Mutt/hubot-plusplus-expanded/issues"
-	},
-	"dependencies": {
-		"@slack/client": "^5.0.2",
-		"@snyk/protect": "^1.1127.0",
-		"axios": "^0.21.1",
-		"clark": "^0.0.6",
-		"cron": "^2.3.0",
-		"date-fns": "^2.29.3",
-		"hubot-conversation": "^1.1.1",
-		"jsdoc-api": "^8.0.0",
-		"lodash": "^4.17.21",
-		"mongodb": "^5.1.0",
-		"token-buddy": "^1.0.0"
-	},
-	"devDependencies": {
-		"bluebird": "^3.7.2",
-		"chai": "^4.3.4",
-		"eslint": "^7.32.0",
-		"eslint-config-airbnb-base": "^14.2.1",
-		"eslint-config-standard": "^16.0.3",
-		"eslint-plugin-import": "^2.24.1",
-		"eslint-plugin-mocha": "^9.0.0",
-		"eslint-plugin-node": "^11.1.0",
-		"eslint-plugin-promise": "^5.1.0",
-		"eslint-plugin-standard": "^4.1.0",
-		"hubot-test-helper": "^1.9.0",
-		"mocha": "^9.1.0",
-		"mocha-each": "^2.0.1",
-		"mock-env": "^0.2.0",
-		"mongo-unit": "^3.3.0",
-		"sinon": "^15.0.2",
-		"sinon-chai": "^3.7.0"
-	},
-	"contributors": [],
-	"snyk": true
+  "name": "hubot-plusplus-expanded",
+  "version": "3.4.13",
+  "description": "A hubot script for micro praise",
+  "main": "index.js",
+  "engines": {
+    "node": "^18.x.x"
+  },
+  "config": {
+    "mongodbMemoryServer": {
+      "version": "5.1.0"
+    }
+  },
+  "scripts": {
+    "test": "HUBOT_LOG_LEVEL=error mocha",
+    "test:watch": "npm run test -- --watch",
+    "lint": "eslint src --fix",
+    "snyk-protect": "snyk-protect",
+    "prepare": "npm run snyk-protect"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/O-Mutt/hubot-plusplus-expanded.git"
+  },
+  "keywords": [
+    "hubot",
+    "points",
+    "plus",
+    "karma",
+    "micro-praise",
+    "bot",
+    "slack",
+    "github",
+    "campfire",
+    "micro",
+    "praise",
+    "++",
+    "plusplus"
+  ],
+  "author": {
+    "name": "Matt O'Keefe",
+    "email": "hubot@okeefe.dev",
+    "url": "https://github.com/O-Mutt/hubot-plusplus-expanded"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/O-Mutt/hubot-plusplus-expanded/issues"
+  },
+  "dependencies": {
+    "@slack/client": "^5.0.2",
+    "@snyk/protect": "^1.1127.0",
+    "axios": "^0.21.1",
+    "clark": "^0.0.6",
+    "cron": "^2.3.0",
+    "date-fns": "^2.29.3",
+    "hubot-conversation": "^1.1.1",
+    "jsdoc-api": "^8.0.0",
+    "lodash": "^4.17.21",
+    "mongodb": "^5.1.0",
+    "token-buddy": "^1.0.0"
+  },
+  "devDependencies": {
+    "bluebird": "^3.7.2",
+    "chai": "^4.3.4",
+    "eslint": "^7.32.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.24.1",
+    "eslint-plugin-mocha": "^10.1.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-standard": "^4.1.0",
+    "hubot-test-helper": "^1.9.0",
+    "mocha": "^10.2.0",
+    "mock-env": "^0.2.0",
+    "mongo-unit": "^3.3.0",
+    "sinon": "^15.2.0",
+    "sinon-chai": "^3.7.0"
+  },
+  "contributors": [],
+  "snyk": true
 }

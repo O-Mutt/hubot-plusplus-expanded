@@ -1,0 +1,22 @@
+# Ignore .yml
+*.yml
+*.yaml
+
+# Ignore .toml
+*.toml
+
+# Ignore .eslintrc
+.eslintrc
+
+# Ignore dist
+/dist
+
+# Ignore coverage
+/coverage
+
+# Docs
+*.md
+
+# Tests
+.nyc_output/
+test-reports/
