@@ -169,6 +169,7 @@ describe('RegExpPlusPlus', () => {
     beforeEach(() => {
       multiUserVoteRegExp = RegExpPlusPlus.createMultiUserVoteRegExp();
     });
+
     it("should match '{@matt, @phil}++'", () => {
       const fullText = '{@matt, @phil}++';
       const expectedMatch = [
@@ -355,6 +356,32 @@ describe('RegExpPlusPlus', () => {
 
       const match = fullText.match(multiUserVoteRegExp);
       expect(match).to.deep.equal(expectedMatch);
+    });
+
+    it('should match `{ @Chelo, @Kahou_Lei, @wimdec_PTO_back_Aug_21 , @guillaume_Back_Aug_6th, @Cherry,   @singaravelan   } ++  you’re all awesome, I’m only here for the fun!`', () => {
+      const fullText = `{@Chelo, @Kahou_Lei, @wimdec_PTO_back_Aug_21 , @guillaume_Back_Aug_6th, @Cherry,   @singaravelan   }   ++    you’re all awesome, I’m only here for the fun!`;
+
+      const expected = [
+        fullText,
+        undefined,
+        '@Chelo, @Kahou_Lei, @wimdec_PTO_back_Aug_21 , @guillaume_Back_Aug_6th, @Cherry,   @singaravelan   ',
+        '++',
+        undefined,
+        'you’re all awesome, I’m only here for the fun!',
+      ];
+
+      expect(multiUserVoteRegExp).to.be.a('RegExp');
+
+      const match = fullText.match(multiUserVoteRegExp);
+      expect(typeof match).to.equal('object');
+      expect(match.length).to.equal(expected.length);
+      expect(match).to.deep.equal(expected);
+      expect(match[0]).to.equal(expected[0]);
+      expect(match[1]).to.equal(expected[1]);
+      expect(match[2]).to.equal(expected[2]);
+      expect(match[3]).to.equal(expected[3]);
+      expect(match[4]).to.equal(expected[4]);
+      expect(match[5]).to.equal(expected[5]);
     });
   });
 

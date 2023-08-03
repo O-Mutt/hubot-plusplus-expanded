@@ -44,12 +44,21 @@ module.exports = function plusplus(robot) {
    * Functions for responding to commands
    */
   async function upOrDownVote(msg) {
-    const [fullText, premessage, name, operator, conjunction, reason] = msg.match;
+    const [fullText, premessage, name, operator, conjunction, reason] =
+      msg.match;
 
-    if (Helpers.isKnownFalsePositive(premessage, conjunction, reason, operator)) {
+    if (
+      Helpers.isKnownFalsePositive(premessage, conjunction, reason, operator)
+    ) {
       // circuit break a plus plus
       robot.emit('plus-plus-failure', {
-        notificationMessage: `False positive detected in <#${msg.message.room}> from <@${msg.message.user.id}>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
+        notificationMessage: `False positive detected in <#${
+          msg.message.room
+        }> from <@${
+          msg.message.user.id
+        }>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(
+          !conjunction && reason
+        )}]\n\n${fullText}`,
         room: msg.message.room,
       });
       return;
@@ -65,21 +74,40 @@ module.exports = function plusplus(robot) {
     const cleanReason = Helpers.cleanAndEncode(reason);
     const from = msg.message.user;
 
-    robot.logger.debug(`${increment} score for [${to.name}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
-    let toUser; let fromUser;
+    robot.logger.debug(
+      `${increment} score for [${to.name}] from [${from}]${
+        cleanReason ? ` because ${cleanReason}` : ''
+      } in [${room}]`,
+    );
+    let toUser;
+    let fromUser;
     try {
-      ({ toUser, fromUser } = await scoreKeeper.incrementScore(to, from, room, cleanReason, increment));
+      ({ toUser, fromUser } = await scoreKeeper.incrementScore(
+        to,
+        from,
+        room,
+        cleanReason,
+        increment,
+      ));
     } catch (e) {
       msg.send(e.message);
       return;
     }
 
-    const message = MessageFactory.BuildNewScoreMessage(toUser, cleanReason, robot.name);
+    const message = MessageFactory.BuildNewScoreMessage(
+      toUser,
+      cleanReason,
+      robot.name,
+    );
 
     if (message) {
       msg.send(message);
       robot.emit('plus-plus', {
-        notificationMessage: `<@${fromUser.slackId}> ${operator.match(RegExpPlusPlus.positiveOperators) ? 'sent' : 'removed'} a ${Helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(RegExpPlusPlus.positiveOperators) ? 'to' : 'from'} <@${toUser.slackId}> in <#${room}>`,
+        notificationMessage: `<@${fromUser.slackId}> ${
+          operator.match(RegExpPlusPlus.positiveOperators) ? 'sent' : 'removed'
+        } a ${Helpers.capitalizeFirstLetter(robot.name)} point ${
+          operator.match(RegExpPlusPlus.positiveOperators) ? 'to' : 'from'
+        } <@${toUser.slackId}> in <#${room}>`,
         sender: fromUser,
         recipient: toUser,
         direction: operator,
@@ -91,23 +119,34 @@ module.exports = function plusplus(robot) {
     }
   }
 
-
-
   async function multipleUsersVote(msg) {
-    const [fullText, premessage, names, operator, conjunction, reason] = msg.match;
+    const [fullText, premessage, names, operator, conjunction, reason] =
+      msg.match;
     if (!names) {
       return;
     }
-    if (Helpers.isKnownFalsePositive(premessage, conjunction, reason, operator)) {
+    if (
+      Helpers.isKnownFalsePositive(premessage, conjunction, reason, operator)
+    ) {
       // circuit break a plus plus
       robot.emit('plus-plus-failure', {
-        notificationMessage: `False positive detected in <#${msg.message.room}> from <@${msg.message.user.id}>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
+        notificationMessage: `False positive detected in <#${
+          msg.message.room
+        }> from <@${
+          msg.message.user.id
+        }>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(
+          !conjunction && reason
+        )}]\n\n${fullText}`,
         room: msg.message.room,
       });
       return;
     }
 
-    const namesArray = names.trim().toLowerCase().split(new RegExp(RegExpPlusPlus.multiUserSeparator)).filter(Boolean);
+    const namesArray = names
+      .trim()
+      .toLowerCase()
+      .split(new RegExp(RegExpPlusPlus.multiUserSeparator))
+      .filter(Boolean);
 
     const cleanNames = namesArray
       // Parse names
@@ -126,13 +165,18 @@ module.exports = function plusplus(robot) {
     if (mentions) {
       to = mentions
         .filter((men) => men.type === 'user')
-        .filter((single, index, allMentions) => index === allMentions.findIndex((m) => m.id === single.id));
+        .filter(
+          (single, index, allMentions) =>
+            index === allMentions.findIndex((m) => m.id === single.id),
+        );
     }
     const cleanReason = Helpers.cleanAndEncode(reason);
     const increment = operator.match(RegExpPlusPlus.positiveOperators) ? 1 : -1;
 
     if (cleanNames.length !== to.length) {
-      msg.send('We are having trouble mapping your multi-user plusplus. Please try again and only include @ mentions.');
+      msg.send(
+        'We are having trouble mapping your multi-user plusplus. Please try again and only include @ mentions.',
+      );
       return;
     }
 
@@ -141,12 +185,33 @@ module.exports = function plusplus(robot) {
     for (let i = 0; i < cleanNames.length; i++) {
       to[i].name = cleanNames[i];
       let toUser;
-      ({ toUser, fromUser } = await scoreKeeper.incrementScore(to[i], from, room, cleanReason, increment));
+      try {
+        ({ toUser, fromUser } = await scoreKeeper.incrementScore(
+          to[i],
+          from,
+          room,
+          cleanReason,
+          increment,
+        ));
+      } catch (err) {
+        //handled in the inc score, we should skip and continue continue
+        continue;
+      }
       if (toUser) {
-        robot.logger.debug(`clean names map [${to[i].name}]: ${toUser.score}, the reason ${toUser.reasons[cleanReason]}`);
-        messages.push(MessageFactory.BuildNewScoreMessage(toUser, cleanReason, robot));
+        robot.logger.debug(
+          `clean names map [${to[i].name}]: ${toUser.score}, the reason ${toUser.reasons[cleanReason]}`,
+        );
+        messages.push(
+          MessageFactory.BuildNewScoreMessage(toUser, cleanReason, robot),
+        );
         robot.emit('plus-plus', {
-          notificationMessage: `<@${fromUser.slackId}> ${operator.match(RegExpPlusPlus.positiveOperators) ? 'sent' : 'removed'} a ${Helpers.capitalizeFirstLetter(robot.name)} point ${operator.match(RegExpPlusPlus.positiveOperators) ? 'to' : 'from'} <@${toUser.slackId}> in <#${room}>`,
+          notificationMessage: `<@${fromUser.slackId}> ${
+            operator.match(RegExpPlusPlus.positiveOperators)
+              ? 'sent'
+              : 'removed'
+          } a ${Helpers.capitalizeFirstLetter(robot.name)} point ${
+            operator.match(RegExpPlusPlus.positiveOperators) ? 'to' : 'from'
+          } <@${toUser.slackId}> in <#${room}>`,
           sender: fromUser,
           recipient: toUser,
           direction: operator,
@@ -185,18 +250,25 @@ module.exports = function plusplus(robot) {
       to.name = cleanName;
     }
 
-    const isAdmin = (this.robot.auth ? this.robot.auth.hasRole(user, 'plusplus-admin') : undefined) || (this.robot.auth ? this.robot.auth.hasRole(user, 'admin') : undefined);
+    const isAdmin =
+      (this.robot.auth
+        ? this.robot.auth.hasRole(user, 'plusplus-admin')
+        : undefined) ||
+      (this.robot.auth ? this.robot.auth.hasRole(user, 'admin') : undefined);
 
     if (!this.robot.auth || !isAdmin) {
       msg.reply("Sorry, you don't have authorization to do that.");
       return;
-    } if (isAdmin) {
+    }
+    if (isAdmin) {
       erased = await scoreKeeper.erase(to, from, room, cleanReason);
     }
 
     if (erased) {
       const decodedReason = Helpers.decode(cleanReason);
-      const message = !decodedReason ? `Erased the following reason from ${to.name}: ${decodedReason}` : `Erased points for ${to.name}`;
+      const message = !decodedReason
+        ? `Erased the following reason from ${to.name}: ${decodedReason}`
+        : `Erased points for ${to.name}`;
       msg.send(message);
     }
   }

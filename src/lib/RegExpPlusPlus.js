@@ -1,16 +1,22 @@
 const scoreKeyword = process.env.HUBOT_PLUSPLUS_KEYWORD || 'score|scores|karma';
-const reasonConjunctions = process.env.HUBOT_PLUSPLUS_CONJUNCTIONS || 'for|because|cause|cuz|as|porque|just|thanks for';
+const reasonConjunctions =
+  process.env.HUBOT_PLUSPLUS_CONJUNCTIONS ||
+  'for|because|cause|cuz|as|porque|just|thanks for';
 
 class RegExpPlusPlus {
   constructor() {
-    this.votedObject = '[\\-\\w.-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]+(?<![+-])';
+    this.votedObject =
+      '[\\-\\w.-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]+(?<![+-])';
     this.captureVoted = `@(${this.votedObject})`;
     this.nonCaptureVoted = `@(?:${this.votedObject})`;
     this.multiUserSeparator = '(?:\\,|\\s|(?:\\s)?\\:(?:\\s)?)';
     // allow for spaces after the thing being upvoted (@user ++)
     this.allowSpaceAfterObject = '\\s*';
-    this.positiveOperators = '\\+\\+|:clap:(?::skin-tone-[0-9]:)?|:thumbsup:(?::skin-tone-[0-9]:)?|:thumbsup_all:|:\\+1:(?::skin-tone-[0-9]:)?';
-    this.negativeOperators = '--|—|\u2013|\u2014|:thumbsdown:(?::skin-tone-[0-9]:)?';
+    this.nonCaptureSpace = `(?:${this.allowSpaceAfterObject})`;
+    this.positiveOperators =
+      '\\+\\+|:clap:(?::skin-tone-[0-9]:)?|:thumbsup:(?::skin-tone-[0-9]:)?|:thumbsup_all:|:\\+1:(?::skin-tone-[0-9]:)?';
+    this.negativeOperators =
+      '--|—|\u2013|\u2014|:thumbsdown:(?::skin-tone-[0-9]:)?';
     this.operator = `(${this.positiveOperators}|${this.negativeOperators})`;
     this.reasonForVote = `(?:\\s+(${reasonConjunctions})?\\s*(.+))?`;
     this.eol = '$';
@@ -20,7 +26,10 @@ class RegExpPlusPlus {
    * botName score for user1
    */
   createAskForScoreRegExp() {
-    return new RegExp(`(.*)?(?:${scoreKeyword})\\s(\\w+\\s)?${this.captureVoted}`, 'i');
+    return new RegExp(
+      `(.*)?(?:${scoreKeyword})\\s(\\w+\\s)?${this.captureVoted}`,
+      'i',
+    );
   }
 
   /**
@@ -42,7 +51,7 @@ class RegExpPlusPlus {
    */
   createMultiUserVoteRegExp() {
     // the thing being upvoted, which is any number of words and spaces
-    const multiUserVotedObject = `(.*)?(?:\\{|\\[|\\()\\s?((?:${this.nonCaptureVoted}${this.multiUserSeparator}?(?:\\s)?)+)\\s?(?:\\}|\\]|\\))`;
+    const multiUserVotedObject = `(.*)?(?:\\{|\\[|\\()\\s?((?:${this.nonCaptureVoted}${this.nonCaptureSpace}${this.multiUserSeparator}?${this.nonCaptureSpace}?)+)\\s?(?:\\}|\\]|\\))`;
 
     return new RegExp(
       `${multiUserVotedObject}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.eol}`,
@@ -57,7 +66,10 @@ class RegExpPlusPlus {
   createTopBottomRegExp() {
     const topOrBottom = '(top|bottom)';
     const digits = '(\\d+)';
-    return new RegExp(`${topOrBottom}${this.allowSpaceAfterObject}${digits}`, 'i');
+    return new RegExp(
+      `${topOrBottom}${this.allowSpaceAfterObject}${digits}`,
+      'i',
+    );
   }
 
   createTopBottomTokenRegExp() {
