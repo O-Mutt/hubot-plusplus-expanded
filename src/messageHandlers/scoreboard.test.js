@@ -22,7 +22,7 @@ describe('Scoreboard', () => {
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
-    room = scoreboard.createRoom();
+    room = scoreboard.createRoom({ httpd: false });
     return mongoUnit.load(testData);
   });
 
@@ -59,7 +59,7 @@ describe('Scoreboard', () => {
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1].length).to.equal(2);
       expect(room.messages[1][1]).to.match(
-        /<@peter\.parker\.min> has 8 points \(\*8 Hubot Tokens\*\)\.\nAccount Level: 2\nTotal Points Given: -2\n:birthday: Hubotday is Jul. 9th 2020\n\n:star: Here are some reasons :star:(\n.*:.*){3}/
+        /<@peter\.parker\.min> has 8 points \(\*8 Hubot Tokens\*\)\.\nAccount Level: 2\nTotal Points Given: -2\n:birthday: Hubotday is Jul. 9th 2020\n\n:star: Here are some reasons :star:(\n.*:.*){3}/,
       );
     });
   });
@@ -80,7 +80,9 @@ describe('Scoreboard', () => {
       await wait(55);
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1].length).to.equal(2);
-      expect(room.messages[1][1]).to.equal('▁▇\n1. <@greg>: -10\n2. <@darf>: -2');
+      expect(room.messages[1][1]).to.equal(
+        '▁▇\n1. <@greg>: -10\n2. <@darf>: -2',
+      );
     });
 
     it('should respond with top 2 leaders on the scoreboard if account level of one user is level 2', async () => {

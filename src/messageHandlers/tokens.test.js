@@ -37,12 +37,17 @@ describe('Tokens', () => {
   });
 
   beforeEach(async () => {
-    sinon.stub(SlackClient, 'WebClient').withArgs('token').returns({
-      users: {
-        info: sinon.stub().returns({ user: { profile: { email: 'test@email.com' } } }),
-      },
-    });
-    room = tokenHelper.createRoom();
+    sinon
+      .stub(SlackClient, 'WebClient')
+      .withArgs('token')
+      .returns({
+        users: {
+          info: sinon
+            .stub()
+            .returns({ user: { profile: { email: 'test@email.com' } } }),
+        },
+      });
+    room = tokenHelper.createRoom({ httpd: false });
     const mockInst = mockScoreKeeper(process.env.MONGODB_URI);
     sinon.stub(ScoreKeeper, 'constructor').returns(mockInst);
     sinon.stub(Helpers, 'isA1Day').returns(false);
@@ -56,20 +61,24 @@ describe('Tokens', () => {
   });
 
   describe('giveTokenBetweenUsers', () => {
-    it('should add a X points when a user is + #\'d', async () => {
+    it("should add a X points when a user is + #'d", async () => {
       room.user.say('peter.parker', '@hubot @peter.parker.min + 5');
       await wait(55);
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1].length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
-        '<@peter.parker> transferred *5* hubot Tokens to <@peter.parker.min>.'
-        + '\n<@peter.parker.min> now has 13 tokens.'
-        + '\n_<@peter.parker> has 195 tokens_',
+        '<@peter.parker> transferred *5* hubot Tokens to <@peter.parker.min>.' +
+          '\n<@peter.parker.min> now has 13 tokens.' +
+          '\n_<@peter.parker> has 195 tokens_',
       );
-      const to = await db.collection('scores').findOne({ name: 'peter.parker.min' });
+      const to = await db
+        .collection('scores')
+        .findOne({ name: 'peter.parker.min' });
       expect(to.score).to.equal(8);
       expect(to.token).to.equal(13);
-      const from = await db.collection('scores').findOne({ name: 'peter.parker' });
+      const from = await db
+        .collection('scores')
+        .findOne({ name: 'peter.parker' });
       expect(from.score).to.equal(200);
       expect(from.token).to.equal(195);
     });
@@ -79,11 +88,17 @@ describe('Tokens', () => {
       await wait(55);
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1].length).to.equal(2);
-      expect(room.messages[1][1]).to.match(/You don't have enough tokens to send 55 to peter.parker/);
-      const to = await db.collection('scores').findOne({ name: 'peter.parker' });
+      expect(room.messages[1][1]).to.match(
+        /You don't have enough tokens to send 55 to peter.parker/,
+      );
+      const to = await db
+        .collection('scores')
+        .findOne({ name: 'peter.parker' });
       expect(to.score).to.equal(200);
       expect(to.token).to.equal(200);
-      const from = await db.collection('scores').findOne({ name: 'peter.parker.min' });
+      const from = await db
+        .collection('scores')
+        .findOne({ name: 'peter.parker.min' });
       expect(from.score).to.equal(8);
       expect(from.token).to.equal(8);
     });
@@ -93,11 +108,17 @@ describe('Tokens', () => {
       await wait(55);
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1].length).to.equal(2);
-      expect(room.messages[1][1]).to.equal('In order to send tokens to peter.parker you both must be, at least, level 2.');
-      const to = await db.collection('scores').findOne({ name: 'peter.parker' });
+      expect(room.messages[1][1]).to.equal(
+        'In order to send tokens to peter.parker you both must be, at least, level 2.',
+      );
+      const to = await db
+        .collection('scores')
+        .findOne({ name: 'peter.parker' });
       expect(to.score).to.equal(200);
       expect(to.token).to.equal(200);
-      const from = await db.collection('scores').findOne({ name: 'matt.erickson.min' });
+      const from = await db
+        .collection('scores')
+        .findOne({ name: 'matt.erickson.min' });
       expect(from.score).to.equal(8);
       expect(from.token).to.equal(undefined);
     });
@@ -107,11 +128,17 @@ describe('Tokens', () => {
       await wait(55);
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1].length).to.equal(2);
-      expect(room.messages[1][1]).to.equal('In order to send tokens to matt.erickson you both must be, at least, level 2.');
-      const to = await db.collection('scores').findOne({ name: 'matt.erickson' });
+      expect(room.messages[1][1]).to.equal(
+        'In order to send tokens to matt.erickson you both must be, at least, level 2.',
+      );
+      const to = await db
+        .collection('scores')
+        .findOne({ name: 'matt.erickson' });
       expect(to.score).to.equal(227);
       expect(to.token).to.equal(undefined);
-      const from = await db.collection('scores').findOne({ name: 'peter.parker' });
+      const from = await db
+        .collection('scores')
+        .findOne({ name: 'peter.parker' });
       expect(from.score).to.equal(200);
       expect(from.token).to.equal(200);
     });
@@ -122,26 +149,48 @@ describe('Tokens', () => {
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1].length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
-        '<@peter.parker> transferred *2* hubot Tokens to <@peter.parker.min>.'
-        + '\n<@peter.parker.min> now has 10 tokens.'
-        + '\n_<@peter.parker> has 198 tokens_',
+        '<@peter.parker> transferred *2* hubot Tokens to <@peter.parker.min>.' +
+          '\n<@peter.parker.min> now has 10 tokens.' +
+          '\n_<@peter.parker> has 198 tokens_',
       );
-      const to = await db.collection('scores').findOne({ name: 'peter.parker.min' });
+      const to = await db
+        .collection('scores')
+        .findOne({ name: 'peter.parker.min' });
       expect(to.score).to.equal(8);
       expect(to.token).to.equal(10);
-      const from = await db.collection('scores').findOne({ name: 'peter.parker' });
+      const from = await db
+        .collection('scores')
+        .findOne({ name: 'peter.parker' });
       expect(from.score).to.equal(200);
       expect(from.token).to.equal(198);
       room.user.say('peter.parker', '@hubot @peter.parker.min + 2');
       await wait(55);
-      const spamCheck = await db.collection('scoreLog').findOne({ from: 'peter.parker' });
-      expect(Object.keys(spamCheck)).to.eql(['_id', 'from', 'to', 'date', 'room', 'reason', 'scoreChange']);
+      const spamCheck = await db
+        .collection('scoreLog')
+        .findOne({ from: 'peter.parker' });
+      expect(Object.keys(spamCheck)).to.eql([
+        '_id',
+        'from',
+        'to',
+        'date',
+        'room',
+        'reason',
+        'scoreChange',
+      ]);
       spamCheck.date = '123'; // hack to handle date;
       spamCheck._id = '1';
       expect(spamCheck).to.deep.include({
-        from: 'peter.parker', to: 'peter.parker.min', reason: null, room: room.name, scoreChange: 2, _id: '1', date: '123',
+        from: 'peter.parker',
+        to: 'peter.parker.min',
+        reason: null,
+        room: room.name,
+        scoreChange: 2,
+        _id: '1',
+        date: '123',
       });
-      expect(room.messages[3][1]).to.equal("I'm sorry <@peter.parker>, I'm afraid I can't do that.");
+      expect(room.messages[3][1]).to.equal(
+        "I'm sorry <@peter.parker>, I'm afraid I can't do that.",
+      );
     });
   });
 });

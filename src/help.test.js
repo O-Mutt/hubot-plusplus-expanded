@@ -18,7 +18,7 @@ describe('help', () => {
   });
 
   beforeEach(() => {
-    room = helpHelper.createRoom();
+    room = helpHelper.createRoom({ httpd: false });
   });
 
   after(async () => {
@@ -60,7 +60,7 @@ describe('help', () => {
       const url = 'https://derp.com';
       room.destroy();
       process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = url;
-      room = helpHelper.createRoom();
+      room = helpHelper.createRoom({ httpd: false });
       room.user.say('peter.nguyen', '@hubot -h');
       await wait(55);
       expect(room.messages.length).to.equal(2);
@@ -96,7 +96,13 @@ describe('help', () => {
       await wait(55);
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1].length).to.equal(2);
-      expect(room.messages[1][1]).to.equal(`${Helpers.capitalizeFirstLetter(room.robot.name)} <${pjson.repository.url}|${pjson.name}> <https://www.npmjs.com/package/${pjson.name}|v${pjson.version}>.`);
+      expect(room.messages[1][1]).to.equal(
+        `${Helpers.capitalizeFirstLetter(room.robot.name)} <${
+          pjson.repository.url
+        }|${pjson.name}> <https://www.npmjs.com/package/${pjson.name}|v${
+          pjson.version
+        }>.`,
+      );
     });
 
     it('should respond with the name and version of the package when asked -v', async () => {
@@ -104,7 +110,13 @@ describe('help', () => {
       await wait(55);
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1].length).to.equal(2);
-      expect(room.messages[1][1]).to.equal(`${Helpers.capitalizeFirstLetter(room.robot.name)} <${pjson.repository.url}|${pjson.name}> <https://www.npmjs.com/package/${pjson.name}|v${pjson.version}>.`);
+      expect(room.messages[1][1]).to.equal(
+        `${Helpers.capitalizeFirstLetter(room.robot.name)} <${
+          pjson.repository.url
+        }|${pjson.name}> <https://www.npmjs.com/package/${pjson.name}|v${
+          pjson.version
+        }>.`,
+      );
     });
 
     it('should respond with the name and version of the package when asked `plusplus version`', async () => {
@@ -112,7 +124,13 @@ describe('help', () => {
       await wait(55);
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1].length).to.equal(2);
-      expect(room.messages[1][1]).to.equal(`${Helpers.capitalizeFirstLetter(room.robot.name)} <${pjson.repository.url}|${pjson.name}> <https://www.npmjs.com/package/${pjson.name}|v${pjson.version}>.`);
+      expect(room.messages[1][1]).to.equal(
+        `${Helpers.capitalizeFirstLetter(room.robot.name)} <${
+          pjson.repository.url
+        }|${pjson.name}> <https://www.npmjs.com/package/${pjson.name}|v${
+          pjson.version
+        }>.`,
+      );
     });
   });
 });

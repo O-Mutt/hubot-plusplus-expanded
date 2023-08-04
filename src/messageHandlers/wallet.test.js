@@ -32,7 +32,7 @@ describe('PlusPlus', () => {
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
-    room = wallet.createRoom();
+    room = wallet.createRoom({ httpd: false });
     return mongoUnit.load(testData);
   });
 
@@ -49,14 +49,24 @@ describe('PlusPlus', () => {
       await wait(55);
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
-        `@matt.erickson matt.erickson, we are going to level up your account to Level 2! This means you will start getting ${Helpers.capitalizeFirstLetter(room.robot.name)} Tokens as well as points!`,
+        `@matt.erickson matt.erickson, we are going to level up your account to Level 2! This means you will start getting ${Helpers.capitalizeFirstLetter(
+          room.robot.name,
+        )} Tokens as well as points!`,
       );
-      const user = await db.collection('scores').findOne({ name: 'matt.erickson' });
+      const user = await db
+        .collection('scores')
+        .findOne({ name: 'matt.erickson' });
       const bot = await db.collection('botToken').findOne({ name: 'hubot' });
       expect(user.score).to.equal(227, 'score should equal default 227');
-      expect(user.token).to.equal(227, 'tokens should equal 227, the same as the score');
+      expect(user.token).to.equal(
+        227,
+        'tokens should equal 227, the same as the score',
+      );
       expect(user.accountLevel).to.equal(2, 'account level should now be 2');
-      expect(bot.token).to.equal(800000000000 - 227, `${room.robot.name} should have 8T - 227 tokens (799999999773)`);
+      expect(bot.token).to.equal(
+        800000000000 - 227,
+        `${room.robot.name} should have 8T - 227 tokens (799999999773)`,
+      );
     });
   });
 });
