@@ -139,4 +139,7 @@ class RegExpPlusPlus {
   }
 }
 
-module.exports = new RegExpPlusPlus();
+module.exports = {
+  RegExpPlusPlus: new RegExpPlusPlus(),
+  conjunctions: reasonConjunctions,
+};

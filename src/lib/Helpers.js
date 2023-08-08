@@ -13,7 +13,7 @@ const {
   isSameDay,
   isSameWeek,
 } = require('date-fns');
-const RegExpPlusPlus = require('./RegExpPlusPlus');
+const { RegExpPlusPlus } = require('./RegExpPlusPlus');
 
 module.exports = class Helpers {
   static getEsOnEndOfWord(number) {

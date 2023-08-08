@@ -5,7 +5,7 @@ chai.use(require('sinon-chai'));
 
 const { expect } = chai;
 
-const RegExpPlusPlus = require('./RegExpPlusPlus');
+const { RegExpPlusPlus } = require('./RegExpPlusPlus');
 
 describe('RegExpPlusPlus', () => {
   describe('createGiveTokenRegExp', () => {

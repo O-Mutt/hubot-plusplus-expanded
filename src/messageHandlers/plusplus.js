@@ -23,7 +23,7 @@
 //
 // Author: O-Mutt
 
-const RegExpPlusPlus = require('../lib/RegExpPlusPlus');
+const { RegExpPlusPlus } = require('../lib/RegExpPlusPlus');
 const ScoreKeeper = require('../lib/services/scorekeeper');
 const Helpers = require('../lib/Helpers');
 // this may need to move or be generic...er

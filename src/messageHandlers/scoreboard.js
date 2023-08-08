@@ -14,7 +14,7 @@ const _ = require('lodash');
 
 const Helpers = require('../lib/Helpers');
 const DatabaseService = require('../lib/services/database');
-const RegExpPlusPlus = require('../lib/RegExpPlusPlus');
+const { RegExpPlusPlus } = require('../lib/RegExpPlusPlus');
 const MessageFactory = require('../lib/MessageFactory');
 
 module.exports = function scoreboard(robot) {
@@ -22,9 +22,18 @@ module.exports = function scoreboard(robot) {
   const databaseService = new DatabaseService({ robot, ...procVars });
 
   robot.respond(RegExpPlusPlus.createAskForScoreRegExp(), respondWithScore);
-  robot.respond(RegExpPlusPlus.createTopBottomRegExp(), respondWithLeaderLoserBoard);
-  robot.respond(RegExpPlusPlus.createTopBottomTokenRegExp(), respondWithLeaderLoserTokenBoard);
-  robot.respond(RegExpPlusPlus.createTopPointGiversRegExp(), getTopPointSenders);
+  robot.respond(
+    RegExpPlusPlus.createTopBottomRegExp(),
+    respondWithLeaderLoserBoard,
+  );
+  robot.respond(
+    RegExpPlusPlus.createTopBottomTokenRegExp(),
+    respondWithLeaderLoserTokenBoard,
+  );
+  robot.respond(
+    RegExpPlusPlus.createTopPointGiversRegExp(),
+    getTopPointSenders,
+  );
 
   async function respondWithScore(msg) {
     const { mentions } = msg.message;
@@ -38,7 +47,11 @@ module.exports = function scoreboard(robot) {
 
     const user = await databaseService.getUser(to);
 
-    const scoreString = MessageFactory.BuildScoreLookup(user, robot.name, procVars);
+    const scoreString = MessageFactory.BuildScoreLookup(
+      user,
+      robot.name,
+      procVars,
+    );
     msg.send(scoreString);
   }
 
@@ -50,11 +63,19 @@ module.exports = function scoreboard(robot) {
     const tops = await databaseService[methodName](amount);
     const message = [];
     if (tops.length > 0) {
-      for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
+      for (
+        let i = 0, end = tops.length - 1, asc = end >= 0;
+        asc ? i <= end : i >= end;
+        asc ? i++ : i--
+      ) {
         const person = tops[i].slackId ? `<@${tops[i].slackId}>` : tops[i].name;
         if (tops[i].accountLevel && tops[i].accountLevel > 1) {
           const tokenStr = tops[i].token > 1 ? 'Tokens' : 'Token';
-          message.push(`${i + 1}. ${person}: ${tops[i].score} (*${tops[i].token} ${Helpers.capitalizeFirstLetter(this.robot.name)} ${tokenStr}*)`);
+          message.push(
+            `${i + 1}. ${person}: ${tops[i].score} (*${
+              tops[i].token
+            } ${Helpers.capitalizeFirstLetter(this.robot.name)} ${tokenStr}*)`,
+          );
         } else {
           message.push(`${i + 1}. ${person}: ${tops[i].score}`);
         }
@@ -78,11 +99,21 @@ module.exports = function scoreboard(robot) {
 
     const message = [];
     if (tops.length > 0) {
-      for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
+      for (
+        let i = 0, end = tops.length - 1, asc = end >= 0;
+        asc ? i <= end : i >= end;
+        asc ? i++ : i--
+      ) {
         const person = tops[i].slackId ? `<@${tops[i].slackId}>` : tops[i].name;
         const tokenStr = tops[i].token > 1 ? 'Tokens' : 'Token';
         const pointStr = tops[i].score > 1 ? 'points' : 'point';
-        message.push(`${i + 1}. ${person}: *${tops[i].token} ${Helpers.capitalizeFirstLetter(this.robot.name)} ${tokenStr}* (${tops[i].score} ${pointStr})`);
+        message.push(
+          `${i + 1}. ${person}: *${
+            tops[i].token
+          } ${Helpers.capitalizeFirstLetter(this.robot.name)} ${tokenStr}* (${
+            tops[i].score
+          } ${pointStr})`,
+        );
       }
     } else {
       message.push('No scores to keep track of yet!');
@@ -102,17 +133,28 @@ module.exports = function scoreboard(robot) {
 
     const message = [];
     if (tops.length > 0) {
-      for (let i = 0, end = tops.length - 1, asc = end >= 0; asc ? i <= end : i >= end; asc ? i++ : i--) {
+      for (
+        let i = 0, end = tops.length - 1, asc = end >= 0;
+        asc ? i <= end : i >= end;
+        asc ? i++ : i--
+      ) {
         const person = `<@${tops[i].slackId}>`;
-        const pointStr = tops[i].totalPointsGiven > 1 ? 'points given' : 'point given';
-        message.push(`${i + 1}. ${person} (${tops[i].totalPointsGiven} ${pointStr})`);
+        const pointStr =
+          tops[i].totalPointsGiven > 1 ? 'points given' : 'point given';
+        message.push(
+          `${i + 1}. ${person} (${tops[i].totalPointsGiven} ${pointStr})`,
+        );
       }
     } else {
       message.push('No scores to keep track of yet!');
     }
 
     const graphSize = Math.min(tops.length, Math.min(amount, 20));
-    message.splice(0, 0, clark(_.take(_.map(tops, 'totalPointsGiven'), graphSize)));
+    message.splice(
+      0,
+      0,
+      clark(_.take(_.map(tops, 'totalPointsGiven'), graphSize)),
+    );
 
     return msg.send(message.join('\n'));
   }
