@@ -8,7 +8,7 @@
 // Author:
 //  O'Mutt (Matt@OKeefe.dev)
 
-const RegExpPlusPlus = require('../lib/RegExpPlusPlus');
+const { RegExpPlusPlus } = require('../lib/RegExpPlusPlus');
 const ScoreKeeper = require('../lib/services/scorekeeper');
 const Helpers = require('../lib/Helpers');
 
@@ -29,7 +29,13 @@ module.exports = function tokens(robot) {
     if (!conjunction && reason) {
       // circuit break a plus plus
       robot.emit('plus-plus-failure', {
-        notificationMessage: `False positive detected in <#${msg.message.room}> from <@${msg.message.user.id}>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(!conjunction && reason)}]\n\n${fullText}`,
+        notificationMessage: `False positive detected in <#${
+          msg.message.room
+        }> from <@${
+          msg.message.user.id
+        }>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(
+          !conjunction && reason
+        )}]\n\n${fullText}`,
         room: msg.message.room,
       });
       return;
@@ -40,7 +46,10 @@ module.exports = function tokens(robot) {
     if (mentions) {
       if (mentions.filter((men) => men.type === 'user').length > 1) {
         // shift off the first mention (most likely @qrafty)
-        robot.logger.debug('We are shifting off the first mention', mentions.filter((men) => men.type === 'user'));
+        robot.logger.debug(
+          'We are shifting off the first mention',
+          mentions.filter((men) => men.type === 'user'),
+        );
         mentions.filter((men) => men.type === 'user').shift();
       }
       to = mentions.filter((men) => men.type === 'user').shift();
@@ -49,25 +58,41 @@ module.exports = function tokens(robot) {
     const cleanReason = Helpers.cleanAndEncode(reason);
     const from = msg.message.user;
 
-    robot.logger.debug(`${number} score for [${mentions}] from [${from}]${cleanReason ? ` because ${cleanReason}` : ''} in [${room}]`);
+    robot.logger.debug(
+      `${number} score for [${mentions}] from [${from}]${
+        cleanReason ? ` because ${cleanReason}` : ''
+      } in [${room}]`,
+    );
     let response;
     try {
-      response = await scoreKeeper.transferTokens(to, from, room, cleanReason, number);
+      response = await scoreKeeper.transferTokens(
+        to,
+        from,
+        room,
+        cleanReason,
+        number,
+      );
     } catch (e) {
       msg.send(e.message);
       return;
     }
 
-    const message = Helpers.getMessageForTokenTransfer(robot,
+    const message = Helpers.getMessageForTokenTransfer(
+      robot,
       response.toUser,
       response.fromUser,
       number,
-      cleanReason);
+      cleanReason,
+    );
 
     if (message) {
       msg.send(message);
       robot.emit('plus-plus', {
-        notificationMessage: `<@${response.fromUser.slackId}> sent ${number} ${Helpers.capitalizeFirstLetter(robot.name)} point${parseInt(number, 10) > 1 ? 's' : ''} to <@${response.toUser.slackId}> in <#${room}>`,
+        notificationMessage: `<@${
+          response.fromUser.slackId
+        }> sent ${number} ${Helpers.capitalizeFirstLetter(robot.name)} point${
+          parseInt(number, 10) > 1 ? 's' : ''
+        } to <@${response.toUser.slackId}> in <#${room}>`,
         recipient: response.toUser,
         sender: response.fromUser,
         direction: '++',

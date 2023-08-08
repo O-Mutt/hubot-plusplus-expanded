@@ -14,7 +14,7 @@ const { default: axios } = require('axios');
 
 const Helpers = require('./lib/Helpers');
 const pjson = require('../package.json');
-const RegExpPlusPlus = require('./lib/RegExpPlusPlus');
+const { RegExpPlusPlus, conjunction } = require('./lib/RegExpPlusPlus');
 
 module.exports = function help(robot) {
   const procVars = Helpers.getProcessVariables(process.env);
@@ -34,52 +34,28 @@ module.exports = function help(robot) {
 
   const { monthlyScoreboardCron, monthlyScoreboardDayOfWeek } = procVars;
   function respondWithHelpGuidance(msg) {
-    const helpMessage = ''
-      .concat(
-        '`<name>++ [<reason>]` - Increment score (for an optional reason). In place of `++` you can also use: :clap:, :thumbsup:, :thumbsup_all:, or :+1:\n',
-      )
-      .concat(
-        '`<name>-- [<reason>]` - Decrement score (for an optional reason). You can also use :thumbsdown:\n',
-      )
-      .concat(
-        '`{name1, name2, name3}++ [<reason>]` - Increment score for all names (for a reason)\n',
-      )
-      .concat(
-        '`{name1, name2, name3}-- [<reason>]` - Decrement score for all names (for a reason) \n',
-      )
-      .concat(
-        '`{name1, name2, name3}-- [<reason>]` - Decrement score for all names (for a reason) \n',
-      )
-      .concat(
-        `\`@${msg.robot.name} score for <name>\` - Display the score for a name and some of the reasons\n`,
-      )
-      .concat(
-        `\`@${msg.robot.name} [top|bottom] [tokens] <amount>\` - Display the top scoring <amount>, sorted by token/points if you include \`tokens\`\n`,
-      )
-      .concat(
-        `\`@${msg.robot.name} erase <name> [<reason>]\` - Remove the score for a name (for a reason) \n`,
-      )
-      .concat(
-        `\`@${msg.robot.name} level me up\` - Level up your account for some additional ${msg.robot.name}iness \n`,
-      )
-      .concat(
-        '`how much are <point_type> points worth` - Shows how much <point_type> points are worth\n',
-      )
-      .concat('----------------------*Info*----------------------')
-      .concat(
-        `Every month ${
-          msg.robot.name
-        } will send out an informational message to <#${
-          procVars.notificationsRoom || 'no room'
-        }> to recognize the top 10 senders, top 10 recipients, and the top 3 slack channels that have been sending/receiving points. :eyes:`,
-      )
-      .concat('----------------*Level 2 Commands*----------------')
-      .concat(
-        "`<name> + [<number>] [<reason>]` - Transfer <number> tokens from your wallet to the receiver's wallet (for an optional reason).\n",
-      )
-      .concat(
-        `\`hot wallet\` displays info about @${msg.robot.name}'s wallet\n`,
-      );
+    const bn = msg.robot.name || 'hubot';
+    const helpMessage = ''.concat(
+      '`<name>++ [<reason>]` - Increment score (for an optional reason). In place of `++` you can also use: `:clap:`, `:thumbsup:`, `:thumbsup_all:`, or `:+1:`\n',
+      '`<name>-- [<reason>]` - Decrement score (for an optional reason). You can also use `:thumbsdown:`\n',
+      '`{name1, name2, name3}++ [<reason>]` - Increment score for all names (for a reason)\n',
+      '`{name1, name2, name3}-- [<reason>]` - Decrement score for all names (for a reason) \n',
+      '`{name1, name2, name3}-- [<reason>]` - Decrement score for all names (for a reason) \n',
+      `\`@${bn} score for <name>\` - Display the score for a name and some of the reasons\n`,
+      `\`@${bn} [top|bottom] [tokens] <amount>\` - Display the top scoring <amount>, sorted by token/points if you include \`tokens\`\n`,
+      `\`@${bn} erase <name> [<reason>]\` - Remove the score for a name (for a reason) \n`,
+      `\`@${bn} level me up\` - Level up your account for some additional \`${bn}\`-iness \n`,
+      '`how much are <point_type> points worth` - Shows how much <point_type> points are worth\n',
+      '--------------------------------------------*Info*--------------------------------------------\n',
+      `Every month (\`${monthlyScoreboardCron}\`), on ${monthlyScoreboardDayOfWeek}, ${bn} will send out an informational message to `,
+      `<#${procVars.notificationsRoom || 'no room'}> to recognize the`,
+      ' top 10 senders, top 10 recipients, and the top 3 slack channels that have been sending/receiving points. :eyes:\n',
+      '--------------------------------------*Level 2 Commands*--------------------------------------\n',
+      "`<name> + <number> [<reason>]` - Transfer <number> tokens from your wallet to the receiver's wallet (for an optional reason).\n",
+      `\`hot wallet\` displays info about \`@${bn}\`'s wallet\n`,
+      '`[<reason>]` indicates optional message parameters\n',
+      `Each \`[<reason>]\` can be prefixed with a conjunction ${conjunction}`,
+    );
     const message = {
       attachments: [
         {
@@ -89,7 +65,7 @@ module.exports = function help(robot) {
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: `Need help with ${msg.robot.name}?`,
+                text: `Need help with ${bn}?`,
               },
             },
             {
