@@ -278,11 +278,11 @@ describe('PlusPlus', () => {
         await wait(55);
         expect(emitSpy).to.have.been.calledWith('plus-plus-failure', {
           notificationMessage:
-            'False positive detected in <#room1> from <@matt.erickson>:\n' +
-            'Pre-Message text: [true].\n' +
+            'False positive detected in <#room1> from <@matt.erickson>\n' +
+            'Has pre-Message text: [true].\n' +
             'Missing Conjunction: [true]\n' +
             '\n' +
-            'hello, @derp -- i have no idea what you are doing',
+            '<redacted message> It was a short message (<150)',
           room: 'room1',
         });
 
