@@ -52,13 +52,17 @@ module.exports = function plusplus(robot) {
     ) {
       // circuit break a plus plus
       robot.emit('plus-plus-failure', {
-        notificationMessage: `False positive detected in <#${
-          msg.message.room
-        }> from <@${
-          msg.message.user.id
-        }>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(
-          !conjunction && reason
-        )}]\n\n${fullText}`,
+        notificationMessage:
+          `False positive detected in <#${msg.message.room}> ` +
+          `from <@${msg.message.user.id}>` +
+          `\nHas pre-Message text: [${!!premessage}].\n` +
+          `Missing Conjunction: [${!!(!conjunction && reason)}]` +
+          `\n\n<redacted message> ` +
+          `${
+            fullText.length >= 150
+              ? 'It was really long (>=150)'
+              : 'It was a short message (<150)'
+          }`,
         room: msg.message.room,
       });
       return;
