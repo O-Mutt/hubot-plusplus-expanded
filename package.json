@@ -68,7 +68,7 @@
     "eslint-plugin-import": "^2.24.1",
     "eslint-plugin-mocha": "^10.1.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-promise": "^6.1.1",
     "hubot-test-helper": "github:vpeltola/hubot-test-helper#fixes-for-hubot-5.x",
     "mocha": "^10.2.0",
     "mock-env": "^0.2.0",
