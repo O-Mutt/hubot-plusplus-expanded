@@ -337,7 +337,7 @@ describe('MessageFactory', () => {
       const baseUser = require('../../test/mockData/mockFullUser.json');
       const scoreMs = MessageFactory.BuildScoreLookup(
         baseUser,
-        mockRobot.name,
+        mockRobot,
         mockProcVars,
       );
       expect(scoreMs).to.have.match(
@@ -356,7 +356,7 @@ describe('MessageFactory', () => {
       const baseUser = require('../../test/mockData/mockMultiUser1.json');
       const scoreMs = MessageFactory.BuildScoreLookup(
         baseUser,
-        mockRobot.name,
+        mockRobot,
         mockProcVars,
       );
       expect(scoreMs).to.equal(
@@ -371,7 +371,7 @@ describe('MessageFactory', () => {
       const baseUser = require('../../test/mockData/mockMinimalUser.json');
       const scoreMs = MessageFactory.BuildScoreLookup(
         baseUser,
-        mockRobot.name,
+        mockRobot,
         mockProcVars,
       );
       expect(scoreMs).to.have.match(
@@ -390,7 +390,7 @@ describe('MessageFactory', () => {
       const baseUser = require('../../test/mockData/mockMinimalUserLevel2.json');
       const scoreMs = MessageFactory.BuildScoreLookup(
         baseUser,
-        mockRobot.name,
+        mockRobot,
         mockProcVars,
       );
       expect(scoreMs).to.have.match(
