@@ -47,11 +47,7 @@ module.exports = function scoreboard(robot) {
 
     const user = await databaseService.getUser(to);
 
-    const scoreString = MessageFactory.BuildScoreLookup(
-      user,
-      robot.name,
-      procVars,
-    );
+    const scoreString = MessageFactory.BuildScoreLookup(user, robot, procVars);
     msg.send(scoreString);
   }
 

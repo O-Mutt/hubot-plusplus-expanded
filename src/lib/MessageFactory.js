@@ -14,7 +14,8 @@ module.exports = class MessageFactory {
    * @memberof MessageFactory
    * @static
    */
-  static BuildScoreLookup(user, robotName, procVars) {
+  static BuildScoreLookup(user, robot, procVars) {
+    const robotName = robot?.name ?? undefined;
     if (_.isEmpty(user) || _.isEmpty(robotName) || _.isEmpty(procVars))
       return '';
     let tokenString = '.';
@@ -33,10 +34,19 @@ module.exports = class MessageFactory {
     baseString += `\nTotal Points Given: ${user.totalPointsGiven}`;
 
     if (user[`${robotName}Day`]) {
-      const dateObj = parseISO(user[`${robotName}Day`]);
-      baseString += `\n:birthday: ${Helpers.capitalizeFirstLetter(
-        robotName,
-      )}day is ${format(dateObj, 'MMM. do yyyy')}`;
+      try {
+        const dateObj = parseISO(user[`${robotName}Day`]);
+        baseString += `\n:birthday: ${Helpers.capitalizeFirstLetter(
+          robotName,
+        )}day is ${format(dateObj, 'MMM. do yyyy')}`;
+      } catch (e) {
+        robot.logger.error(
+          `Robot day failed to be parsed: ${robot.name}, ${
+            user[`${robotName}Day`]
+          }`,
+          e,
+        );
+      }
     }
     const keys = Object.keys(user.reasons || {});
     if (keys.length > 1) {

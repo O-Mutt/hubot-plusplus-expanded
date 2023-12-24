@@ -1,6 +1,6 @@
 {
   "name": "hubot-plusplus-expanded",
-  "version": "3.4.17",
+  "version": "3.4.19",
   "description": "A hubot script for micro praise",
   "main": "index.js",
   "engines": {
@@ -51,7 +51,7 @@
     "@snyk/protect": "^1.1127.0",
     "axios": "^1.4.0",
     "clark": "^0.0.6",
-    "cron": "^2.3.0",
+    "cron": "^3.1.6",
     "date-fns": "^2.29.3",
     "hubot-conversation": "^1.1.1",
     "jsdoc-api": "^8.0.0",
@@ -69,7 +69,6 @@
     "eslint-plugin-mocha": "^10.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.1.0",
-    "eslint-plugin-standard": "^5.0.0",
     "hubot-test-helper": "github:vpeltola/hubot-test-helper#fixes-for-hubot-5.x",
     "mocha": "^10.2.0",
     "mock-env": "^0.2.0",
