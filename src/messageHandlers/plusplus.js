@@ -106,20 +106,24 @@ module.exports = function plusplus(robot) {
 
     if (message) {
       msg.send(message);
-      robot.emit('plus-plus', {
-        notificationMessage: `<@${fromUser.slackId}> ${
-          operator.match(RegExpPlusPlus.positiveOperators) ? 'sent' : 'removed'
-        } a ${Helpers.capitalizeFirstLetter(robot.name)} point ${
-          operator.match(RegExpPlusPlus.positiveOperators) ? 'to' : 'from'
-        } <@${toUser.slackId}> in <#${room}>`,
-        sender: fromUser,
-        recipient: toUser,
-        direction: operator,
-        amount: 1,
-        room,
-        reason: cleanReason,
-        msg,
-      });
+      robot.emit('plus-plus', [
+        {
+          notificationMessage: `<@${fromUser.slackId}> ${
+            operator.match(RegExpPlusPlus.positiveOperators)
+              ? 'sent'
+              : 'removed'
+          } a ${Helpers.capitalizeFirstLetter(robot.name)} point ${
+            operator.match(RegExpPlusPlus.positiveOperators) ? 'to' : 'from'
+          } <@${toUser.slackId}> in <#${room}>`,
+          sender: fromUser,
+          recipient: toUser,
+          direction: operator,
+          amount: 1,
+          room,
+          reason: cleanReason,
+          msg,
+        },
+      ]);
     }
   }
 
@@ -186,6 +190,7 @@ module.exports = function plusplus(robot) {
 
     let messages = [];
     let fromUser;
+    const pointEmits = [];
     for (let i = 0; i < cleanNames.length; i++) {
       to[i].name = cleanNames[i];
       let toUser;
@@ -208,7 +213,7 @@ module.exports = function plusplus(robot) {
         messages.push(
           MessageFactory.BuildNewScoreMessage(toUser, cleanReason, robot),
         );
-        robot.emit('plus-plus', {
+        pointEmits.push({
           notificationMessage: `<@${fromUser.slackId}> ${
             operator.match(RegExpPlusPlus.positiveOperators)
               ? 'sent'
@@ -226,6 +231,7 @@ module.exports = function plusplus(robot) {
         });
       }
     }
+    robot.emit('plus-plus', pointEmits);
     messages = messages.filter((message) => !!message); // de-dupe
 
     robot.logger.debug(`These are the messages \n ${messages.join('\n')}`);
