@@ -1,4 +1,3 @@
-const chai = require('chai');
 const sinon = require('sinon');
 
 const { subYears, addDays } = require('date-fns');
@@ -6,8 +5,6 @@ const { subYears, addDays } = require('date-fns');
 const { helpers } = require('./helpers');
 const MessageFactory = require('./messageFactory');
 const { nonSequiturs } = require('./static/a1');
-
-const { expect } = chai;
 
 describe('MessageFactory', () => {
   const mockRobot = { name: 'Robit' };
@@ -37,7 +34,7 @@ describe('MessageFactory', () => {
         emptyReasons,
         mockRobot,
       );
-      expect(msg).to.equal('');
+      expect(msg).toBe('');
     });
 
     it('should take the user w/a single point without reasons and print their score', () => {
@@ -53,7 +50,7 @@ describe('MessageFactory', () => {
         emptyReasons,
         mockRobot,
       );
-      expect(msg).to.equal('matt has 1 point.');
+      expect(msg).toBe('matt has 1 point.');
     });
 
     it('should take the user w/2 points (plural) without reasons and print their score', () => {
@@ -69,7 +66,7 @@ describe('MessageFactory', () => {
         emptyReasons,
         mockRobot,
       );
-      expect(msg).to.equal('matt has 2 points.');
+      expect(msg).toBe('matt has 2 points.');
     });
 
     it('should take the user w/100 points (special case) and print their score as the special output', () => {
@@ -85,7 +82,7 @@ describe('MessageFactory', () => {
         emptyReasons,
         mockRobot,
       );
-      expect(msg).to.equal(':100: matt has 100 points :100:');
+      expect(msg).toBe(':100: matt has 100 points :100:');
     });
 
     it('should take the user w/1000 points (special case) and print their score as the special output', () => {
@@ -101,7 +98,7 @@ describe('MessageFactory', () => {
         emptyReasons,
         mockRobot,
       );
-      expect(msg).to.equal(':1000: matt has 1000 points :1000:');
+      expect(msg).toBe(':1000: matt has 1000 points :1000:');
     });
 
     it('should take the user w/300 points (special case) and print their score as the special output', () => {
@@ -117,7 +114,7 @@ describe('MessageFactory', () => {
         emptyReasons,
         mockRobot,
       );
-      expect(msg).to.equal(':300: matt has 300 points :300:');
+      expect(msg).toBe(':300: matt has 300 points :300:');
     });
 
     it('should take the user object and reason "winning" and print the expected message', () => {
@@ -135,7 +132,7 @@ describe('MessageFactory', () => {
         reason,
         'hubot',
       );
-      expect(message).to.equal(expectedMessage);
+      expect(message).toBe(expectedMessage);
     });
 
     it('should take the user object and reason "cool runnings!" and print the expected message', () => {
@@ -153,7 +150,7 @@ describe('MessageFactory', () => {
         reason,
         'hubot',
       );
-      expect(message).to.equal(expectedMessage);
+      expect(message).toBe(expectedMessage);
     });
 
     it('should take the user object and reason "cool runnings!" and print the expected message for botDay', () => {
@@ -172,7 +169,7 @@ describe('MessageFactory', () => {
         reason,
         'hubot',
       );
-      expect(message).to.equal(expectedMessage);
+      expect(message).toBe(expectedMessage);
     });
 
     it('should take the user object and reason "cool runnings!" and print the expected message when no points for the reason', () => {
@@ -191,7 +188,7 @@ describe('MessageFactory', () => {
         reason,
         'hubot',
       );
-      expect(message).to.equal(expectedMessage);
+      expect(message).toBe(expectedMessage);
     });
 
     it('should take the user object and reason "cool runnings!" and print the expected message when 99 points for the reason', () => {
@@ -210,7 +207,7 @@ describe('MessageFactory', () => {
         reason,
         'hubot',
       );
-      expect(message).to.equal(expectedMessage);
+      expect(message).toBe(expectedMessage);
     });
 
     it('should take the user object and reason "cool runnings!" and print the expected message when 99 points for the reason and 145 total points', () => {
@@ -229,7 +226,7 @@ describe('MessageFactory', () => {
         reason,
         'hubot',
       );
-      expect(message).to.equal(expectedMessage);
+      expect(message).toBe(expectedMessage);
     });
 
     it('should take the user object and reason "cool runnings!" and print the expected message when 99 points for the reason and 200 total points', () => {
@@ -248,7 +245,7 @@ describe('MessageFactory', () => {
         reason,
         'hubot',
       );
-      expect(message).to.equal(expectedMessage);
+      expect(message).toBe(expectedMessage);
     });
 
     it('should take the user object with no reasons and print the expected message', () => {
@@ -266,7 +263,7 @@ describe('MessageFactory', () => {
         reason,
         'hubot',
       );
-      expect(message).to.equal(expectedMessage);
+      expect(message).toBe(expectedMessage);
     });
 
     it('should take the user object with multiple reasons and print the expected message for each reason', () => {
@@ -291,14 +288,14 @@ describe('MessageFactory', () => {
         'hubot',
       );
 
-      expect(message1).to.equal(expectedMessage1);
+      expect(message1).toBe(expectedMessage1);
 
       const message2 = MessageFactory.BuildNewScoreMessage(
         user,
         reason2,
         'hubot',
       );
-      expect(message2).to.equal(expectedMessage2);
+      expect(message2).toBe(expectedMessage2);
     });
   });
 
@@ -309,28 +306,28 @@ describe('MessageFactory', () => {
         undefined,
         undefined,
       );
-      expect(dummyMsg).to.equal('');
+      expect(dummyMsg).toBe('');
 
       dummyMsg = MessageFactory.BuildScoreLookup({}, undefined, undefined);
-      expect(dummyMsg).to.equal('');
+      expect(dummyMsg).toBe('');
 
       dummyMsg = MessageFactory.BuildScoreLookup(undefined, {}, undefined);
-      expect(dummyMsg).to.equal('');
+      expect(dummyMsg).toBe('');
 
       dummyMsg = MessageFactory.BuildScoreLookup(undefined, undefined, {});
-      expect(dummyMsg).to.equal('');
+      expect(dummyMsg).toBe('');
 
       dummyMsg = MessageFactory.BuildScoreLookup({}, undefined, {});
-      expect(dummyMsg).to.equal('');
+      expect(dummyMsg).toBe('');
 
       dummyMsg = MessageFactory.BuildScoreLookup({}, {}, undefined);
-      expect(dummyMsg).to.equal('');
+      expect(dummyMsg).toBe('');
 
       dummyMsg = MessageFactory.BuildScoreLookup(undefined, {}, {});
-      expect(dummyMsg).to.equal('');
+      expect(dummyMsg).toBe('');
 
       dummyMsg = MessageFactory.BuildScoreLookup({}, {}, {});
-      expect(dummyMsg).to.equal('');
+      expect(dummyMsg).toBe('');
     });
 
     it('should respond with 5 reasons if the user has 5 or more', async () => {
@@ -341,15 +338,13 @@ describe('MessageFactory', () => {
         mockRobot,
         mockProcVars,
       );
-      expect(scoreMs).to.have.match(
-        new RegExp(
-          `^<@${baseUser.name}> has ${baseUser.score} points.` +
-            `\nAccount Level: ${baseUser.accountLevel}` +
-            `\nTotal Points Given: ${baseUser.totalPointsGiven}` +
-            '\n\n:star: Here are some reasons :star:' +
-            '(\n.*:.*){5}$',
-        ),
-      );
+      expect(scoreMs).toMatch(new RegExp(
+        `^<@${baseUser.name}> has ${baseUser.score} points.` +
+          `\nAccount Level: ${baseUser.accountLevel}` +
+          `\nTotal Points Given: ${baseUser.totalPointsGiven}` +
+          '\n\n:star: Here are some reasons :star:' +
+          '(\n.*:.*){5}$',
+      ));
     });
 
     it('should respond with score and no reasons if the user has no reasons', async () => {
@@ -360,11 +355,9 @@ describe('MessageFactory', () => {
         mockRobot,
         mockProcVars,
       );
-      expect(scoreMs).to.equal(
-        `<@${baseUser.name}> has ${baseUser.score} points.` +
-          `\nAccount Level: ${baseUser.accountLevel}` +
-          `\nTotal Points Given: ${baseUser.totalPointsGiven}`,
-      );
+      expect(scoreMs).toBe(`<@${baseUser.name}> has ${baseUser.score} points.` +
+        `\nAccount Level: ${baseUser.accountLevel}` +
+        `\nTotal Points Given: ${baseUser.totalPointsGiven}`);
     });
 
     it('should respond with 3 reasons if the user has 3', async () => {
@@ -375,15 +368,13 @@ describe('MessageFactory', () => {
         mockRobot,
         mockProcVars,
       );
-      expect(scoreMs).to.have.match(
-        new RegExp(
-          `^<@${baseUser.name}> has ${baseUser.score} points.` +
-            `\nAccount Level: ${baseUser.accountLevel}` +
-            `\nTotal Points Given: ${baseUser.totalPointsGiven}` +
-            '\n\n:star: Here are some reasons :star:' +
-            '(\n.*:.*){3}$',
-        ),
-      );
+      expect(scoreMs).toMatch(new RegExp(
+        `^<@${baseUser.name}> has ${baseUser.score} points.` +
+          `\nAccount Level: ${baseUser.accountLevel}` +
+          `\nTotal Points Given: ${baseUser.totalPointsGiven}` +
+          '\n\n:star: Here are some reasons :star:' +
+          '(\n.*:.*){3}$',
+      ));
     });
 
     it('should respond with 3 reasons if the user has 3 and token count', async () => {
@@ -394,8 +385,8 @@ describe('MessageFactory', () => {
         mockRobot,
         mockProcVars,
       );
-      expect(scoreMs).to.have.match(
-        /<@peter\.parker\.min> has 8 points \(\*8 Robit Tokens\*\)\.\nAccount Level: 2\nTotal Points Given: -2\n\n:star: Here are some reasons :star:(\n.*:.*){3}/,
+      expect(scoreMs).toMatch(
+        /<@peter\.parker\.min> has 8 points \(\*8 Robit Tokens\*\)\.\nAccount Level: 2\nTotal Points Given: -2\n\n:star: Here are some reasons :star:(\n.*:.*){3}/
       );
     });
   });
@@ -405,42 +396,40 @@ describe('MessageFactory', () => {
     const ROBOT_NAME = 'Robit';
     it('returns a string', () => {
       const message = MessageFactory.GetA1DayMessage(BASE_MSG, ROBOT_NAME);
-      expect(typeof message).to.be.a('string');
+      expect(typeof typeof message).toBe('string');
     });
 
     it('returns a modified message', () => {
       const message = MessageFactory.GetA1DayMessage(BASE_MSG, ROBOT_NAME, -1);
-      expect(message).to.equal(BASE_MSG);
+      expect(message).toBe(BASE_MSG);
     });
 
     it('returns a message with vowels removed', () => {
       const message = MessageFactory.GetA1DayMessage(BASE_MSG, ROBOT_NAME, 0);
       const expectedMessage = 'Hll Wrld m Trtl';
-      expect(message).to.equal(expectedMessage);
+      expect(message).toBe(expectedMessage);
     });
 
     it('returns a message with letters rotated 13 positions', () => {
       const message = MessageFactory.GetA1DayMessage(BASE_MSG, ROBOT_NAME, 1);
       const expectedMessage = 'Uryyb Jbeyq V Nz Ghegyr';
-      expect(message).to.equal(expectedMessage);
+      expect(message).toBe(expectedMessage);
     });
 
     it('returns static string about itself', () => {
       const message = MessageFactory.GetA1DayMessage(BASE_MSG, ROBOT_NAME, 2);
-      expect(message).to.equal(`I'm ${ROBOT_NAME}. Not a mind reader!`);
+      expect(message).toBe(`I'm ${ROBOT_NAME}. Not a mind reader!`);
     });
 
     it('returns static string about classified info', () => {
       const message = MessageFactory.GetA1DayMessage(BASE_MSG, ROBOT_NAME, 3);
-      expect(message).to.equal(
-        "That's classified information, I'm afraid I cannot disclose that.",
-      );
+      expect(message).toBe("That's classified information, I'm afraid I cannot disclose that.");
     });
 
     it('returns a message with random casing', () => {
       const message = MessageFactory.GetA1DayMessage(BASE_MSG, ROBOT_NAME, 4);
-      expect(message).not.to.equal(BASE_MSG);
-      expect(message.toLowerCase()).to.equal(BASE_MSG.toLowerCase());
+      expect(message).not.toBe(BASE_MSG);
+      expect(message.toLowerCase()).toBe(BASE_MSG.toLowerCase());
     });
 
     it('returns a message with a random non sequitur added', () => {
@@ -453,7 +442,7 @@ describe('MessageFactory', () => {
       const expectedNonSequitur = nonSequiturs.some((nonSequitur) =>
         message.includes(nonSequitur),
       );
-      expect(expectedNonSequitur).to.equal(true);
+      expect(expectedNonSequitur).toBe(true);
     });
 
     it('returns a message that is misspelled in some way', () => {
@@ -463,17 +452,17 @@ describe('MessageFactory', () => {
         6,
         true,
       );
-      expect(message).not.to.equal(BASE_MSG);
+      expect(message).not.toBe(BASE_MSG);
     });
 
     it('returns a flipped and reversed message', () => {
       const message = MessageFactory.GetA1DayMessage(BASE_MSG, ROBOT_NAME, 7);
-      expect(message).to.equal('ǝlʇɹn┴ ɯ∀ I plɹoM ollǝH');
+      expect(message).toBe('ǝlʇɹn┴ ɯ∀ I plɹoM ollǝH');
     });
 
     it('should return the original message when the index is outside the array', () => {
       const message = MessageFactory.GetA1DayMessage(BASE_MSG, ROBOT_NAME, 8);
-      expect(message).to.equal(BASE_MSG);
+      expect(message).toBe(BASE_MSG);
     });
   });
 });
