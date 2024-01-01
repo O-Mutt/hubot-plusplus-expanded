@@ -1,7 +1,6 @@
 const { MongoClient } = require('mongodb');
 const sinon = require('sinon');
 const chai = require('chai');
-chai.use(require('sinon-chai'));
 
 const { expect } = chai;
 const SlackClient = require('@slack/client');

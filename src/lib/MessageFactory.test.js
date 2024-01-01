@@ -1,6 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
-chai.use(require('sinon-chai'));
+
 const { subYears, addDays } = require('date-fns');
 
 const { helpers } = require('./helpers');

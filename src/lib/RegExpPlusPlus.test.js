@@ -1,7 +1,6 @@
 /* eslint-disable new-cap */
 /* eslint-disable mocha/no-setup-in-describe */
 const chai = require('chai');
-chai.use(require('sinon-chai'));
 
 const { expect } = chai;
 
