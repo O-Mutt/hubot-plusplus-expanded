@@ -5,6 +5,7 @@ module.exports = {
   'watch-files': ['./{,!(node_modules)/**}/*.test.js'],
   package: './package.json',
   spec: ['./{,!(node_modules)/**}/*.test.js'],
+  require: ['./test/globalFixture.js'],
   ignore: ['node_modules'],
   exit: true,
 };

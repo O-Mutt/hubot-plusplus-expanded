@@ -1,28 +1,23 @@
 const { format, parseISO } = require('date-fns');
 const _ = require('lodash');
 
-const Helpers = require('./Helpers');
+const { H } = require('./helpers');
 const { upsideDownChars, nonSequiturs } = require('./static/a1');
 
-module.exports = class MessageFactory {
+class MessageFactory {
   /**
    * Builds a message for the user's score
    * @param {object} user - The user object
-   * @param {string} robotName - The name of the robot
-   * @param {object} procVars - The process variables
    * @returns {string} - The message
    * @memberof MessageFactory
    * @static
    */
-  static BuildScoreLookup(user, robot, procVars) {
-    const robotName = robot?.name ?? undefined;
-    if (_.isEmpty(user) || _.isEmpty(robotName) || _.isEmpty(procVars))
-      return '';
+  static BuildScoreLookup(robotName, user) {
+    const pVars = H.getProcessVariables(process.env);
+    if (_.isEmpty(user) || _.isEmpty(pVars)) return '';
     let tokenString = '.';
     if (user.accountLevel > 1) {
-      tokenString = ` (*${user.token} ${Helpers.capitalizeFirstLetter(
-        robotName,
-      )} `;
+      tokenString = ` (*${user.token} ${H.capitalizeFirstLetter(robotName)} `;
       tokenString = tokenString.concat(
         user.token > 1 ? 'Tokens*).' : 'Token*).',
       );
@@ -36,12 +31,12 @@ module.exports = class MessageFactory {
     if (user[`${robotName}Day`]) {
       try {
         const dateObj = parseISO(user[`${robotName}Day`]);
-        baseString += `\n:birthday: ${Helpers.capitalizeFirstLetter(
+        baseString += `\n:birthday: ${H.capitalizeFirstLetter(
           robotName,
         )}day is ${format(dateObj, 'MMM. do yyyy')}`;
       } catch (e) {
-        robot.logger.error(
-          `Robot day failed to be parsed: ${robot.name}, ${
+        this.robot.logger.error(
+          `Robot day failed to be parsed: ${robotName}, ${
             user[`${robotName}Day`]
           }`,
           e,
@@ -62,15 +57,14 @@ module.exports = class MessageFactory {
       const reasonMap = _.reduce(
         sampleReasons,
         (memo, val, key) => {
-          const decodedKey = Helpers.decode(key);
+          const decodedKey = H.decode(key);
           const pointStr = val > 1 ? 'points' : 'point';
-          memo += `\n_${decodedKey}_: ${val} ${pointStr}`;
-          return memo;
+          return `${memo}\n_${decodedKey}_: ${val} ${pointStr}`;
         },
         '',
       );
 
-      return `${baseString}\n\n:star: Here are some ${procVars.reasonsKeyword} :star:${reasonMap}`;
+      return `${baseString}\n\n:star: Here are some ${pVars.reasonsKeyword} :star:${reasonMap}`;
     }
 
     return baseString;
@@ -80,19 +74,19 @@ module.exports = class MessageFactory {
    * Builds a message for the user's score
    * @param {object} user - The user object
    * @param {string} reason - The reason for the score
-   * @param {string} robotName - The name of the robot
    * @returns {string} - The message
    * @memberof MessageFactory
    * @static
    */
-  static BuildNewScoreMessage(user, reason, robotName) {
+  static BuildNewScoreMessage(robot, user, reason) {
+    const robotName = robot.name;
     if (!user) {
       return '';
     }
     const username = user.slackId ? `<@${user.slackId}>` : user.name;
-    let scoreStr = `${username} has ${
-      user.score
-    } point${Helpers.getEsOnEndOfWord(user.score)}`;
+    let scoreStr = `${username} has ${user.score} point${H.getEsOnEndOfWord(
+      user.score,
+    )}`;
     let reasonStr = '';
     let cakeDayStr = '';
 
@@ -107,11 +101,11 @@ module.exports = class MessageFactory {
     }
 
     if (user.accountLevel && user.accountLevel > 1) {
-      let tokenStr = `(*${user.token} ${Helpers.capitalizeFirstLetter(
+      let tokenStr = `(*${user.token} ${H.capitalizeFirstLetter(
         robotName,
       )} Tokens*)`;
       if (user.token === 1) {
-        tokenStr = `(*${user.token} ${Helpers.capitalizeFirstLetter(
+        tokenStr = `(*${user.token} ${H.capitalizeFirstLetter(
           robotName,
         )} Token*)`;
       }
@@ -119,7 +113,7 @@ module.exports = class MessageFactory {
     }
 
     if (reason) {
-      const decodedReason = Helpers.decode(reason);
+      const decodedReason = H.decode(reason);
       if (user.reasons[reason] === 1 || user.reasons[reason] === -1) {
         if (user.score === 1 || user.score === -1) {
           reasonStr = ` for ${decodedReason}`;
@@ -133,8 +127,8 @@ module.exports = class MessageFactory {
       }
     }
 
-    if (Helpers.isCakeDay(user[`${robotName}Day`])) {
-      const yearsAsString = Helpers.getYearsAsString(user[`${robotName}Day`]);
+    if (H.isCakeDay(user[`${robotName}Day`])) {
+      const yearsAsString = H.getYearsAsString(user[`${robotName}Day`]);
       cakeDayStr = `\n:birthday: Today is ${username}'s ${yearsAsString}${robotName}day! :birthday:`;
     }
 
@@ -145,8 +139,8 @@ module.exports = class MessageFactory {
       reasonStr += '.';
     }
     let normalMessage = `${scoreStr}${reasonStr}${cakeDayStr}`;
-    if (Helpers.isA1Day()) {
-      normalMessage = MessageFactory.GetA1DayMessage(normalMessage, robotName);
+    if (H.isA1Day()) {
+      normalMessage = this.GetA1DayMessage(normalMessage);
     }
 
     return normalMessage;
@@ -156,14 +150,13 @@ module.exports = class MessageFactory {
    * Builds a message for the user's score
    * @param {object} user - The user object
    * @param {string} reason - The reason for the score
-   * @param {string} robotName - The name of the robot
    * @returns {string} - The message
    * @memberof MessageFactory
    * @static
    */
   static GetA1DayMessage(
-    originalMessage,
     robotName,
+    originalMessage,
     randomIndex = Math.floor(Math.random() * 7),
     force = false,
   ) {
@@ -180,15 +173,16 @@ module.exports = class MessageFactory {
       () => `I'm ${robotName}. Not a mind reader!`,
       () => "That's classified information, I'm afraid I cannot disclose that.",
       (message) => {
+        let newMessage = message;
         for (let i = 0; i < message.length; i++) {
           const randomCase =
             Math.random() < 0.5 ? 'toUpperCase' : 'toLowerCase';
-          message =
-            message.substr(0, i) +
-            message[i][randomCase]() +
-            message.substr(i + 1);
+          newMessage =
+            newMessage.substr(0, i) +
+            newMessage[i][randomCase]() +
+            newMessage.substr(i + 1);
         }
-        return message;
+        return newMessage;
       },
       (message) => {
         const words = message.split(' ');
@@ -202,20 +196,21 @@ module.exports = class MessageFactory {
         return words.join(' ');
       },
       (message) => {
-        const words = message.split(' ');
+        let newMessage = message;
+        const words = newMessage.split(' ');
         for (let i = 0; i < words.length; i++) {
           if (Math.random() < 0.13 || force) {
-            const randomWord = Math.floor(Math.random() * message.length);
+            const randomWord = Math.floor(Math.random() * newMessage.length);
             const randomChar = String.fromCharCode(
               Math.floor(Math.random() * 26) + 97,
             );
-            message =
-              message.slice(0, randomWord) +
+            newMessage =
+              newMessage.slice(0, randomWord) +
               randomChar +
-              message.slice(randomWord + 1);
+              newMessage.slice(randomWord + 1);
           }
         }
-        return message;
+        return newMessage;
       },
       (message) => {
         const charArray = message.split('');
@@ -229,4 +224,7 @@ module.exports = class MessageFactory {
     const rand = a0opt[randomIndex];
     return rand(originalMessage);
   }
-};
+}
+
+module.exports = MessageFactory;
+module.exports.mfs = MessageFactory;

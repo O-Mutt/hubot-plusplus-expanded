@@ -1,10 +1,8 @@
 const chai = require('chai');
 chai.use(require('sinon-chai'));
 const sinon = require('sinon');
-const mongoUnit = require('mongo-unit');
 const TestHelper = require('hubot-test-helper');
 
-const testData = require('../../test/mockData');
 const { wait } = require('../../test/test_helpers');
 
 const { expect } = chai;
@@ -14,22 +12,17 @@ describe('Scoreboard', () => {
   let scoreboard;
   let sandbox;
   before(async () => {
-    const url = await mongoUnit.start();
-    process.env.MONGODB_URI = url;
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
     scoreboard = new TestHelper('./messageHandlers/scoreboard.js');
   });
 
   beforeEach(async () => {
-    sandbox = sinon.createSandbox();
     room = scoreboard.createRoom({ httpd: false });
-    return mongoUnit.load(testData);
   });
 
   afterEach(async () => {
     sandbox.restore();
     room.destroy();
-    return mongoUnit.drop();
   });
 
   describe('getScore', () => {

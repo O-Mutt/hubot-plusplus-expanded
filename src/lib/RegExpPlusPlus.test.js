@@ -5,7 +5,7 @@ chai.use(require('sinon-chai'));
 
 const { expect } = chai;
 
-const { RegExpPlusPlus } = require('./RegExpPlusPlus');
+const { RegExpPlusPlus } = require('./regExpPlusPlus');
 
 describe('RegExpPlusPlus', () => {
   describe('createGiveTokenRegExp', () => {
@@ -359,7 +359,8 @@ describe('RegExpPlusPlus', () => {
     });
 
     it('should match `{ @Chelo, @Kahou_Lei, @wimdec_PTO_back_Aug_21 , @guillaume_Back_Aug_6th, @Cherry,   @singaravelan   } ++  you’re all awesome, I’m only here for the fun!`', () => {
-      const fullText = `{@Chelo, @Kahou_Lei, @wimdec_PTO_back_Aug_21 , @guillaume_Back_Aug_6th, @Cherry,   @singaravelan   }   ++    you’re all awesome, I’m only here for the fun!`;
+      const fullText =
+        '{@Chelo, @Kahou_Lei, @wimdec_PTO_back_Aug_21 , @guillaume_Back_Aug_6th, @Cherry,   @singaravelan   }   ++    you’re all awesome, I’m only here for the fun!';
 
       const expected = [
         fullText,

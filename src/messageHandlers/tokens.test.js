@@ -4,29 +4,16 @@ const sinon = require('sinon');
 
 const { expect } = chai;
 
-const { MongoClient } = require('mongodb');
-const mongoUnit = require('mongo-unit');
 const TestHelper = require('hubot-test-helper');
 const SlackClient = require('@slack/client');
 
-const Helpers = require('../lib/Helpers');
-const { mockScoreKeeper, wait } = require('../../test/test_helpers');
-const testData = require('../../test/mockData');
-const ScoreKeeper = require('../lib/services/scorekeeper');
+const { H } = require('../lib/helpers');
+const { wait } = require('../../test/test_helpers');
 
 describe('Tokens', () => {
   let room;
-  let db;
   let tokenHelper;
   before(async () => {
-    const url = await mongoUnit.start();
-    const client = new MongoClient(url, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    const connection = await client.connect();
-    db = connection.db();
-    process.env.MONGODB_URI = url;
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
 
     tokenHelper = new TestHelper('./messageHandlers/tokens.js');
@@ -47,17 +34,14 @@ describe('Tokens', () => {
             .returns({ user: { profile: { email: 'test@email.com' } } }),
         },
       });
+
+    sinon.stub(H, 'isA1Day').returns(false);
     room = tokenHelper.createRoom({ httpd: false });
-    const mockInst = mockScoreKeeper(process.env.MONGODB_URI);
-    sinon.stub(ScoreKeeper, 'constructor').returns(mockInst);
-    sinon.stub(Helpers, 'isA1Day').returns(false);
-    return mongoUnit.load(testData);
   });
 
   afterEach(async () => {
     sinon.restore();
     room.destroy();
-    return mongoUnit.drop();
   });
 
   describe('giveTokenBetweenUsers', () => {

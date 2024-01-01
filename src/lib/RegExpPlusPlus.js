@@ -119,7 +119,7 @@ class RegExpPlusPlus {
    */
   // eslint-disable-next-line class-methods-use-this
   createLevelUpAccount() {
-    return new RegExp(/(level (me )?up|upgrade (my account|me))/, 'i');
+    return /(level (me )?up|upgrade (my account|me))/i;
   }
 
   /**
@@ -127,7 +127,7 @@ class RegExpPlusPlus {
    */
   // eslint-disable-next-line class-methods-use-this
   getHelp() {
-    return new RegExp('(help|-h|--help)', 'i');
+    return /(help|-h|--help)/i;
   }
 
   /**
@@ -135,11 +135,13 @@ class RegExpPlusPlus {
    */
   // eslint-disable-next-line class-methods-use-this
   getBotWallet() {
-    return new RegExp(/hot( |-)?wallet/, 'i');
+    return /hot( |-)?wallet/i;
   }
 }
 
-module.exports = {
-  RegExpPlusPlus: new RegExpPlusPlus(),
-  conjunctions: reasonConjunctions,
-};
+const regExpPlusPlus = new RegExpPlusPlus();
+
+module.exports = regExpPlusPlus;
+module.exports.rpp = regExpPlusPlus;
+module.exports.RegExpPlusPlus = regExpPlusPlus;
+module.exports.conjunctions = reasonConjunctions;

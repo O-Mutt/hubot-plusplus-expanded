@@ -1,10 +1,8 @@
 const sinon = require('sinon');
 
-const ScoreKeeper = require('../src/lib/services/scorekeeper');
-
 const robotStub = {
   brain: {
-    data: { },
+    data: {},
     on() {},
     emit() {},
     save() {},
@@ -31,12 +29,4 @@ function wait(ms) {
   });
 }
 
-function mockScoreKeeper(mongoUri) {
-  const peerFeedbackUrl = '\'Formal Praise\' (company.formal-praise.com)';
-  const spamMessage = 'Please slow your roll.';
-  return new ScoreKeeper({
-    robot: robotStub, mongoUri, peerFeedbackUrl, spamMessage, furtherFeedbackSuggestedScore: 10, spamTimeLimit: 1,
-  });
-}
-
-module.exports = { robotStub, wait, mockScoreKeeper };
+module.exports = { robotStub, wait };

@@ -2,10 +2,9 @@ const chai = require('chai');
 const sinon = require('sinon');
 chai.use(require('sinon-chai'));
 const { subYears, addDays } = require('date-fns');
-const { wait } = require('../../test/test_helpers');
 
-const Helpers = require('./Helpers');
-const MessageFactory = require('./MessageFactory');
+const { helpers } = require('./helpers');
+const MessageFactory = require('./messageFactory');
 const { nonSequiturs } = require('./static/a1');
 
 const { expect } = chai;
@@ -15,22 +14,24 @@ describe('MessageFactory', () => {
   const mockProcVars = { reasonsKeyword: 'reasons' };
   let notBotDay;
   let botDay;
+  let instance;
   beforeEach(() => {
-    const mockHelpers = sinon.stub(Helpers, 'decode');
+    instance = new MessageFactory(mockRobot);
+    const mockHelpers = sinon.stub(helpers, 'decode');
     mockHelpers.returnsArg(0);
     notBotDay = addDays(subYears(new Date(), 1), 5);
     botDay = subYears(new Date(), 1);
   });
 
   afterEach(() => {
-    Helpers.decode.restore();
+    helpers.decode.restore();
   });
 
   // This method expects base64 encoded reasons but we are stubbing out the decode method
   describe('BuildNewScoreMessage', () => {
     it("should handle undefined user, undefined reason, and print ''", () => {
       const user = undefined;
-      const emptyReasons = Helpers.cleanAndEncode(undefined);
+      const emptyReasons = helpers.cleanAndEncode(undefined);
       const msg = MessageFactory.BuildNewScoreMessage(
         user,
         emptyReasons,
@@ -46,7 +47,7 @@ describe('MessageFactory', () => {
         reasons: {},
         hubotDay: notBotDay,
       };
-      const emptyReasons = Helpers.cleanAndEncode(undefined);
+      const emptyReasons = helpers.cleanAndEncode(undefined);
       const msg = MessageFactory.BuildNewScoreMessage(
         user,
         emptyReasons,
@@ -62,7 +63,7 @@ describe('MessageFactory', () => {
         reasons: {},
         hubotDay: notBotDay,
       };
-      const emptyReasons = Helpers.cleanAndEncode(undefined);
+      const emptyReasons = helpers.cleanAndEncode(undefined);
       const msg = MessageFactory.BuildNewScoreMessage(
         user,
         emptyReasons,
@@ -78,7 +79,7 @@ describe('MessageFactory', () => {
         reasons: {},
         hubotDay: notBotDay,
       };
-      const emptyReasons = Helpers.cleanAndEncode(undefined);
+      const emptyReasons = helpers.cleanAndEncode(undefined);
       const msg = MessageFactory.BuildNewScoreMessage(
         user,
         emptyReasons,
@@ -94,7 +95,7 @@ describe('MessageFactory', () => {
         reasons: {},
         hubotDay: notBotDay,
       };
-      const emptyReasons = Helpers.cleanAndEncode(undefined);
+      const emptyReasons = helpers.cleanAndEncode(undefined);
       const msg = MessageFactory.BuildNewScoreMessage(
         user,
         emptyReasons,
@@ -110,7 +111,7 @@ describe('MessageFactory', () => {
         reasons: {},
         hubotDay: notBotDay,
       };
-      const emptyReasons = Helpers.cleanAndEncode(undefined);
+      const emptyReasons = helpers.cleanAndEncode(undefined);
       const msg = MessageFactory.BuildNewScoreMessage(
         user,
         emptyReasons,

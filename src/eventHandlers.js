@@ -8,37 +8,12 @@
 // Author:
 //  O'Mutt (Matt@OKeefe.dev)
 
-const Helpers = require('./lib/Helpers');
+const EventHandlerService = require('./lib/services/eventHandler');
 
 module.exports = function events(robot) {
-  const procVars = Helpers.getProcessVariables(process.env);
+  const ehs = new EventHandlerService(robot);
 
-  robot.on('plus-plus', sendPlusPlusNotification);
-  robot.on('plus-plus-failure', sendPlusPlusFalsePositiveNotification);
-  robot.on('plus-plus-spam', logAndNotifySpam);
-
-  function sendPlusPlusNotification(notificationObject) {
-    if (procVars.notificationsRoom) {
-      robot.messageRoom(procVars.notificationsRoom, notificationObject.notificationMessage);
-    }
-  }
-
-  function sendPlusPlusFalsePositiveNotification(notificationObject) {
-    if (procVars.falsePositiveNotificationsRoom) {
-      robot.messageRoom(procVars.falsePositiveNotificationsRoom, notificationObject.notificationMessage);
-    }
-  }
-
-  /**
-   *
-   * @param {object} notificationObject
-   * @param {object} notificationObject.to the user object who was receiving the point
-   * @param {object} notificationObject.from the user object who was sending the point
-   * @param {string} notificationObject.message the message that should be sent to the user
-   * @param {string} notificationObject.reason a reason why the message is being sent
-   */
-  function logAndNotifySpam(notificationObject) {
-    robot.logger.error(`A spam event has been detected: ${notificationObject.message}. ${notificationObject.reason}`);
-    robot.messageRoom(notificationObject.from.slackId, `${notificationObject.message}\n\n${notificationObject.reason}`);
-  }
+  robot.on('plus-plus', ehs.sendPlusPlusNotification);
+  robot.on('plus-plus-failure', ehs.sendPlusPlusFalsePositiveNotification);
+  robot.on('plus-plus-spam', ehs.logAndNotifySpam);
 };

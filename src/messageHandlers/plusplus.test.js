@@ -4,28 +4,16 @@ const sinon = require('sinon');
 
 const { expect } = chai;
 
-const { MongoClient } = require('mongodb');
-const mongoUnit = require('mongo-unit');
 const TestHelper = require('hubot-test-helper');
 const SlackClient = require('@slack/client');
 
-const Helpers = require('../lib/Helpers');
+const { H } = require('../lib/helpers');
 const { wait } = require('../../test/test_helpers');
-const testData = require('../../test/mockData');
 
 describe('PlusPlus', () => {
   let room;
-  let db;
   let plusPlusHelper;
   before(async () => {
-    const url = await mongoUnit.start();
-    const client = new MongoClient(url, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    const connection = await client.connect();
-    db = connection.db();
-    process.env.MONGODB_URI = url;
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
     plusPlusHelper = new TestHelper('./messageHandlers/plusplus.js');
   });
@@ -34,7 +22,7 @@ describe('PlusPlus', () => {
     sinon.restore();
   });
 
-  beforeEach(async () => {
+  beforeEach(() => {
     sinon
       .stub(SlackClient, 'WebClient')
       .withArgs('token')
@@ -45,15 +33,13 @@ describe('PlusPlus', () => {
             .returns({ user: { profile: { email: 'test@email.com' } } }),
         },
       });
-    sinon.stub(Helpers, 'isA1Day').returns(false);
+    sinon.stub(H, 'isA1Day').returns(false);
     room = plusPlusHelper.createRoom({ httpd: false });
-    return mongoUnit.load(testData);
   });
 
   afterEach(async () => {
     sinon.restore();
     room.destroy();
-    return mongoUnit.drop();
   });
 
   describe('upOrDownVote', () => {

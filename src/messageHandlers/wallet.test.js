@@ -2,14 +2,9 @@ const chai = require('chai');
 chai.use(require('sinon-chai'));
 const sinon = require('sinon');
 const TestHelper = require('hubot-test-helper');
-const { MongoClient } = require('mongodb');
-const mongoUnit = require('mongo-unit');
-
 const { expect } = chai;
 
-const Helpers = require('../lib/Helpers');
-
-const testData = require('../../test/mockData');
+const { H } = require('../lib/helpers');
 const { wait } = require('../../test/test_helpers');
 
 describe('PlusPlus', () => {
@@ -18,14 +13,6 @@ describe('PlusPlus', () => {
   let wallet;
   let sandbox;
   before(async () => {
-    const url = await mongoUnit.start();
-    const client = new MongoClient(url, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    const connection = await client.connect();
-    db = connection.db();
-    process.env.MONGODB_URI = url;
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
     wallet = new TestHelper('./messageHandlers/wallet.js');
   });
@@ -33,13 +20,11 @@ describe('PlusPlus', () => {
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
     room = wallet.createRoom({ httpd: false });
-    return mongoUnit.load(testData);
   });
 
   afterEach(async () => {
     sandbox.restore();
     room.destroy();
-    return mongoUnit.drop();
   });
 
   describe('upgrade my account', () => {
@@ -49,7 +34,7 @@ describe('PlusPlus', () => {
       await wait(55);
       expect(room.messages.length).to.equal(2);
       expect(room.messages[1][1]).to.equal(
-        `@matt.erickson matt.erickson, we are going to level up your account to Level 2! This means you will start getting ${Helpers.capitalizeFirstLetter(
+        `@matt.erickson matt.erickson, we are going to level up your account to Level 2! This means you will start getting ${H.capitalizeFirstLetter(
           room.robot.name,
         )} Tokens as well as points!`,
       );
