@@ -2,7 +2,6 @@ const {
   differenceInYears,
   format,
   getDate,
-  getWeekOfMonth,
   isSunday,
   isMonday,
   isTuesday,
@@ -10,12 +9,11 @@ const {
   isThursday,
   isFriday,
   isSaturday,
-  isSameDay,
-  isSameWeek,
+  getWeekOfMonth,
 } = require('date-fns');
-const { RegExpPlusPlus } = require('./RegExpPlusPlus');
+const { rpp } = require('./regExpPlusPlus');
 
-module.exports = class Helpers {
+class Helpers {
   static getEsOnEndOfWord(number) {
     if (number === -1 || number === 1) {
       return '';
@@ -35,7 +33,7 @@ module.exports = class Helpers {
       return undefined;
     }
 
-    const buff = new Buffer.from(str, 'base64');
+    const buff = Buffer.from(str, 'base64');
     const text = buff.toString('UTF-8');
     return text;
   }
@@ -51,6 +49,7 @@ module.exports = class Helpers {
       if (robot) {
         robot.logger.debug('There was an error in the isCakeDay function', e);
       } else {
+        // eslint-disable-next-line no-console
         console.log('There was an error in the isCakeDay function', e);
       }
     }
@@ -147,7 +146,7 @@ module.exports = class Helpers {
 
     // this should fix a dumb issue with mac quotes
     const trimmed = JSON.parse(JSON.stringify(str.trim().toLowerCase()));
-    const buff = new Buffer.from(trimmed);
+    const buff = Buffer.from(trimmed);
     const base64data = buff.toString('base64');
     return base64data;
   }
@@ -169,9 +168,11 @@ module.exports = class Helpers {
       premessage &&
       !conjunction &&
       reason &&
-      operator.match(RegExpPlusPlus.negativeOperators);
+      new RegExp(rpp.negativeOperators).test(operator);
     return falsePositive;
   }
+
+  static getProcessVars = Helpers.getProcessVariables;
 
   static getProcessVariables(env) {
     const procVars = {};
@@ -181,9 +182,7 @@ module.exports = class Helpers {
       'Looks like you hit the spam filter. Please slow your roll.';
     procVars.spamTimeLimit = parseInt(env.SPAM_TIME_LIMIT, 10) || 5;
     procVars.companyName = env.HUBOT_COMPANY_NAME || 'Company Name';
-    procVars.peerFeedbackUrl =
-      env.HUBOT_PEER_FEEDBACK_URL ||
-      `praise in Lattice (https://${procVars.companyName}.latticehq.com/)`;
+
     procVars.furtherFeedbackSuggestedScore =
       parseInt(env.HUBOT_FURTHER_FEEDBACK_SCORE, 10) || 10;
     procVars.mongoUri =
@@ -205,6 +204,12 @@ module.exports = class Helpers {
       env.HUBOT_PLUSPLUS_MONTHLY_SCOREBOARD_CRON || '0 10 1-7 * *';
     procVars.monthlyScoreboardDayOfWeek =
       parseInt(env.HUBOT_PLUSPLUS_MONTHLY_SCOREBOARD_DAY_OF_WEEK, 10) || 1; // 0-6 (Sun - Sat)
+
+    // Dependent on other procVars
+    procVars.peerFeedbackUrl =
+      env.HUBOT_PEER_FEEDBACK_URL ||
+      `praise in Lattice (https://${procVars.companyName}.latticehq.com/)`;
+
     return procVars;
   }
 
@@ -280,4 +285,9 @@ module.exports = class Helpers {
   static isSameDayOfYear(date1, date2) {
     return Helpers.getDayOfYear(date1) === Helpers.getDayOfYear(date2);
   }
-};
+}
+
+module.exports = Helpers;
+module.exports.H = Helpers;
+module.exports.Helpers = Helpers;
+module.exports.h = Helpers;

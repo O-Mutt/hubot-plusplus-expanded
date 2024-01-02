@@ -4,26 +4,23 @@ const { formatISO, subMinutes } = require('date-fns');
 const scores = require('../data/scores');
 const logDocumentName = require('../data/scoreLog');
 const botTokenDocumentName = require('../data/botToken');
-const Helpers = require('../Helpers');
+const { H } = require('../helpers');
 
 class DatabaseService {
-  constructor(params) {
-    this.db = undefined;
-    this.robot = params.robot;
-    this.uri = params.mongoUri;
-    this.furtherFeedbackScore = params.furtherFeedbackSuggestedScore;
-    this.peerFeedbackUrl = params.peerFeedbackUrl;
-    this.spamTimeLimit = params.spamTimeLimit;
+  constructor() {
+    this.db = null;
   }
 
   async init() {
-    const client = new MongoClient(this.uri,
-      {
+    if (!this.db) {
+      const { mongoUri } = H.getProcessVars(process.env);
+      const client = new MongoClient(mongoUri, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
       });
-    const connection = await client.connect();
-    this.db = connection.db();
+      const connection = await client.connect();
+      this.db = connection.db();
+    }
   }
 
   async getDb() {
@@ -34,36 +31,38 @@ class DatabaseService {
   }
 
   /*
-  * user - the name of the user
-  */
-  async getUser(user) {
+   * user - the name of the user
+   */
+  async getUser(robot, user) {
     const userName = user.name ? user.name : user;
     const search = user.id ? { slackId: user.id } : { name: userName };
-    this.robot.logger.debug(`trying to find user ${JSON.stringify(search)}`);
+    robot.logger.debug(`trying to find user ${JSON.stringify(search)}`);
     const db = await this.getDb();
 
-    const dbUser = await db.collection(scores.scoresDocumentName).findOne(
-      search,
-      { sort: { score: -1 } },
-    );
+    const dbUser = await db
+      .collection(scores.scoresDocumentName)
+      .findOne(search, { sort: { score: -1 } });
 
     if (!dbUser) {
-      this.robot.logger.debug('creating a new user', user);
-      const newUser = await scores.createNewLevelOneUser(user, this.robot);
+      robot.logger.debug('creating a new user', user);
+      const newUser = await scores.createNewLevelOneUser(user, robot);
       return newUser;
     }
     return dbUser;
   }
 
   /*
-  * user - the name of the user
-  */
-  async getAllUsers() {
+   * user - the name of the user
+   */
+  async getAllUsers(robot) {
     const search = { slackId: { $exists: true } };
-    this.robot.logger.debug('getting _all_ users');
+    robot.logger.debug('getting _all_ users');
     const db = await this.getDb();
 
-    const dbUsers = await db.collection(scores.scoresDocumentName).find(search).toArray();
+    const dbUsers = await db
+      .collection(scores.scoresDocumentName)
+      .find(search)
+      .toArray();
     return dbUsers;
   }
 
@@ -72,12 +71,15 @@ class DatabaseService {
    * @param {object} user the user who is getting a point change
    * @returns {object} the updated user who received a change
    */
-  async saveUser(user) {
+  async saveUser(robot, user) {
     const userName = user.name ? user.name : user;
-    const search = user.slackId ? { slackId: user.slackId } : { name: userName };
+    const search = user.slackId
+      ? { slackId: user.slackId }
+      : { name: userName };
     const db = await this.getDb();
 
-    const result = await db.collection(scores.scoresDocumentName)
+    const result = await db
+      .collection(scores.scoresDocumentName)
       .findOneAndUpdate(
         search,
         {
@@ -92,18 +94,24 @@ class DatabaseService {
 
     const updatedUser = result.value;
 
-    this.robot.logger.debug(`Saving user original: [${user.name}: ${user.score}], new [${updatedUser.name}: ${updatedUser.score}]`);
+    robot.logger.debug(
+      `Saving user original: [${user.name}: ${user.score}], new [${updatedUser.name}: ${updatedUser.score}]`,
+    );
 
     return updatedUser;
   }
 
-  async savePlusPlusLog(to, from, room, reason, incrementValue) {
+  async savePlusPlusLog(_robot, to, from, room, reason, incrementValue) {
     const pointsAmount = parseInt(incrementValue, 10);
     const fromId = from.slackId || from.name;
-    const scoreSearch = from.slackId ? { slackId: from.slackId } : { name: from.name };
+    const scoreSearch = from.slackId
+      ? { slackId: from.slackId }
+      : { name: from.name };
     const toId = to.slackId || to.name;
     const db = await this.getDb();
-    await db.collection(scores.scoresDocumentName).updateOne(scoreSearch, { $inc: { totalPointsGiven: pointsAmount } });
+    await db
+      .collection(scores.scoresDocumentName)
+      .updateOne(scoreSearch, { $inc: { totalPointsGiven: pointsAmount } });
     await db.collection(logDocumentName).insertOne({
       from: fromId,
       to: toId,
@@ -122,19 +130,21 @@ class DatabaseService {
    * @returns {boolean} true if the user has sent a point to the same user in the time period
    * @returns {boolean} false if the user has not sent a point to the same user in the time period
    */
-  async isSpam(to, from) {
-    this.robot.logger.debug('spam check');
+  async isSpam(robot, to, from) {
+    robot.logger.debug('spam check');
+    const { spamTimeLimit } = H.getProcessVars(process.env);
     const db = await this.getDb();
-    const fiveMinutesAgo = formatISO(subMinutes(new Date(), this.spamTimeLimit));
-    const previousScoreExists = await db.collection(logDocumentName)
+    const fiveMinutesAgo = formatISO(subMinutes(new Date(), spamTimeLimit));
+    const previousScoreExists = await db
+      .collection(logDocumentName)
       .countDocuments({
         from,
         to,
         date: { $gte: fiveMinutesAgo },
       });
-    this.robot.logger.debug('spam check result', previousScoreExists);
+    robot.logger.debug('spam check result', previousScoreExists);
     if (previousScoreExists !== 0) {
-      this.robot.logger.error(`${from} is spamming points to ${to}! STOP THEM!!!!`);
+      robot.logger.error(`${from} is spamming points to ${to}! STOP 'EM!!!!`);
       return true;
     }
 
@@ -142,20 +152,28 @@ class DatabaseService {
   }
 
   /*
-  * from - database user who is sending the score
-  * to - database user who is receiving the score
-  * score - the number of score that is being sent
-  */
-  async savePointsGiven(from, to, score) {
+   * from - database user who is sending the score
+   * to - database user who is receiving the score
+   * score - the number of score that is being sent
+   */
+  async savePointsGiven(robot, from, to, score) {
+    const { furtherFeedbackSuggestedScore, peerFeedbackUrl } = H.getProcessVars(
+      process.env,
+    );
     const db = await this.getDb();
-    const cleanName = Helpers.cleanAndEncode(to.name);
-    const fromUser = await this.getUser(from);
-    const fromSearch = fromUser.slackId ? { slackId: fromUser.slackId } : { name: fromUser.name };
+    const cleanName = H.cleanAndEncode(to.name);
+    const fromUser = await this.getUser(robot, from);
+    const fromSearch = fromUser.slackId
+      ? { slackId: fromUser.slackId }
+      : { name: fromUser.name };
 
-    const oldScore = fromUser.pointsGiven[cleanName] ? fromUser.pointsGiven[cleanName] : 0;
+    const oldScore = fromUser.pointsGiven[cleanName]
+      ? fromUser.pointsGiven[cleanName]
+      : 0;
     // even if they are down voting them they should still get a tally as they ++/-- the same person
-    fromUser.pointsGiven[cleanName] = (oldScore + 1);
-    const result = await db.collection(scores.scoresDocumentName)
+    fromUser.pointsGiven[cleanName] = oldScore + score;
+    const result = await db
+      .collection(scores.scoresDocumentName)
       .findOneAndUpdate(
         fromSearch,
         { $set: fromUser },
@@ -165,12 +183,17 @@ class DatabaseService {
           sort: { score: -1 },
         },
       );
-    const updatedUser = result.value;
+    const upUser = result.value;
 
-    if (updatedUser.pointsGiven[cleanName] % this.furtherFeedbackScore === 0) {
-      this.robot.logger.debug(`${from.name} has sent a lot of points to ${to.name} suggesting further feedback ${score}`);
+    if (upUser.pointsGiven[cleanName] % furtherFeedbackSuggestedScore === 0) {
+      robot.logger.debug(
+        `${from.name} has sent a lot of points to ${to.name} suggesting further feedback ${score}`,
+      );
       const toIdent = to.slackId ? `<@${to.slackId}>` : to.name;
-      this.robot.messageRoom(from.id, `Looks like you've given ${toIdent} quite a few points, maybe you should look at submitting ${this.peerFeedbackUrl}`);
+      robot.messageRoom(
+        from.id,
+        `Looks like you've given ${toIdent} quite a few points, maybe you should look at submitting ${peerFeedbackUrl}`,
+      );
     }
   }
 
@@ -179,15 +202,16 @@ class DatabaseService {
    * @param {number} amount - the amount of scores to return
    * @returns {Promise<Array>} - the scores
    */
-  async getTopScores(amount) {
+  async getTopScores(robot, amount) {
     const db = await this.getDb();
-    const results = await db.collection(scores.scoresDocumentName)
+    const results = await db
+      .collection(scores.scoresDocumentName)
       .find({})
       .sort({ score: -1, accountLevel: -1 })
       .limit(amount)
       .toArray();
 
-    this.robot.logger.debug('Trying to find top scores');
+    robot.logger.debug('Trying to find top scores');
 
     return results;
   }
@@ -197,15 +221,16 @@ class DatabaseService {
    * @param {number} amount - the amount of scores to return
    * @returns {Promise<Array>} - the scores
    */
-  async getBottomScores(amount) {
+  async getBottomScores(robot, amount) {
     const db = await this.getDb();
-    const results = await db.collection(scores.scoresDocumentName)
+    const results = await db
+      .collection(scores.scoresDocumentName)
       .find({})
       .sort({ score: 1, accountLevel: -1 })
       .limit(amount)
       .toArray();
 
-    this.robot.logger.debug('Trying to find bottom scores');
+    robot.logger.debug('Trying to find bottom scores');
 
     return results;
   }
@@ -215,9 +240,10 @@ class DatabaseService {
    * @param {number} amount - the amount of tokens to return
    * @returns {Promise<Array>} - the tokens
    */
-  async getTopTokens(amount) {
+  async getTopTokens(robot, amount) {
     const db = await this.getDb();
-    const results = await db.collection(scores.scoresDocumentName)
+    const results = await db
+      .collection(scores.scoresDocumentName)
       .find({
         accountLevel: { $gte: 2 },
       })
@@ -225,7 +251,7 @@ class DatabaseService {
       .limit(amount)
       .toArray();
 
-    this.robot.logger.debug('Trying to find top tokens');
+    robot.logger.debug('Trying to find top tokens');
 
     return results;
   }
@@ -235,9 +261,10 @@ class DatabaseService {
    * @param {number} amount - the amount of tokens to return
    * @returns {Promise<Array>} - the tokens
    */
-  async getBottomTokens(amount) {
+  async getBottomTokens(robot, amount) {
     const db = await this.getDb();
-    const results = await db.collection(scores.scoresDocumentName)
+    const results = await db
+      .collection(scores.scoresDocumentName)
       .find({
         accountLevel: { $gte: 2 },
       })
@@ -245,7 +272,7 @@ class DatabaseService {
       .limit(amount)
       .toArray();
 
-    this.robot.logger.debug('Trying to find bottom tokens');
+    robot.logger.debug('Trying to find bottom tokens');
 
     return results;
   }
@@ -255,15 +282,16 @@ class DatabaseService {
    * @param {number} amount - the amount of senders to return
    * @returns {Promise<Array>} - the senders
    */
-  async getTopSender(amount) {
+  async getTopSender(robot, amount) {
     const db = await this.getDb();
-    const results = await db.collection(scores.scoresDocumentName)
+    const results = await db
+      .collection(scores.scoresDocumentName)
       .find({ totalPointsGiven: { $exists: true } })
       .sort({ totalPointsGiven: -1, accountLevel: -1 })
       .limit(amount)
       .toArray();
 
-    this.robot.logger.debug('Trying to find top sender');
+    robot.logger.debug('Trying to find top sender');
 
     return results;
   }
@@ -273,109 +301,162 @@ class DatabaseService {
    * @param {number} amount - the amount of senders to return
    * @returns {Promise<Array>} - the senders
    */
-  async getBottomSender(amount) {
+  async getBottomSender(robot, amount) {
     const db = await this.getDb();
-    const results = await db.collection(scores.scoresDocumentName)
+    const results = await db
+      .collection(scores.scoresDocumentName)
       .find({ totalPointsGiven: { $exists: true } })
       .sort({ totalPointsGiven: 1, accountLevel: -1 })
       .limit(amount)
       .toArray();
 
-    this.robot.logger.debug('Trying to find bottom sender');
+    robot.logger.debug('Trying to find bottom sender');
 
     return results;
   }
 
   async erase(user, reason) {
     const userName = user.name ? user.name : user;
-    const search = user.slackId ? { slackId: user.slackId } : { name: userName };
+    const search = user.slackId
+      ? { slackId: user.slackId }
+      : { name: userName };
     const db = await this.getDb();
 
     let result;
     if (reason) {
-      const oldUser = await db.collection(scores.scoresDocumentName).findOne(search);
+      const oldUser = await db
+        .collection(scores.scoresDocumentName)
+        .findOne(search);
       const newScore = oldUser.score - oldUser.reasons[reason];
-      result = await db.collection(scores.scoresDocumentName)
-        .updateOne(search, { $set: { score: newScore, reasons: { [`${reason}`]: 0 } } });
+      result = await db
+        .collection(scores.scoresDocumentName)
+        .updateOne(search, {
+          $set: { score: newScore, reasons: { [`${reason}`]: 0 } },
+        });
     } else {
-      result = await db.collection(scores.scoresDocumentName)
+      result = await db
+        .collection(scores.scoresDocumentName)
         .deleteOne(search, { $set: { score: 0 } });
     }
 
     return result;
   }
 
-  async updateAccountLevelToTwo(user) {
+  async updateAccountLevelToTwo(robot, user) {
     const userName = user.name ? user.name : user;
-    const search = user.slackId ? { slackId: user.slackId } : { name: userName };
+    const search = user.slackId
+      ? { slackId: user.slackId }
+      : { name: userName };
     const db = await this.getDb();
     let tokensAdded = 0;
-    const foundUser = await db.collection(scores.scoresDocumentName).findOne(search);
+    const foundUser = await db
+      .collection(scores.scoresDocumentName)
+      .findOne(search);
     // we are leveling up from 0 (which is level 1) -> 2 or 2 -> 3
     if (foundUser.accountLevel && foundUser.accountLevel === 2) {
       // this is a weird case and shouldn't really happen... not sure about this...
-      this.robot.logger.debug(`Somehow FoundUser[${foundUser.name}] SearchedUser[${user.name}] was trying to upgrade their account to level 2.`);
+      robot.logger.debug(
+        `Somehow FoundUser[${foundUser.name}] SearchedUser[${user.name}] was trying to upgrade their account to level 2.`,
+      );
       return true;
     }
     foundUser.accountLevel = 2;
     foundUser.token = 0;
     tokensAdded = foundUser.score;
-    await db.collection(scores.scoresDocumentName).updateOne(search, { $set: foundUser });
-    const newScore = await this.transferScoreFromBotToUser(user, tokensAdded);
+    await db
+      .collection(scores.scoresDocumentName)
+      .updateOne(search, { $set: foundUser });
+    const newScore = await this.transferScoreFromBotToUser(
+      robot,
+      user,
+      tokensAdded,
+    );
     return newScore;
   }
 
-  async getBotWallet() {
+  async getBotWallet(robot) {
     const db = await this.getDb();
-    const botWallet = await db.collection(botTokenDocumentName).findOne({ name: this.robot.name });
+    const botWallet = await db
+      .collection(botTokenDocumentName)
+      .findOne({ name: robot.name });
     return botWallet;
   }
 
   async getTopSenderInDuration(amount = 10, days = 7) {
     const db = await this.getDb();
-    const topSendersForDuration = await db.collection(logDocumentName).aggregate([
-      {
-        $match: { date: { $gt: new Date(new Date().setDate(new Date().getDate() - days)).toISOString() } },
-      },
-      {
-        $group: { _id: '$from', scoreChange: { $sum: '$scoreChange' } },
-      },
-      {
-        $sort: { scoreChange: -1 },
-      }])
-      .limit(amount).toArray();
+    const topSendersForDuration = await db
+      .collection(logDocumentName)
+      .aggregate([
+        {
+          $match: {
+            date: {
+              $gt: new Date(
+                new Date().setDate(new Date().getDate() - days),
+              ).toISOString(),
+            },
+          },
+        },
+        {
+          $group: { _id: '$from', scoreChange: { $sum: '$scoreChange' } },
+        },
+        {
+          $sort: { scoreChange: -1 },
+        },
+      ])
+      .limit(amount)
+      .toArray();
     return topSendersForDuration;
   }
 
   async getTopReceiverInDuration(amount = 10, days = 7) {
     const db = await this.getDb();
-    const topRecipientForDuration = await db.collection(logDocumentName).aggregate([
-      {
-        $match: { date: { $gt: new Date(new Date().setDate(new Date().getDate() - days)).toISOString() } },
-      },
-      {
-        $group: { _id: '$to', scoreChange: { $sum: '$scoreChange' } },
-      },
-      {
-        $sort: { scoreChange: -1 },
-      }])
-      .limit(amount).toArray();
+    const topRecipientForDuration = await db
+      .collection(logDocumentName)
+      .aggregate([
+        {
+          $match: {
+            date: {
+              $gt: new Date(
+                new Date().setDate(new Date().getDate() - days),
+              ).toISOString(),
+            },
+          },
+        },
+        {
+          $group: { _id: '$to', scoreChange: { $sum: '$scoreChange' } },
+        },
+        {
+          $sort: { scoreChange: -1 },
+        },
+      ])
+      .limit(amount)
+      .toArray();
     return topRecipientForDuration;
   }
 
   async getTopRoomInDuration(amount = 3, days = 7) {
     const db = await this.getDb();
-    const topRoomForDuration = await db.collection(logDocumentName).aggregate([
-      {
-        $match: { date: { $gt: new Date(new Date().setDate(new Date().getDate() - days)).toISOString() } },
-      },
-      {
-        $group: { _id: '$room', scoreChange: { $sum: '$scoreChange' } },
-      },
-      {
-        $sort: { scoreChange: -1 },
-      }])
-      .limit(amount).toArray();
+    const topRoomForDuration = await db
+      .collection(logDocumentName)
+      .aggregate([
+        {
+          $match: {
+            date: {
+              $gt: new Date(
+                new Date().setDate(new Date().getDate() - days),
+              ).toISOString(),
+            },
+          },
+        },
+        {
+          $group: { _id: '$room', scoreChange: { $sum: '$scoreChange' } },
+        },
+        {
+          $sort: { scoreChange: -1 },
+        },
+      ])
+      .limit(amount)
+      .toArray();
     return topRoomForDuration;
   }
 
@@ -386,38 +467,58 @@ class DatabaseService {
    * @param {string} fromName the name of the user sending the points
    * @returns {object} the user who received the points updated value
    */
-  async transferScoreFromBotToUser(user, scoreChange, from) {
+  async transferScoreFromBotToUser(robot, user, scoreChange, from) {
     const userName = user.name ? user.name : user;
-    const search = user.slackId ? { slackId: user.slackId } : { name: userName };
+    const search = user.slackId
+      ? { slackId: user.slackId }
+      : { name: userName };
 
     const db = await this.getDb();
-    this.robot.logger.info(`We are transferring ${scoreChange} ${Helpers.capitalizeFirstLetter(this.robot.name)} Tokens to ${userName} from ${from ? from.name : Helpers.capitalizeFirstLetter(this.robot.name)}`);
-    const result = await db.collection(scores.scoresDocumentName).findOneAndUpdate(
-      search,
-      {
-        $inc:
-        {
-          token: scoreChange,
-        },
-      },
-      {
-        returnDocument: 'after',
-      },
+    robot.logger.info(
+      `We are transferring ${scoreChange} ${H.capitalizeFirstLetter(
+        robot.name,
+      )} Tokens to ${userName} from ${
+        from ? from.name : H.capitalizeFirstLetter(robot.name)
+      }`,
     );
-    await db.collection(botTokenDocumentName).updateOne({ name: this.robot.name }, { $inc: { token: -scoreChange } });
+    const result = await db
+      .collection(scores.scoresDocumentName)
+      .findOneAndUpdate(
+        search,
+        {
+          $inc: {
+            token: scoreChange,
+          },
+        },
+        {
+          returnDocument: 'after',
+        },
+      );
+    await db
+      .collection(botTokenDocumentName)
+      .updateOne({ name: robot.name }, { $inc: { token: -scoreChange } });
     // If this isn't a level up and the score is larger than 1 (tipping aka level 3)
     if (from && from.name && (scoreChange > 1 || scoreChange < -1)) {
-      const fromSearch = from.slackId ? { slackId: from.slackId } : { name: from.name };
-      await db.collection(scores.scoresDocumentName).updateOne(fromSearch, { $inc: { token: -scoreChange } });
+      const fromSearch = from.slackId
+        ? { slackId: from.slackId }
+        : { name: from.name };
+      await db
+        .collection(scores.scoresDocumentName)
+        .updateOne(fromSearch, { $inc: { token: -scoreChange } });
     }
     return result.value;
   }
 
-  async getMagicSecretStringNumberValue() {
+  async getMagicSecretStringNumberValue(robot) {
     const db = await this.getDb();
-    const updateBotWallet = await db.collection(botTokenDocumentName).findOne({ name: this.robot.name });
+    const updateBotWallet = await db
+      .collection(botTokenDocumentName)
+      .findOne({ name: robot.name });
     return updateBotWallet.magicString;
   }
 }
 
-module.exports = DatabaseService;
+const databaseService = new DatabaseService();
+
+module.exports = databaseService;
+module.exports.dbs = databaseService;

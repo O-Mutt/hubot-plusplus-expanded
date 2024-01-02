@@ -1,119 +1,158 @@
-const chai = require('chai');
-chai.use(require('sinon-chai'));
-const sinon = require('sinon');
-const mongoUnit = require('mongo-unit');
 const TestHelper = require('hubot-test-helper');
 
-const testData = require('../../test/mockData');
-const { wait } = require('../../test/test_helpers');
-
-const { expect } = chai;
+const { H } = require('../lib/helpers');
+const {
+  wait,
+  relativeTestHelperPathHelper,
+} = require('../../test/test_helpers');
 
 describe('Scoreboard', () => {
   let room;
   let scoreboard;
-  let sandbox;
-  before(async () => {
-    const url = await mongoUnit.start();
-    process.env.MONGODB_URI = url;
+  let capRobotName;
+  let roomRobot;
+
+  beforeAll(async () => {
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
-    scoreboard = new TestHelper('./messageHandlers/scoreboard.js');
+    scoreboard = new TestHelper(
+      relativeTestHelperPathHelper('src/messageHandlers/scoreboard.js'),
+    );
   });
 
   beforeEach(async () => {
-    sandbox = sinon.createSandbox();
-    room = scoreboard.createRoom({ httpd: false });
-    return mongoUnit.load(testData);
+    room = await scoreboard.createRoom({ httpd: false });
+    roomRobot = room.robot;
+    capRobotName = H.capitalizeFirstLetter(roomRobot.name);
   });
 
   afterEach(async () => {
-    sandbox.restore();
     room.destroy();
-    return mongoUnit.drop();
   });
 
   describe('getScore', () => {
     it('should respond with 5 reasons if the user has 5', async () => {
-      room.user.say('matt.erickson', '@hubot score for @matt.erickson');
-      await wait(55);
-      expect(room.messages.length).to.equal(2);
-      expect(room.messages[1].length).to.equal(2);
-      expect(room.messages[1][1]).to.match(
-        /<@matt\.erickson> has 227 points\.\nAccount Level: 1\nTotal Points Given: 13\n:birthday: Hubotday is Jul. 9th 2020\n\n:star: Here are some reasons :star:(\n.*:.*){5}/,
+      room.user.say(
+        'matt.erickson',
+        `@${roomRobot.name} score for @matt.erickson`,
       );
+      await wait();
+      expect(room.messages.length).toBe(2);
+      expect(room.messages[1].length).toBe(2);
+      const messageLines = room.messages[1][1].split('\n');
+      expect(messageLines).toEqual([
+        `<@matt.erickson> has 227 points.`,
+        `Account Level: 1`,
+        `Total Points Given: 13`,
+        `:birthday: ${capRobotName}day is Jul. 9th 2020`,
+        '',
+        `:star: Here are some reasons :star:`,
+        expect.any(String),
+        expect.any(String),
+        expect.any(String),
+        expect.any(String),
+        expect.any(String),
+      ]);
     });
 
     it('should respond with 3 reasons if the user has 3', async () => {
-      room.user.say('matt.erickson.min', '@hubot score for @matt.erickson.min');
-      await wait(55);
-      expect(room.messages.length).to.equal(2);
-      expect(room.messages[1].length).to.equal(2);
-      expect(room.messages[1][1]).to.match(
-        /<@matt\.erickson\.min> has 8 points\.\nAccount Level: 1\nTotal Points Given: -2\n:birthday: Hubotday is Jul. 9th 2020\n\n:star: Here are some reasons :star:(\n.*:.*){3}/,
+      room.user.say(
+        'matt.erickson.min',
+        `@${roomRobot.name} score for @matt.erickson.min`,
       );
+      await wait();
+      expect(room.messages.length).toBe(2);
+      expect(room.messages[1].length).toBe(2);
+      const messageLines = room.messages[1][1].split('\n');
+      expect(messageLines).toEqual([
+        `<@matt.erickson.min> has 8 points.`,
+        `Account Level: 1`,
+        `Total Points Given: -2`,
+        `:birthday: ${capRobotName}day is Jul. 9th 2020`,
+        '',
+        `:star: Here are some reasons :star:`,
+        expect.any(String),
+        expect.any(String),
+        expect.any(String),
+      ]);
     });
 
     it('should respond with 3 reasons if the user has 3 and token count', async () => {
-      room.user.say('peter.parker.min', '@hubot score for @peter.parker.min');
-      await wait(55);
-      expect(room.messages.length).to.equal(2);
-      expect(room.messages[1].length).to.equal(2);
-      expect(room.messages[1][1]).to.match(
-        /<@peter\.parker\.min> has 8 points \(\*8 Hubot Tokens\*\)\.\nAccount Level: 2\nTotal Points Given: -2\n:birthday: Hubotday is Jul. 9th 2020\n\n:star: Here are some reasons :star:(\n.*:.*){3}/,
+      room.user.say(
+        'peter.parker.min',
+        `@${roomRobot.name} score for @peter.parker.min`,
       );
+      await wait();
+      expect(room.messages.length).toBe(2);
+      expect(room.messages[1].length).toBe(2);
+      const messageLines = room.messages[1][1].split('\n');
+      expect(messageLines).toEqual([
+        `<@peter.parker.min> has 8 points (*8 ${capRobotName} Tokens*).`,
+        `Account Level: 2`,
+        `Total Points Given: -2`,
+        `:birthday: ${capRobotName}day is Jul. 9th 2020`,
+        '',
+        `:star: Here are some reasons :star:`,
+        expect.any(String),
+        expect.any(String),
+        expect.any(String),
+      ]);
     });
   });
 
   describe('respondWithLeaderLoserBoard', () => {
     it('should respond with top 2 leaders on the scoreboard', async () => {
-      room.user.say('matt.erickson', '@hubot top 2');
-      await wait(55);
-      expect(room.messages.length).to.equal(2);
-      expect(room.messages[1].length).to.equal(2);
-      expect(room.messages[1][1]).to.include(
-        '\n1. <@matt.erickson>: 227\n2. <@peter.parker>: 200 (*200 Hubot Tokens*)',
+      room.user.say('matt.erickson', `@${roomRobot.name} top 2`);
+      await wait();
+      expect(room.messages.length).toBe(2);
+      expect(room.messages[1].length).toBe(2);
+      expect(room.messages[1][1]).toEqual(
+        `▇▁
+1. <@matt.erickson>: 227
+2. <@peter.parker>: 200 (*200 ${capRobotName} Tokens*)`,
       );
     });
 
     it('should respond with bottom 2 losers on the scoreboard', async () => {
-      room.user.say('matt.erickson', '@hubot bottom 2');
-      await wait(55);
-      expect(room.messages.length).to.equal(2);
-      expect(room.messages[1].length).to.equal(2);
-      expect(room.messages[1][1]).to.equal(
-        '▁▇\n1. <@greg>: -10\n2. <@darf>: -2',
-      );
+      room.user.say('matt.erickson', `@${roomRobot.name} bottom 2`);
+      await wait();
+      expect(room.messages.length).toBe(2);
+      expect(room.messages[1].length).toBe(2);
+      expect(room.messages[1][1]).toBe(`▁▇
+1. <@greg>: -10
+2. <@darf>: -2`);
     });
 
     it('should respond with top 2 leaders on the scoreboard if account level of one user is level 2', async () => {
-      room.user.say('matt.erickson', '@hubot top 2');
-      await wait(55);
-      expect(room.messages.length).to.equal(2);
-      expect(room.messages[1].length).to.equal(2);
-      expect(room.messages[1][1]).to.include(
-        '\n1. <@matt.erickson>: 227\n2. <@peter.parker>: 200 (*200 Hubot Tokens*)',
+      room.user.say('matt.erickson', `@${roomRobot.name} top 2`);
+      await wait();
+      expect(room.messages.length).toBe(2);
+      expect(room.messages[1].length).toBe(2);
+      expect(room.messages[1][1]).toContain(
+        `\n1. <@matt.erickson>: 227\n2. <@peter.parker>: 200 (*200 ${capRobotName} Tokens*)`,
       );
     });
   });
 
   describe('respondWithLeaderLoserTokenBoard', () => {
     it('should respond with top 2 leaders on the scoreboard', async () => {
-      room.user.say('matt.erickson', '@hubot top tokens 2');
-      await wait(55);
-      expect(room.messages.length).to.equal(2);
-      expect(room.messages[1].length).to.equal(2);
-      expect(room.messages[1][1]).to.include(
-        '\n1. <@peter.parker>: *200 Hubot Tokens* (200 points)\n2. <@peter.parker.min>: *8 Hubot Tokens* (8 points)',
+      room.user.say('matt.erickson', `@${roomRobot.name} top tokens 2`);
+      await wait();
+      expect(room.messages.length).toBe(2);
+      expect(room.messages[1].length).toBe(2);
+      expect(room.messages[1][1]).toEqual(
+        `▇▁
+1. <@peter.parker>: *200 ${capRobotName} Tokens* (200 points)
+2. <@peter.parker.min>: *8 ${capRobotName} Tokens* (8 points)`,
       );
     });
 
     it('should respond with bottom 2 leaders on the scoreboard', async () => {
-      room.user.say('matt.erickson', '@hubot bottom tokens 2');
-      await wait(55);
-      expect(room.messages.length).to.equal(2);
-      expect(room.messages[1].length).to.equal(2);
-      expect(room.messages[1][1]).to.include(
-        '\n1. <@peter.parker.min>: *8 Hubot Tokens* (8 points)\n2. <@peter.parker>: *200 Hubot Tokens* (200 points)',
+      room.user.say('matt.erickson', `@${roomRobot.name} bottom tokens 2`);
+      await wait();
+      expect(room.messages.length).toBe(2);
+      expect(room.messages[1].length).toBe(2);
+      expect(room.messages[1][1]).toContain(
+        `\n1. <@peter.parker.min>: *8 ${capRobotName} Tokens* (8 points)\n2. <@peter.parker>: *200 ${capRobotName} Tokens* (200 points)`,
       );
     });
   });

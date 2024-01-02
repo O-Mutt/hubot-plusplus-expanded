@@ -1,39 +1,13 @@
-// Description:
-//   The help message documentation for the hubot-plusplus script
-//
-// Commands:
-//   @hubot help - responds with all the help
-//   @hubot plusplus version - responds with the current plusplus module version
-//   how much * point * - Shows how much hubot points are worth (e.g. how much are @qrafty points worth)
-//
-//
-// Author:
-//  O'Mutt (Matt@OKeefe.dev)
-
 const { default: axios } = require('axios');
+const { conjunction } = require('../regExpPlusPlus');
+const { H } = require('../helpers');
+const pjson = require('../../../package.json');
 
-const Helpers = require('./lib/Helpers');
-const pjson = require('../package.json');
-const { RegExpPlusPlus, conjunction } = require('./lib/RegExpPlusPlus');
+class HelpService {
+  static respondWithHelpGuidance(msg) {
+    const procVars = H.getProcessVariables(process.env);
 
-module.exports = function help(robot) {
-  const procVars = Helpers.getProcessVariables(process.env);
-
-  robot.respond(RegExpPlusPlus.getHelp(), respondWithHelpGuidance);
-  robot.respond(new RegExp(/(plusplus version|-v|--version)/, 'i'), (msg) => {
-    msg.send(
-      `${Helpers.capitalizeFirstLetter(msg.robot.name)} <${
-        pjson.repository.url
-      }|${pjson.name}> <https://www.npmjs.com/package/${pjson.name}|v${
-        pjson.version
-      }>.`,
-    );
-  });
-
-  robot.hear(new RegExp('how much .*point.*', 'i'), tellHowMuchPointsAreWorth);
-
-  const { monthlyScoreboardCron, monthlyScoreboardDayOfWeek } = procVars;
-  function respondWithHelpGuidance(msg) {
+    const { monthlyScoreboardCron, monthlyScoreboardDayOfWeek } = procVars;
     const bn = msg.robot.name || 'hubot';
     const helpMessage = ''.concat(
       '`<name>++ [<reason>]` - Increment score (for an optional reason). In place of `++` you can also use: `:clap:`, `:thumbsup:`, `:thumbsup_all:`, or `:+1:`\n',
@@ -87,7 +61,7 @@ module.exports = function help(robot) {
       ],
     };
 
-    if (procVars.furtherHelpUrl !== 'undefined') {
+    if (procVars.furtherHelpUrl && procVars.furtherHelpUrl !== 'undefined') {
       message.attachments[0].blocks.push({
         type: 'section',
         text: {
@@ -99,7 +73,7 @@ module.exports = function help(robot) {
     msg.send(message);
   }
 
-  async function tellHowMuchPointsAreWorth(msg) {
+  static async tellHowMuchPointsAreWorth(msg) {
     try {
       const resp = await axios({
         url: 'https://api.coindesk.com/v1/bpi/currentprice/ARS.json',
@@ -117,4 +91,14 @@ module.exports = function help(robot) {
       );
     }
   }
-};
+
+  static respondWithVersion(msg) {
+    msg.send(
+      `${H.capitalizeFirstLetter(msg.robot.name)} <${pjson.repository.url}|${
+        pjson.name
+      }> <https://www.npmjs.com/package/${pjson.name}|v${pjson.version}>.`,
+    );
+  }
+}
+
+module.exports = HelpService;

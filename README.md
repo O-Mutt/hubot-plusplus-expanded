@@ -68,7 +68,7 @@ Some of the behavior of this plugin is configured in the environment:
 
 `HUBOT_FURTHER_FEEDBACK_SCORE` - the score that would add a suggestion to provide the user with more feedback (*default:* `10`).
 
-**Required** There needs to be an index on the `scoreLogs` table for a TTL or the user will only be able to send one `++|--` before they will be spam blocked. 
+**Required** There needs to be an index on the `scoreLogs` table for a TTL or the user will only be able to send one `++|--` before they will be spam blocked.
 `db.scoreLog.createIndex( { "date": 1 }, { expireAfterSeconds: 5 } )`
 
 ## Mongo data Layout

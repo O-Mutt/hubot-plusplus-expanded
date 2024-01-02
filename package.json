@@ -12,9 +12,12 @@
     }
   },
   "scripts": {
-    "test": "HUBOT_LOG_LEVEL=error mocha",
+    "test": "jest",
+    "test:ci": "CI=true jest",
     "test:watch": "npm run test -- --watch",
-    "lint": "eslint src --fix",
+    "lint": "eslint .",
+    "lint:watch": "esw . -w",
+    "lint:fix": "npm run lint -- --fix",
     "snyk-protect": "snyk-protect",
     "prepare": "npm run snyk-protect"
   },
@@ -48,6 +51,7 @@
   },
   "dependencies": {
     "@slack/client": "^5.0.2",
+    "@slack/web-api": "^6.11.0",
     "@snyk/protect": "^1.1127.0",
     "axios": "^1.4.0",
     "clark": "^0.0.6",
@@ -60,21 +64,21 @@
     "token-buddy": "^1.0.0"
   },
   "devDependencies": {
-    "bluebird": "^3.7.2",
-    "chai": "^4.3.7",
-    "eslint": "^7.32.0",
+    "eslint": "^8.56.0",
+    "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-config-standard": "^16.0.3",
-    "eslint-plugin-import": "^2.24.1",
-    "eslint-plugin-mocha": "^10.1.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jest": "^27.6.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^5.1.0",
-    "hubot-test-helper": "github:vpeltola/hubot-test-helper#fixes-for-hubot-5.x",
-    "mocha": "^10.2.0",
+    "eslint-plugin-prettier": "^5.1.2",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-watch": "^8.0.0",
+    "hubot-test-helper": "github:synyx/hubot-test-helper#update-hubot-10",
+    "jest": "^29.7.0",
     "mock-env": "^0.2.0",
-    "mongo-unit": "^3.3.0",
-    "sinon": "^15.2.0",
-    "sinon-chai": "^3.7.0"
+    "mongo-unit": "^3.3.0"
   },
   "contributors": [],
   "snyk": true

@@ -1,11 +1,15 @@
 {
-    "cSpell.words": [
-        "Autobuild",
-        "codeql",
-        "darf",
-        "eartha",
-        "nade",
-        "pjson",
-        "sandiego"
-    ]
+  "cSpell.words": [
+    "abcdefghijklmnopqrstuvwxyzabcdefghijklm",
+    "aeiouy",
+    "Autobuild",
+    "codeql",
+    "darf",
+    "eartha",
+    "mockbot",
+    "nade",
+    "pjson",
+    "sandiego",
+    "satoshi"
+  ]
 }
