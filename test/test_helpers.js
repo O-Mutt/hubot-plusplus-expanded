@@ -53,13 +53,7 @@ const mockSlackClient = () => {
 
 function relativeTestHelperPathHelper(file) {
   const fileDirectory = path.join(__dirname, '..', file);
-  console.log(`$$$$ === process.env test_helpers.js [53] ===`, fileDirectory);
-  // return path.resolve(currentDirectory, file);
   return fileDirectory;
-  // if (process.env.CI) {
-  //   return '.';
-  // }
-  // return '../../../src';
 }
 
 module.exports = {

@@ -40,7 +40,6 @@ describe('Tokens', () => {
 
   describe('giveTokenBetweenUsers', () => {
     it("should add n points when a user is + n'd", async () => {
-      console.log(`$$$$ === room tokens.test.js [43] ===`, room);
       room.user.say('peter.parker', `@${roomRobot.name} @peter.parker.min + 5`);
       await wait();
       expect(room.messages.length).toBe(2);
