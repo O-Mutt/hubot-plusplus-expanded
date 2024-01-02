@@ -1,6 +1,10 @@
 const TestHelper = require('hubot-test-helper');
 
-const { wait, mockSlackClient } = require('../../test/test_helpers');
+const {
+  wait,
+  mockSlackClient,
+  relativeTestHelperPathHelper,
+} = require('../../test/test_helpers');
 
 describe('Tokens', () => {
   let room;
@@ -9,7 +13,9 @@ describe('Tokens', () => {
   beforeAll(async () => {
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
 
-    tokenHelper = new TestHelper('../../../src/messageHandlers/tokens.js');
+    tokenHelper = new TestHelper(
+      `${relativeTestHelperPathHelper()}/messageHandlers/tokens.js`,
+    );
   });
 
   afterAll(async () => {});

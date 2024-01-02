@@ -1,7 +1,10 @@
 const TestHelper = require('hubot-test-helper');
 
 const { H } = require('../lib/helpers');
-const { wait } = require('../../test/test_helpers');
+const {
+  wait,
+  relativeTestHelperPathHelper,
+} = require('../../test/test_helpers');
 
 describe('Scoreboard', () => {
   let room;
@@ -11,7 +14,9 @@ describe('Scoreboard', () => {
 
   beforeAll(async () => {
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
-    scoreboard = new TestHelper('../../../src/messageHandlers/scoreboard.js');
+    scoreboard = new TestHelper(
+      `${relativeTestHelperPathHelper()}/messageHandlers/scoreboard.js`,
+    );
   });
 
   beforeEach(async () => {

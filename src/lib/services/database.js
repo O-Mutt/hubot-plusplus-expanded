@@ -144,7 +144,7 @@ class DatabaseService {
       });
     robot.logger.debug('spam check result', previousScoreExists);
     if (previousScoreExists !== 0) {
-      robot.logger.error(`${from} is spamming points to ${to}! STOP THEM!!!!`);
+      robot.logger.error(`${from} is spamming points to ${to}! STOP 'EM!!!!`);
       return true;
     }
 

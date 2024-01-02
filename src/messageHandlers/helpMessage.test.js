@@ -2,7 +2,10 @@ const TestHelper = require('hubot-test-helper');
 
 const { H } = require('../lib/helpers');
 const pjson = require('../../package.json');
-const { wait } = require('../../test/test_helpers');
+const {
+  wait,
+  relativeTestHelperPathHelper,
+} = require('../../test/test_helpers');
 
 describe('helpMessage', () => {
   let room;
@@ -10,7 +13,9 @@ describe('helpMessage', () => {
   let roomRobot;
   beforeAll(async () => {
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
-    helpHelper = new TestHelper('../../../src/messageHandlers/helpMessage.js');
+    helpHelper = new TestHelper(
+      `${relativeTestHelperPathHelper()}/messageHandlers/helpMessage.js`,
+    );
   });
 
   beforeEach(() => {

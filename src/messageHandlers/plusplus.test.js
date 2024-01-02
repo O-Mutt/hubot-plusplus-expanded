@@ -1,7 +1,11 @@
 const TestHelper = require('hubot-test-helper');
 
 const { H } = require('../lib/helpers');
-const { wait, mockSlackClient } = require('../../test/test_helpers');
+const {
+  wait,
+  mockSlackClient,
+  relativeTestHelperPathHelper,
+} = require('../../test/test_helpers');
 
 describe('PlusPlus', () => {
   let room;
@@ -9,7 +13,9 @@ describe('PlusPlus', () => {
   let emitSpy;
   beforeAll(async () => {
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
-    plusPlusHelper = new TestHelper('../../../src/messageHandlers/plusplus.js');
+    plusPlusHelper = new TestHelper(
+      `${relativeTestHelperPathHelper()}/messageHandlers/plusplus.js`,
+    );
   });
 
   afterAll(async () => {});

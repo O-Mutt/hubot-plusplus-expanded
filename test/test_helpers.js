@@ -49,4 +49,16 @@ const mockSlackClient = () => {
   });
 };
 
-module.exports = { mockHubot, wait, mockSlackClient };
+function relativeTestHelperPathHelper() {
+  if (process.env.CI) {
+    return '.';
+  }
+  return '../../../src';
+}
+
+module.exports = {
+  mockHubot,
+  wait,
+  mockSlackClient,
+  relativeTestHelperPathHelper,
+};

@@ -1,7 +1,10 @@
 const TestHelper = require('hubot-test-helper');
 
 const { H } = require('../lib/helpers');
-const { wait } = require('../../test/test_helpers');
+const {
+  wait,
+  relativeTestHelperPathHelper,
+} = require('../../test/test_helpers');
 
 describe('PlusPlus', () => {
   let room;
@@ -10,7 +13,9 @@ describe('PlusPlus', () => {
   let roomRobot;
   beforeAll(async () => {
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
-    wallet = new TestHelper('../../../src/messageHandlers/wallet.js');
+    wallet = new TestHelper(
+      `${relativeTestHelperPathHelper()}/messageHandlers/wallet.js`,
+    );
   });
 
   beforeEach(async () => {
