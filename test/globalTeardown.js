@@ -1,10 +1,9 @@
 const mongoUnit = require('mongo-unit');
 const { MongoClient } = require('mongodb');
-const sinon = require('sinon');
+
 const testData = require('./mockData');
 
-// can be async or not
-exports.mochaGlobalSetup = async function () {
+module.exports = async function (_globalConfig, _projectConfig) {
   const url = await mongoUnit.start();
   const client = new MongoClient(url, {
     useNewUrlParser: true,
@@ -15,7 +14,7 @@ exports.mochaGlobalSetup = async function () {
 
   //stub the process.env pieces
 
-  sinon.stub(process, 'env').value({
+  jest.mock(process, 'env').value({
     ...process.env,
     MONGODB_URI: url,
     HUBOT_PEER_FEEDBACK_URL: `'Formal Praise' (company.formal-praise.com)`,

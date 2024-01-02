@@ -12,7 +12,8 @@ class MessageFactory {
    * @memberof MessageFactory
    * @static
    */
-  static BuildScoreLookup(robotName, user) {
+  static BuildScoreLookup(robot, user) {
+    const robotName = robot.name;
     const pVars = H.getProcessVariables(process.env);
     if (_.isEmpty(user) || _.isEmpty(pVars)) return '';
     let tokenString = '.';
@@ -140,7 +141,7 @@ class MessageFactory {
     }
     let normalMessage = `${scoreStr}${reasonStr}${cakeDayStr}`;
     if (H.isA1Day()) {
-      normalMessage = this.GetA1DayMessage(normalMessage);
+      normalMessage = this.GetA1DayMessage(robot, normalMessage);
     }
 
     return normalMessage;
@@ -148,6 +149,7 @@ class MessageFactory {
 
   /**
    * Builds a message for the user's score
+   * @param {object} robot - The robot object
    * @param {object} user - The user object
    * @param {string} reason - The reason for the score
    * @returns {string} - The message
@@ -155,7 +157,7 @@ class MessageFactory {
    * @static
    */
   static GetA1DayMessage(
-    robotName,
+    robot,
     originalMessage,
     randomIndex = Math.floor(Math.random() * 7),
     force = false,
@@ -170,7 +172,7 @@ class MessageFactory {
           (letter) => alpha[alpha.indexOf(letter) + 13],
         );
       },
-      () => `I'm ${robotName}. Not a mind reader!`,
+      () => `I'm ${robot.name}. Not a mind reader!`,
       () => "That's classified information, I'm afraid I cannot disclose that.",
       (message) => {
         let newMessage = message;

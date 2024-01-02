@@ -157,7 +157,7 @@ class DatabaseService {
    * score - the number of score that is being sent
    */
   async savePointsGiven(robot, from, to, score) {
-    const { furtherFeedbackScore, peerFeedbackUrl } = H.getProcessVars(
+    const { furtherFeedbackSuggestedScore, peerFeedbackUrl } = H.getProcessVars(
       process.env,
     );
     const db = await this.getDb();
@@ -171,7 +171,7 @@ class DatabaseService {
       ? fromUser.pointsGiven[cleanName]
       : 0;
     // even if they are down voting them they should still get a tally as they ++/-- the same person
-    fromUser.pointsGiven[cleanName] = oldScore + 1;
+    fromUser.pointsGiven[cleanName] = oldScore + score;
     const result = await db
       .collection(scores.scoresDocumentName)
       .findOneAndUpdate(
@@ -183,9 +183,9 @@ class DatabaseService {
           sort: { score: -1 },
         },
       );
-    const updatedUser = result.value;
+    const upUser = result.value;
 
-    if (updatedUser.pointsGiven[cleanName] % furtherFeedbackScore === 0) {
+    if (upUser.pointsGiven[cleanName] % furtherFeedbackSuggestedScore === 0) {
       robot.logger.debug(
         `${from.name} has sent a lot of points to ${to.name} suggesting further feedback ${score}`,
       );
@@ -366,7 +366,11 @@ class DatabaseService {
     await db
       .collection(scores.scoresDocumentName)
       .updateOne(search, { $set: foundUser });
-    const newScore = await this.transferScoreFromBotToUser(user, tokensAdded);
+    const newScore = await this.transferScoreFromBotToUser(
+      robot,
+      user,
+      tokensAdded,
+    );
     return newScore;
   }
 

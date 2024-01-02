@@ -1,39 +1,13 @@
-const { MongoClient } = require('mongodb');
-const sinon = require('sinon');
-const SlackClient = require('@slack/client');
-
-const ScoreKeeperService = require('./scorekeeper');
 const { H } = require('../helpers');
-const { robotStub } = require('../../../test/test_helpers');
-
-const defaultData = {
-  scores: [{}],
-  scoreLog: [{}],
-};
+const { wait } = require('../../../test/test_helpers');
 
 describe('ScoreKeeper', () => {
-  let msgSpy;
-  let emitSpy;
-
+  let instance;
   beforeEach(async () => {
-    msgSpy = sinon.spy(robotStub, 'messageRoom');
-    emitSpy = sinon.spy(robotStub, 'emit');
-    sinon
-      .stub(SlackClient, 'WebClient')
-      .withArgs('token')
-      .returns({
-        users: {
-          info: sinon
-            .stub()
-            .returns({ user: { profile: { email: 'test@email.com' } } }),
-        },
-      });
+    instance = require('./scorekeeper');
   });
 
-  afterEach(async () => {
-    sinon.restore();
-    msgSpy.resetHistory();
-  });
+  afterEach(async () => {});
 
   describe('adding', () => {
     it('should add 1 point to "pointReceiver" with no reason and return the expected result', async () => {
@@ -43,10 +17,11 @@ describe('ScoreKeeper', () => {
       const reason = undefined;
       const expectedResult = { score: 1, reasons: {} };
 
-      const beforeUser = await ScoreKeeperService.getUser(to);
+      const beforeUser = await instance.getUser(mockRobot, to);
       expect(beforeUser.score).toBe(0);
 
-      const { toUser: r } = await ScoreKeeperService.incrementScore(
+      const { toUser: r } = await instance.incrementScore(
+        mockRobot,
         to,
         from,
         room,
@@ -55,9 +30,11 @@ describe('ScoreKeeper', () => {
       );
       expect(r).toBeInstanceOf(Object);
       expect(r.score).toBe(expectedResult.score);
-      expect(r.reasons['because points']).toBe(expectedResult.reasons['because points']);
+      expect(r.reasons['because points']).toBe(
+        expectedResult.reasons['because points'],
+      );
 
-      const afterUser = await ScoreKeeperService.getUser(to);
+      const afterUser = await instance.getUser(mockRobot, to);
       expect(afterUser.score).toBe(1);
     });
 
@@ -68,10 +45,11 @@ describe('ScoreKeeper', () => {
       const reason = 'because points';
       const expectedResult = { score: 1, reasons: { 'because points': 1 } };
 
-      const beforeUser = await ScoreKeeperService.getUser(to);
+      const beforeUser = await instance.getUser(mockRobot, to);
       expect(beforeUser.score).toBe(0);
 
-      const { toUser: r } = await ScoreKeeperService.incrementScore(
+      const { toUser: r } = await instance.incrementScore(
+        mockRobot,
         to,
         from,
         room,
@@ -80,9 +58,11 @@ describe('ScoreKeeper', () => {
       );
       expect(r).toBeInstanceOf(Object);
       expect(r.score).toBe(expectedResult.score);
-      expect(r.reasons['because points']).toBe(expectedResult.reasons['because points']);
+      expect(r.reasons['because points']).toBe(
+        expectedResult.reasons['because points'],
+      );
 
-      const afterUser = await ScoreKeeperService.getUser(to);
+      const afterUser = await instance.getUser(mockRobot, to);
       expect(afterUser.score).toBe(1);
     });
 
@@ -93,10 +73,11 @@ describe('ScoreKeeper', () => {
       const reason = undefined;
       const expectedResult = { score: 1, reasons: {} };
 
-      const beforeUser = await ScoreKeeperService.getUser(to);
+      const beforeUser = await instance.getUser(mockRobot, to);
       expect(beforeUser.score).toBe(0);
 
-      const { toUser: r } = await ScoreKeeperService.incrementScore(
+      const { toUser: r } = await instance.incrementScore(
+        mockRobot,
         to,
         from,
         room,
@@ -105,9 +86,11 @@ describe('ScoreKeeper', () => {
       );
       expect(r).toBeInstanceOf(Object);
       expect(r.score).toBe(expectedResult.score);
-      expect(r.reasons['because points']).toBe(expectedResult.reasons['because points']);
+      expect(r.reasons['because points']).toBe(
+        expectedResult.reasons['because points'],
+      );
 
-      const afterUser = await ScoreKeeperService.getUser(to);
+      const afterUser = await instance.getUser(mockRobot, to);
       expect(afterUser.score).toBe(1);
     });
 
@@ -118,10 +101,11 @@ describe('ScoreKeeper', () => {
       const reason = undefined;
       const expectedResult = { score: 1, reasons: {} };
 
-      const beforeUser = await ScoreKeeperService.getUser(to);
+      const beforeUser = await instance.getUser(mockRobot, to);
       expect(beforeUser.score).toBe(0);
 
-      const { toUser: r } = await ScoreKeeperService.incrementScore(
+      const { toUser: r } = await instance.incrementScore(
+        mockRobot,
         to,
         from,
         room,
@@ -130,9 +114,11 @@ describe('ScoreKeeper', () => {
       );
       expect(r).toBeInstanceOf(Object);
       expect(r.score).toBe(expectedResult.score);
-      expect(r.reasons['because points']).toBe(expectedResult.reasons['because points']);
+      expect(r.reasons['because points']).toBe(
+        expectedResult.reasons['because points'],
+      );
 
-      const afterUser = await ScoreKeeperService.getUser(to);
+      const afterUser = await instance.getUser(mockRobot, to);
       expect(afterUser.score).toBe(1);
     });
 
@@ -143,10 +129,11 @@ describe('ScoreKeeper', () => {
       const reason = undefined;
       const expectedResult = { score: 1, reasons: {} };
 
-      const beforeUser = await ScoreKeeperService.getUser(to);
+      const beforeUser = await instance.getUser(mockRobot, to);
       expect(beforeUser.score).toBe(0);
 
-      const { toUser: r } = await ScoreKeeperService.incrementScore(
+      const { toUser: r } = await instance.incrementScore(
+        mockRobot,
         to,
         from,
         room,
@@ -155,20 +142,24 @@ describe('ScoreKeeper', () => {
       );
       expect(r).toBeInstanceOf(Object);
       expect(r.score).toBe(expectedResult.score);
-      expect(r.reasons['because points']).toBe(expectedResult.reasons['because points']);
+      expect(r.reasons['because points']).toBe(
+        expectedResult.reasons['because points'],
+      );
 
-      const afterUser = await ScoreKeeperService.getUser(to);
+      const afterUser = await instance.getUser(mockRobot, to);
       expect(afterUser.score).toBe(1);
     });
 
     it('does not allow spamming points', async () => {
-      const to = { name: 'matt.erickson', id: 'matt.erickson' };
+      const to = { name: 'matt.erickson.empty', id: 'matt.erickson.empty' };
+      const spamUser = { name: 'matt.erickson.from', id: '123' };
       // empty score to start
-      const beforeUser = await ScoreKeeperService.getUser(to);
+      const beforeUser = await instance.getUser(mockRobot, to);
       expect(beforeUser.score).toBe(0);
-      const { toUser: r } = await ScoreKeeperService.incrementScore(
+      const { toUser: r } = await instance.incrementScore(
+        mockRobot,
         to,
-        { name: 'matt.erickson.min', id: '123' },
+        spamUser,
         'room',
         'because points',
         1,
@@ -176,31 +167,37 @@ describe('ScoreKeeper', () => {
       expect(r).toBeInstanceOf(Object);
       expect(r.score).toBe(1);
       expect(r.reasons['because points']).toBe(1);
-      expect(emitSpy.called).toBe(false);
+      expect(mockRobot.emit).not.toHaveBeenCalled();
 
       // score added
-      const afterUser = await ScoreKeeperService.getUser(to);
+      const afterUser = await instance.getUser(mockRobot, to);
       expect(afterUser.score).toBe(1);
 
       // Try to spam
       let r2;
       try {
-        ({ toUser: r2 } = await ScoreKeeperService.incrementScore(
+        ({ toUser: r2 } = await instance.incrementScore(
+          mockRobot,
           to,
-          { name: 'from', id: '123' },
+          spamUser,
           'room',
           'because points',
           1,
         ));
         expect(r2).toBeUndefined();
       } catch (e) {
-        expect(e.message).toBe("I'm sorry <@123>, I'm afraid I can't do that.");
+        expect(e.message).toBe(
+          `I'm sorry <@${spamUser.id}>, I'm afraid I can't do that.`,
+        );
       }
-      const spamScore = await ScoreKeeperService.getUser(to);
+      const spamScore = await instance.getUser(mockRobot, to);
       expect(spamScore).not.toBe(2);
 
-      expect(emitSpy.called).toBe(true);
-      expect(emitSpy).toHaveBeenCalledWith('plus-plus-spam');
+      expect(mockRobot.emit).toHaveBeenCalled();
+      expect(mockRobot.emit).toHaveBeenCalledWith(
+        'plus-plus-spam',
+        expect.anything(),
+      );
     });
 
     describe('special increment value response', () => {
@@ -216,27 +213,31 @@ describe('ScoreKeeper', () => {
       });
 
       it('should call for a special response if user has 10 "gives"', async () => {
-        const { toUser: r } = await ScoreKeeperService.incrementScore(
+        const { toUser: r } = await instance.incrementScore(
+          mockRobot,
           { name: 'derp' },
           { name: 'matt', id: '123' },
           'room',
           'because points',
-          1,
+          10,
         );
         expect(r).toBeInstanceOf(Object);
-        expect(r.score).toBe(1);
-        expect(r.reasons['because points']).toBe(1);
-        expect(msgSpy.called).toBe(true);
-        expect(msgSpy).toHaveBeenCalledWith(
+        expect(r.score).toBe(10);
+        expect(r.reasons['because points']).toBe(10);
+        expect(mockRobot.messageRoom).toHaveBeenCalled();
+        expect(mockRobot.messageRoom).toHaveBeenCalledWith(
           '123',
-          `Looks like you've given derp quite a few points, maybe you should look at submitting ${ScoreKeeperService.peerFeedbackUrl}`
+          `Looks like you've given derp quite a few points, maybe you should look at submitting ${
+            H.getProcessVariables(process.env).peerFeedbackUrl
+          }`,
         );
       });
     });
 
     it('adds more points to a user for a reason', async () => {
       const to = 'to';
-      let { toUser: r } = await ScoreKeeperService.incrementScore(
+      let { toUser: r } = await instance.incrementScore(
+        mockRobot,
         to,
         { name: 'from', id: '123' },
         'room',
@@ -247,7 +248,8 @@ describe('ScoreKeeper', () => {
       expect(r.score).toBe(1);
       expect(r.reasons['because points']).toBe(1);
 
-      ({ toUser: r } = await ScoreKeeperService.incrementScore(
+      ({ toUser: r } = await instance.incrementScore(
+        mockRobot,
         to,
         { name: 'another-from', id: '321' },
         'room',
@@ -257,16 +259,17 @@ describe('ScoreKeeper', () => {
       expect(r).toBeInstanceOf(Object);
       expect(r.score).toBe(2);
       expect(r.reasons['because points']).toBe(2);
-      expect(typeof r[`${robotStub.name}Day`]).toBe('object');
+      expect(typeof r[`${mockRobot.name}Day`]).toBe('object');
 
-      const afterUser = await ScoreKeeperService.getUser(to);
+      const afterUser = await instance.getUser(mockRobot, to);
       expect(afterUser.score).toBe(2);
     });
   });
 
   describe('subtracting', () => {
     it('adds points to a user', async () => {
-      const { toUser: r } = await ScoreKeeperService.incrementScore(
+      const { toUser: r } = await instance.incrementScore(
+        mockRobot,
         { name: 'to', id: 'to' },
         { name: 'from', id: '123' },
         'room',
@@ -277,7 +280,8 @@ describe('ScoreKeeper', () => {
     });
 
     it('subtracts points from a user for a reason', async () => {
-      const { toUser: r } = await ScoreKeeperService.incrementScore(
+      const { toUser: r } = await instance.incrementScore(
+        mockRobot,
         { name: 'to', id: 'to' },
         { name: 'from', id: '123' },
         'room',
@@ -291,12 +295,14 @@ describe('ScoreKeeper', () => {
 
     it('does not allow spamming points', async () => {
       const to = 'mahMainBuddy';
+      const spamUser = { name: 'matt.erickson.from', id: '123' };
       // empty score to start
-      const beforeUser = await ScoreKeeperService.getUser(to);
+      const beforeUser = await instance.getUser(mockRobot, to);
       expect(beforeUser.score).toBe(0);
-      const { toUser: r } = await ScoreKeeperService.incrementScore(
+      const { toUser: r } = await instance.incrementScore(
+        mockRobot,
         to,
-        { name: 'from', id: '123' },
+        spamUser,
         'room',
         'because points',
         -1,
@@ -304,41 +310,50 @@ describe('ScoreKeeper', () => {
       expect(r).toBeInstanceOf(Object);
       expect(r.score).toBe(-1);
       expect(r.reasons['because points']).toBe(-1);
+      expect(mockRobot.emit).not.toHaveBeenCalled();
 
       // score added
-      const afterUser = await ScoreKeeperService.getUser(to);
+      const afterUser = await instance.getUser(mockRobot, to);
       expect(afterUser.score).toBe(-1);
 
       // Try to spam
       let r2;
       try {
-        ({ toUser: r2 } = await ScoreKeeperService.incrementScore(
+        ({ toUser: r2 } = await instance.incrementScore(
+          mockRobot,
           to,
-          { name: 'from', id: '123' },
+          spamUser,
           'room',
           'because points',
           -1,
         ));
         expect(r2).toBeUndefined();
       } catch (e) {
-        expect(e.message).toBe("I'm sorry <@123>, I'm afraid I can't do that.");
+        expect(e.message).toBe(
+          `I'm sorry <@${spamUser.id}>, I'm afraid I can't do that.`,
+        );
       }
-      const spamScore = await ScoreKeeperService.getUser(to);
+      const spamScore = await instance.getUser(mockRobot, to);
       expect(spamScore).not.toBe(-2);
 
-      expect(emitSpy.called).toBe(true);
-      expect(emitSpy).toHaveBeenCalledWith('plus-plus-spam');
+      expect(mockRobot.emit).toHaveBeenCalled();
+      expect(mockRobot.emit).toHaveBeenCalledWith(
+        'plus-plus-spam',
+        expect.anything(),
+      );
     });
 
     it('subtracts more points from a user for a reason', async () => {
-      let { toUser: r } = await ScoreKeeperService.incrementScore(
+      let { toUser: r } = await instance.incrementScore(
+        mockRobot,
         { name: 'to', id: 'to' },
         { name: 'from', id: '123' },
         'room',
         'because points',
         -1,
       );
-      ({ toUser: r } = await ScoreKeeperService.incrementScore(
+      ({ toUser: r } = await instance.incrementScore(
+        mockRobot,
         { name: 'to', id: 'to' },
         'another-from',
         'room',
@@ -353,7 +368,8 @@ describe('ScoreKeeper', () => {
 
   describe('erasing', () => {
     it('erases a reason from a user', async () => {
-      const { toUser: p } = await ScoreKeeperService.incrementScore(
+      const { toUser: p } = await instance.incrementScore(
+        mockRobot,
         { name: 'to', id: 'to' },
         { name: 'from', id: '123' },
         'room',
@@ -363,20 +379,22 @@ describe('ScoreKeeper', () => {
       expect(p).toBeInstanceOf(Object);
       expect(p.score).toBe(1);
       expect(p.reasons.reason).toBe(1);
-      const r = await ScoreKeeperService.erase(
+      const r = await instance.erase(
+        mockRobot,
         'to',
         { name: 'from', id: '123' },
         'room',
         'reason',
       );
       expect(r).toEqual(true);
-      const rs = await ScoreKeeperService.getUser('to');
+      const rs = await instance.getUser(mockRobot, 'to');
       expect(rs.reasons).toEqual({ reason: 0 });
       expect(rs.reasons.reason).toBe(0);
     });
 
     it('erases a user from the scoreboard', async () => {
-      const { toUser: p } = await ScoreKeeperService.incrementScore(
+      const { toUser: p } = await instance.incrementScore(
+        mockRobot,
         { name: 'to', id: 'to' },
         { name: 'from', id: '123' },
         'room',
@@ -386,20 +404,22 @@ describe('ScoreKeeper', () => {
       expect(p).toBeInstanceOf(Object);
       expect(p.score).toBe(1);
       expect(p.reasons.reason).toBe(1);
-      const r = await ScoreKeeperService.erase(
+      const r = await instance.erase(
+        mockRobot,
         'to',
         { name: 'from', id: '123' },
         'room',
       );
       expect(r).toBe(true);
-      const user2 = await ScoreKeeperService.getUser('to');
+      const user2 = await instance.getUser(mockRobot, 'to');
       expect(user2.score).toBe(0);
     });
   });
 
   describe('scores', () => {
     it('returns the score for a user', async () => {
-      const { toUser: p } = await ScoreKeeperService.incrementScore(
+      const { toUser: p } = await instance.incrementScore(
+        mockRobot,
         { name: 'to', id: 'to' },
         { name: 'from', id: '123' },
         'room',
@@ -407,13 +427,14 @@ describe('ScoreKeeper', () => {
         1,
       );
       expect(p.score).toBe(1);
-      const user = await ScoreKeeperService.getUser('to');
+      const user = await instance.getUser(mockRobot, 'to');
       expect(user.score).toBe(1);
     });
 
     it('returns the reasons for a user', async () => {
       try {
-        const user = await ScoreKeeperService.incrementScore(
+        const user = await instance.incrementScore(
+          mockRobot,
           { name: 'to', id: 'to' },
           { name: 'from', id: '123' },
           'room',

@@ -1,6 +1,6 @@
 const clark = require('clark');
 const _ = require('lodash');
-const { helpers } = require('../helpers');
+const { H } = require('../helpers');
 const { mfs } = require('../messageFactory');
 const { dbs } = require('./database');
 
@@ -8,25 +8,26 @@ class ScoreboardService {
   static async respondWithScore(msg) {
     const { mentions } = msg.message;
     const [_fullText, _premessage, _conjunction, name] = msg.match;
-    let to = { name: helpers.cleanName(name) };
+    let to = { name: H.cleanName(name) };
     if (mentions) {
       const userMentions = mentions.filter((men) => men.type === 'user');
       to = userMentions.pop();
       to.name = name;
     }
 
-    const user = await dbs.getUser(to);
+    const user = await dbs.getUser(msg.robot, to);
 
-    const scoreString = mfs.BuildScoreLookup(user);
+    const scoreString = mfs.BuildScoreLookup(msg.robot, user);
     msg.send(scoreString);
   }
 
   static async respondWithLeaderLoserBoard(msg) {
     const amount = parseInt(msg.match[2], 10) || 10;
-    const topOrBottom = helpers.capitalizeFirstLetter(msg.match[1].trim());
+
+    const topOrBottom = H.capitalizeFirstLetter(msg.match[1].trim());
     const methodName = `get${topOrBottom}Scores`;
 
-    const tops = await dbs[methodName](amount);
+    const tops = await dbs[methodName](msg.robot, amount);
     const message = [];
     if (tops.length > 0) {
       for (
@@ -40,7 +41,7 @@ class ScoreboardService {
           message.push(
             `${i + 1}. ${person}: ${tops[i].score} (*${
               tops[i].token
-            } ${helpers.capitalizeFirstLetter(msg.robot.name)} ${tokenStr}*)`,
+            } ${H.capitalizeFirstLetter(msg.robot.name)} ${tokenStr}*)`,
           );
         } else {
           message.push(`${i + 1}. ${person}: ${tops[i].score}`);
@@ -58,10 +59,10 @@ class ScoreboardService {
 
   static async respondWithLeaderLoserTokenBoard(msg) {
     const amount = parseInt(msg.match[2], 10) || 10;
-    const topOrBottom = helpers.capitalizeFirstLetter(msg.match[1].trim());
+    const topOrBottom = H.capitalizeFirstLetter(msg.match[1].trim());
     const methodName = `get${topOrBottom}Tokens`;
 
-    const tops = await dbs[methodName](amount);
+    const tops = await dbs[methodName](msg.robot, amount);
 
     const message = [];
     if (tops.length > 0) {
@@ -74,11 +75,9 @@ class ScoreboardService {
         const tokenStr = tops[i].token > 1 ? 'Tokens' : 'Token';
         const pointStr = tops[i].score > 1 ? 'points' : 'point';
         message.push(
-          `${i + 1}. ${person}: *${
-            tops[i].token
-          } ${helpers.capitalizeFirstLetter(msg.robot.name)} ${tokenStr}* (${
-            tops[i].score
-          } ${pointStr})`,
+          `${i + 1}. ${person}: *${tops[i].token} ${H.capitalizeFirstLetter(
+            msg.robot.name,
+          )} ${tokenStr}* (${tops[i].score} ${pointStr})`,
         );
       }
     } else {
@@ -93,9 +92,9 @@ class ScoreboardService {
 
   static async getTopPointSenders(msg) {
     const amount = parseInt(msg.match[2], 10) || 10;
-    const topOrBottom = helpers.capitalizeFirstLetter(msg.match[1].trim());
+    const topOrBottom = H.capitalizeFirstLetter(msg.match[1].trim());
     const methodName = `get${topOrBottom}Sender`;
-    const tops = await dbs[methodName](amount);
+    const tops = await dbs[methodName](msg.robot, amount);
 
     const message = [];
     if (tops.length > 0) {

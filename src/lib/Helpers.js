@@ -168,7 +168,7 @@ class Helpers {
       premessage &&
       !conjunction &&
       reason &&
-      operator.match(rpp.negativeOperators);
+      new RegExp(rpp.negativeOperators).test(operator);
     return falsePositive;
   }
 

@@ -10,8 +10,8 @@
 // Author:
 //  O'Mutt (Matt@OKeefe.dev)
 
-const { RegExpPlusPlus } = require('./lib/regExpPlusPlus');
-const HelpService = require('./lib/services/help');
+const { RegExpPlusPlus } = require('../lib/regExpPlusPlus');
+const HelpService = require('../lib/services/help');
 
 module.exports = function help(robot) {
   robot.respond(RegExpPlusPlus.getHelp(), HelpService.respondWithHelpGuidance);

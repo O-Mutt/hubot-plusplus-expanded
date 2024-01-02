@@ -1,4 +1,4 @@
-const SlackClient = require('@slack/client');
+const { WebClient } = require('@slack/web-api');
 /*
  * Scores Object
  * --------------------------------
@@ -58,7 +58,7 @@ async function createNewLevelOneUser(createUser, robot) {
     robot.adapter.options &&
     robot.adapter.options.token
   ) {
-    const web = new SlackClient.WebClient(robot.adapter.options.token);
+    const web = new WebClient(robot.adapter.options.token);
     const result = await web.users.info({ user: newUser.slackId });
     newUser.slackEmail = getEmail(result.user);
   }
