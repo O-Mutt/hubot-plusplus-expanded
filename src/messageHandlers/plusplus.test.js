@@ -14,13 +14,13 @@ describe('PlusPlus', () => {
   beforeAll(async () => {
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
     plusPlusHelper = new TestHelper(
-      `${relativeTestHelperPathHelper()}/messageHandlers/plusplus.js`,
+      relativeTestHelperPathHelper('src/messageHandlers/plusplus.js'),
     );
   });
 
   afterAll(async () => {});
 
-  beforeEach(() => {
+  beforeEach(async () => {
     mockSlackClient();
     jest.mock('../lib/helpers', () => {
       const actual = jest.requireActual('../lib/helpers');
@@ -29,7 +29,7 @@ describe('PlusPlus', () => {
         isA1Day: jest.fn().mockReturnValue(false),
       };
     });
-    room = plusPlusHelper.createRoom({ httpd: false });
+    room = await plusPlusHelper.createRoom({ httpd: false });
     emitSpy = jest.spyOn(room.robot, 'emit');
   });
 

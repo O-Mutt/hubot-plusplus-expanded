@@ -14,12 +14,12 @@ describe('PlusPlus', () => {
   beforeAll(async () => {
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
     wallet = new TestHelper(
-      `${relativeTestHelperPathHelper()}/messageHandlers/wallet.js`,
+      relativeTestHelperPathHelper('src/messageHandlers/wallet.js'),
     );
   });
 
   beforeEach(async () => {
-    room = wallet.createRoom({ httpd: false });
+    room = await wallet.createRoom({ httpd: false });
     roomRobot = room.robot;
     capRobotName = H.capitalizeFirstLetter(roomRobot.name);
   });

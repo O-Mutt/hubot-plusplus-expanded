@@ -15,12 +15,12 @@ describe('Scoreboard', () => {
   beforeAll(async () => {
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
     scoreboard = new TestHelper(
-      `${relativeTestHelperPathHelper()}/messageHandlers/scoreboard.js`,
+      relativeTestHelperPathHelper('src/messageHandlers/scoreboard.js'),
     );
   });
 
   beforeEach(async () => {
-    room = scoreboard.createRoom({ httpd: false });
+    room = await scoreboard.createRoom({ httpd: false });
     roomRobot = room.robot;
     capRobotName = H.capitalizeFirstLetter(roomRobot.name);
   });

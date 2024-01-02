@@ -14,13 +14,13 @@ describe('helpMessage', () => {
   beforeAll(async () => {
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
     helpHelper = new TestHelper(
-      `${relativeTestHelperPathHelper()}/messageHandlers/helpMessage.js`,
+      relativeTestHelperPathHelper('src/messageHandlers/helpMessage.js'),
     );
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
-    room = helpHelper.createRoom({ httpd: false });
+    room = await helpHelper.createRoom({ httpd: false });
     roomRobot = room.robot;
   });
 
@@ -34,7 +34,7 @@ describe('helpMessage', () => {
         const url = 'https://derp.com';
         room.destroy();
         process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = url;
-        room = helpHelper.createRoom({ httpd: false });
+        room = await helpHelper.createRoom({ httpd: false });
         room.user.say('peter.nguyen', `@${roomRobot.name} -h`);
         await wait();
         expect(room.messages.length).toBe(2);

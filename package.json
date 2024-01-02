@@ -75,7 +75,7 @@
     "eslint-plugin-prettier": "^5.1.2",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-watch": "^8.0.0",
-    "hubot-test-helper": "github:vpeltola/hubot-test-helper#fixes-for-hubot-5.x",
+    "hubot-test-helper": "github:synyx/hubot-test-helper#update-hubot-10",
     "jest": "^29.7.0",
     "mock-env": "^0.2.0",
     "mongo-unit": "^3.3.0"

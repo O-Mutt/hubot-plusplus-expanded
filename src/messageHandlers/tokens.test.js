@@ -14,7 +14,7 @@ describe('Tokens', () => {
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
 
     tokenHelper = new TestHelper(
-      `${relativeTestHelperPathHelper()}/messageHandlers/tokens.js`,
+      relativeTestHelperPathHelper('src/messageHandlers/tokens.js'),
     );
   });
 
@@ -30,7 +30,7 @@ describe('Tokens', () => {
         isA1Day: jest.fn().mockReturnValue(false),
       };
     });
-    room = tokenHelper.createRoom({ httpd: false });
+    room = await tokenHelper.createRoom({ httpd: false });
     roomRobot = room.robot;
   });
 
@@ -40,6 +40,7 @@ describe('Tokens', () => {
 
   describe('giveTokenBetweenUsers', () => {
     it("should add n points when a user is + n'd", async () => {
+      console.log(`$$$$ === room tokens.test.js [43] ===`, room);
       room.user.say('peter.parker', `@${roomRobot.name} @peter.parker.min + 5`);
       await wait();
       expect(room.messages.length).toBe(2);
