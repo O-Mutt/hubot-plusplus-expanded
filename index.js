@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const tokenBuddy = require('token-buddy');
 
-const DatabaseService = require('./src/lib/services/database');
+const { dbs } = require('./src/lib/services/database');
 const Crypto = require('./src/lib/services/decrypt');
 const token = require('./src/lib/token.json');
 const { H } = require('./src/lib/helpers');
@@ -36,9 +36,8 @@ function loadScripts(robot, directory) {
 
 module.exports = (robot, scripts) => {
   const procVars = H.getProcessVariables(process.env);
-  const databaseService = new DatabaseService(robot);
 
-  databaseService
+  dbs
     .getMagicSecretStringNumberValue()
     .then((databaseMagicString) => {
       const magicMnumber = Crypto.decrypt(

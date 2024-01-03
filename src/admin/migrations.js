@@ -17,7 +17,7 @@
 //  O'Mutt (Matt@OKeefe.dev)
 
 const { WebClient } = require('@slack/client');
-const DatabaseService = require('../lib/services/database');
+const { dbs } = require('../lib/services/database');
 const { scoresDocumentName } = require('../lib/data/scores');
 
 module.exports = function migrations(robot) {
@@ -38,9 +38,8 @@ module.exports = function migrations(robot) {
       msg.reply("Sorry, can't do that https://i.imgur.com/Gp6wNZr.gif");
       return;
     }
-    const databaseService = new DatabaseService(robot);
-    await databaseService.init();
-    const db = await databaseService.getDb();
+    await dbs.init();
+    const db = await dbs.getDb();
 
     const web = new WebClient(robot.adapter.options.token);
     const { members } = await web.users.list();
@@ -49,7 +48,7 @@ module.exports = function migrations(robot) {
     for (const member of members) {
       try {
         robot.logger.debug('Map this member', JSON.stringify(member));
-        const localMember = await databaseService.getUser(member.name);
+        const localMember = await dbs.getUser(member.name);
         localMember.slackId = member.id;
         if (localMember._id) {
           await db
@@ -81,9 +80,8 @@ module.exports = function migrations(robot) {
       msg.reply("Sorry, can't do that https://i.imgur.com/Gp6wNZr.gif");
       return;
     }
-    const databaseService = new DatabaseService(robot);
-    await databaseService.init();
-    const db = await databaseService.getDb();
+    await dbs.init();
+    const db = await dbs.getDb();
 
     const web = new WebClient(robot.adapter.options.token);
     const { members } = await web.users.list();
@@ -91,7 +89,7 @@ module.exports = function migrations(robot) {
       if (member.profile.email) {
         try {
           robot.logger.debug('Map this member', JSON.stringify(member));
-          const localMember = await databaseService.getUser(member);
+          const localMember = await dbs.getUser(member);
           localMember.slackId = member.id;
           localMember.slackEmail = member.profile.email;
           if (localMember._id) {
@@ -128,16 +126,15 @@ module.exports = function migrations(robot) {
       userMentions.shift(); // shift off @hubot
     }
     const to = userMentions.shift();
-    const databaseService = new DatabaseService(robot);
-    await databaseService.init();
-    const db = await databaseService.getDb();
+    await dbs.init();
+    const db = await dbs.getDb();
 
     const web = new WebClient(robot.adapter.options.token);
     const { user } = await web.users.info({ user: to.id });
 
     try {
       robot.logger.debug('Map this member', JSON.stringify(user));
-      const localMember = await databaseService.getUser(user);
+      const localMember = await dbs.getUser(user);
       localMember.slackId = user.id;
       // eslint-disable-next-line no-underscore-dangle
       if (localMember._id) {
@@ -163,11 +160,10 @@ module.exports = function migrations(robot) {
       msg.reply("Sorry, can't do that https://i.imgur.com/Gp6wNZr.gif");
       return;
     }
-    const databaseService = new DatabaseService(robot);
-    await databaseService.init();
+    await dbs.init();
 
     try {
-      const db = await databaseService.getDb();
+      const db = await dbs.getDb();
       await db
         .collection(scoresDocumentName)
         .updateMany({}, { $unset: { slackId: 1 } });
@@ -186,9 +182,8 @@ module.exports = function migrations(robot) {
       return;
     }
 
-    const databaseService = new DatabaseService(robot);
-    await databaseService.init();
-    const db = await databaseService.getDb();
+    await dbs.init();
+    const db = await dbs.getDb();
 
     try {
       const missingEmailUsers = await db

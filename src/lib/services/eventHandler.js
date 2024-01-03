@@ -1,24 +1,24 @@
 const { H } = require('../helpers');
 
 class EventHandlerService {
-  constructor(robot) {
-    this.procVars = H.getProcessVariables(process.env);
-    this.robot = robot;
-  }
-
-  sendPlusPlusNotification(notificationObject) {
-    if (this.procVars.notificationsRoom) {
-      this.robot.messageRoom(
-        this.procVars.notificationsRoom,
+  static sendPlusPlusNotification(robot, notificationObject) {
+    const { notificationsRoom } = H.getProcessVariables(process.env);
+    if (notificationsRoom) {
+      robot.messageRoom(
+        notificationsRoom,
         notificationObject.notificationMessage,
       );
     }
   }
 
-  sendPlusPlusFalsePositiveNotification(notificationObject) {
-    if (this.procVars.falsePositiveNotificationsRoom) {
-      this.robot.messageRoom(
-        this.procVars.falsePositiveNotificationsRoom,
+  static sendPlusPlusFalsePositiveNotification(robot, notificationObject) {
+    const { falsePositiveNotificationsRoom } = H.getProcessVariables(
+      process.env,
+    );
+
+    if (falsePositiveNotificationsRoom) {
+      robot.messageRoom(
+        falsePositiveNotificationsRoom,
         notificationObject.notificationMessage,
       );
     }
@@ -32,11 +32,11 @@ class EventHandlerService {
    * @param {string} notificationObject.message the message that should be sent to the user
    * @param {string} notificationObject.reason a reason why the message is being sent
    */
-  logAndNotifySpam(notificationObject) {
-    this.robot.logger.error(
+  static logAndNotifySpam(robot, notificationObject) {
+    robot.logger.error(
       `A spam event has been detected: ${notificationObject.message}. ${notificationObject.reason}`,
     );
-    this.robot.messageRoom(
+    robot.messageRoom(
       notificationObject.from.slackId,
       `${notificationObject.message}\n\n${notificationObject.reason}`,
     );
@@ -44,3 +44,4 @@ class EventHandlerService {
 }
 
 module.exports = EventHandlerService;
+module.exports.ehs = EventHandlerService;

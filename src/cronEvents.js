@@ -13,12 +13,11 @@ const clark = require('clark');
 const _ = require('lodash');
 const { CronJob } = require('cron');
 
-const DatabaseService = require('./lib/services/database');
+const { dbs } = require('./lib/services/database');
 const { H } = require('./lib/helpers');
 
 module.exports = function cron(robot) {
   const procVars = H.getProcessVariables(process.env);
-  const databaseService = new DatabaseService(robot);
 
   if (!procVars.notificationsRoom) {
     return;
@@ -32,7 +31,7 @@ module.exports = function cron(robot) {
         robot.logger.debug('running the cron job');
 
         // Senders
-        const topSenders = await databaseService.getTopSenderInDuration(10, 30);
+        const topSenders = await dbs.getTopSenderInDuration(10, 30);
         let message = [];
         if (topSenders.length > 0) {
           for (
@@ -65,10 +64,7 @@ module.exports = function cron(robot) {
         robot.messageRoom(procVars.notificationsRoom, message.join('\n'));
 
         // Recipients
-        const topRecipient = await databaseService.getTopReceiverInDuration(
-          10,
-          30,
-        );
+        const topRecipient = await dbs.getTopReceiverInDuration(10, 30);
         message = [];
         if (topRecipient.length > 0) {
           for (
@@ -105,7 +101,7 @@ module.exports = function cron(robot) {
         robot.messageRoom(procVars.notificationsRoom, message.join('\n'));
 
         // Room
-        const topRoom = await databaseService.getTopRoomInDuration(3, 30);
+        const topRoom = await dbs.getTopRoomInDuration(3, 30);
         message = [];
         if (topRoom.length > 0) {
           for (
