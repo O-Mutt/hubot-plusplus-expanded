@@ -167,9 +167,9 @@ describe('PlusPlus', () => {
           await wait();
           expect(room.messages.length).toBe(2);
           expect(room.messages[1].length).toBe(2);
-          expect(room.messages[1][1]).toBe(
-            '<@darf.arg> has 2 points.\n<@pirate.jack123> has 2 points.\n<@ted.phil> has 2 points.',
-          );
+          expect(room.messages[1][1]).toEqual(`<@darf.arg> has 2 points.
+<@pirate.jack123> has 2 points.
+<@ted.phil> has 2 points.`);
         });
       });
 

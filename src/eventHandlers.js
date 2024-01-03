@@ -11,7 +11,13 @@
 const { ehs } = require('./lib/services/eventHandler');
 
 module.exports = function events(robot) {
-  robot.on('plus-plus', ehs.sendPlusPlusNotification);
-  robot.on('plus-plus-failure', ehs.sendPlusPlusFalsePositiveNotification);
-  robot.on('plus-plus-spam', ehs.logAndNotifySpam);
+  robot.on('plus-plus', (eventArgs) =>
+    ehs.sendPlusPlusNotification(robot, eventArgs),
+  );
+  robot.on('plus-plus-failure', (eventArgs) =>
+    ehs.sendPlusPlusFalsePositiveNotification(robot, eventArgs),
+  );
+  robot.on('plus-plus-spam', (eventArgs) =>
+    ehs.logAndNotifySpam(robot, eventArgs),
+  );
 };
