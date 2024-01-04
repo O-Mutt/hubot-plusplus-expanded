@@ -4,6 +4,37 @@ const { rpp } = require('../regExpPlusPlus');
 const { mfs } = require('../messageFactory');
 
 class PlusPlusService {
+  static buildPlusPlusNotification(
+    msg,
+    operator,
+    fromUser,
+    toUser,
+    room,
+    cleanReason,
+  ) {
+    const capRobotName = H.capitalizeFirstLetter(msg.robot.name);
+    const sentOrRem = operator.match(rpp.positiveOperators)
+      ? 'sent'
+      : 'removed';
+    const toOrFrom = operator.match(rpp.positiveOperators) ? 'to' : 'from';
+
+    const fromValue = fromUser.slackId
+      ? `<@${fromUser.slackId}>`
+      : fromUser.name;
+    const toValue = toUser.slackId ? `<@${toUser.slackId}>` : toUser.name;
+
+    return {
+      notificationMessage: `${fromValue} ${sentOrRem} a ${capRobotName} point ${toOrFrom} ${toValue} in <#${room}>`,
+      sender: fromUser,
+      recipient: toUser,
+      direction: operator,
+      amount: 1,
+      room,
+      reason: cleanReason,
+      msg,
+    };
+  }
+
   /**
    * Functions for responding to commands
    */
@@ -70,22 +101,18 @@ class PlusPlusService {
 
     if (message) {
       msg.send(message);
-      msg.robot.emit('plus-plus', [
-        {
-          notificationMessage: `<@${fromUser.slackId}> ${
-            operator.match(rpp.positiveOperators) ? 'sent' : 'removed'
-          } a ${H.capitalizeFirstLetter(msg.robot.name)} point ${
-            operator.match(rpp.positiveOperators) ? 'to' : 'from'
-          } <@${toUser.slackId}> in <#${room}>`,
-          sender: fromUser,
-          recipient: toUser,
-          direction: operator,
-          amount: 1,
-          room,
-          reason: cleanReason,
+
+      msg.robot.emit(
+        'plus-plus',
+        PlusPlusService.buildPlusPlusNotification(
           msg,
-        },
-      ]);
+          operator,
+          fromUser,
+          toUser,
+          room,
+          cleanReason,
+        ),
+      );
     }
   }
 
@@ -129,9 +156,9 @@ class PlusPlusService {
 
     const from = msg.message.user;
     const { room, mentions } = msg.message;
-    let to = cleanNames.map((cn) => ({ name: cn }));
+    let toList = cleanNames.map((cn) => ({ name: cn }));
     if (mentions) {
-      to = mentions
+      toList = mentions
         .filter((men) => men.type === 'user')
         .filter(
           (single, index, allMentions) =>
@@ -141,7 +168,7 @@ class PlusPlusService {
     const cleanReason = H.cleanAndEncode(reason);
     const increment = operator.match(rpp.positiveOperators) ? 1 : -1;
 
-    if (cleanNames.length !== to.length) {
+    if (cleanNames.length !== toList.length) {
       msg.send(
         'We are having trouble mapping your multi-user plusplus. Please try again and only include @ mentions.',
       );
@@ -149,7 +176,7 @@ class PlusPlusService {
     }
 
     const incScorePromises = [];
-    for (const oneTo of to) {
+    for (const oneTo of toList) {
       incScorePromises.push(
         sks.incrementScore(
           msg.robot,
@@ -177,20 +204,17 @@ class PlusPlusService {
           messages.push(
             mfs.BuildNewScoreMessage(msg.robot, toUser, cleanReason),
           );
-          pointEmits.push({
-            notificationMessage: `<@${fromUser.slackId}> ${
-              operator.match(rpp.positiveOperators) ? 'sent' : 'removed'
-            } a ${H.capitalizeFirstLetter(msg.robot.name)} point ${
-              operator.match(rpp.positiveOperators) ? 'to' : 'from'
-            } <@${toUser.slackId}> in <#${room}>`,
-            sender: fromUser,
-            recipient: toUser,
-            direction: operator,
-            amount: 1,
-            room,
-            reason: cleanReason,
-            msg,
-          });
+
+          pointEmits.push(
+            PlusPlusService.buildPlusPlusNotification(
+              msg,
+              operator,
+              fromUser,
+              toUser,
+              room,
+              cleanReason,
+            ),
+          );
         }
       }
     }

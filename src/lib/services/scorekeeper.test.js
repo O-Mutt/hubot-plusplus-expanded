@@ -235,7 +235,7 @@ describe('ScoreKeeper', () => {
     });
 
     it('adds more points to a user for a reason', async () => {
-      const to = 'to';
+      const to = 'to.morepointsreason';
       let { toUser: r } = await instance.incrementScore(
         mockRobot,
         to,

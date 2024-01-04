@@ -144,6 +144,27 @@ describe('PlusPlus', () => {
           );
         });
 
+        it('should handle multiple user scores all the way to the plusplus event', async () => {
+          const capRobotName = H.capitalizeFirstLetter(room.robot.name);
+          const sender = 'matt.erickson';
+          const recipients = ['the.thing', 'sends.the.event'];
+          room.user.say(sender, `{ @${recipients[0]}, @${recipients[1]} }++`);
+          await wait();
+          expect(room.messages.length).toBe(2);
+          expect(room.robot.emit).toHaveBeenCalledWith(
+            'plus-plus',
+            expect.any(Array),
+          );
+          const scores = room.robot.emit.mock.calls[0][1];
+
+          expect(scores[0].notificationMessage).toEqual(
+            `<@${sender}> sent a ${capRobotName} point to ${recipients[0]} in <#${room.name}>`,
+          );
+          expect(scores[1].notificationMessage).toEqual(
+            `<@${sender}> sent a ${capRobotName} point to ${recipients[1]} in <#${room.name}>`,
+          );
+        });
+
         it('should add a point to each user in the multi-user plus plus with text before it', async () => {
           room.user.say(
             'matt.erickson',

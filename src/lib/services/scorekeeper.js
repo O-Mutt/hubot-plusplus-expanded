@@ -197,12 +197,15 @@ class ScoreKeeperService {
     );
     const isToSelf = to.name === from.name;
     if (isToSelf) {
-      robot.emit('plus-plus-spam', {
-        to,
-        from,
-        message: spamMessage,
-        reason: 'Looks like you may be trying to send a point to yourself.',
-      });
+      robot.emit(
+        'plus-plus-spam',
+        ScoreKeeperService.buildSpamNotification(
+          to,
+          from,
+          spamMessage,
+          'Looks like you may be trying to send a point to yourself.',
+        ),
+      );
     }
     return isToSelf;
   }
@@ -214,12 +217,15 @@ class ScoreKeeperService {
     robot.logger.debug(`Checking spam to [${to.name}] from [${from.name}]`);
     const isSpam = await dbs.isSpam(robot, toId, fromId);
     if (isSpam) {
-      robot.emit('plus-plus-spam', {
-        to,
-        from,
-        message: spamMessage,
-        reason: `You recently sent <@${toId}> a point.`,
-      });
+      robot.emit(
+        'plus-plus-spam',
+        ScoreKeeperService.buildSpamNotification(
+          to,
+          from,
+          spamMessage,
+          `You recently sent <@${toId}> a point.`,
+        ),
+      );
     }
     return isSpam;
   }
@@ -241,14 +247,26 @@ class ScoreKeeperService {
     if (from.is_bot) {
       isBot = true;
       robot.logger.error('A bot is sending points in DM');
-      robot.emit('plus-plus-spam', {
-        to: undefined,
-        from,
-        message: spamMessage,
-        reason: "You can't have a bot do the dirty work.",
-      });
+      robot.emit(
+        'plus-plus-spam',
+        ScoreKeeperService.buildSpamNotification(
+          undefined,
+          from,
+          spamMessage,
+          "You can't have a bot do the dirty work.",
+        ),
+      );
     }
     return isBot;
+  }
+
+  static buildSpamNotification(to, from, message, reason) {
+    return {
+      to,
+      from,
+      message,
+      reason,
+    };
   }
 }
 
