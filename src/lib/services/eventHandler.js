@@ -2,17 +2,9 @@ const { H } = require('../helpers');
 
 class EventHandlerService {
   static sendPlusPlusNotification(robot, notificationObject) {
-    let message = '';
-    if (Array.isArray(notificationObject)) {
-      message = notificationObject.map((n) => n.notificationMessage).join('\n');
-    } else if (
-      Object.prototype.hasOwnProperty.call(
-        notificationObject,
-        'notificationMessage',
-      )
-    ) {
-      message = notificationObject.notificationMessage;
-    }
+    const message = notificationObject
+      .map((n) => n.notificationMessage)
+      .join('\n');
     const { notificationsRoom } = H.getProcessVariables(process.env);
     if (notificationsRoom) {
       robot.messageRoom(notificationsRoom, message);
