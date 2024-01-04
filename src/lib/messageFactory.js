@@ -36,7 +36,7 @@ class MessageFactory {
           robotName,
         )}day is ${format(dateObj, 'MMM. do yyyy')}`;
       } catch (e) {
-        this.robot.logger.error(
+        robot.logger.error(
           `Robot day failed to be parsed: ${robotName}, ${
             user[`${robotName}Day`]
           }`,
@@ -141,7 +141,7 @@ class MessageFactory {
     }
     let normalMessage = `${scoreStr}${reasonStr}${cakeDayStr}`;
     if (H.isA1Day()) {
-      normalMessage = this.GetA1DayMessage(robot, normalMessage);
+      normalMessage = MessageFactory.GetA1DayMessage(robot, normalMessage);
     }
 
     return normalMessage;
