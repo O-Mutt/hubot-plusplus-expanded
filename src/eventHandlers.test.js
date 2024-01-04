@@ -59,12 +59,17 @@ describe('EventHandlers', () => {
 
       it('should message room if notification has notification message', async () => {
         process.env.HUBOT_PLUSPLUS_NOTIFICATION_ROOM = 'test';
-        roomRobot.emit('plus-plus', {
-          notificationMessage: 'test',
-        });
+        roomRobot.emit('plus-plus', [
+          {
+            notificationMessage: 'test',
+          },
+          {
+            notificationMessage: 'test2',
+          },
+        ]);
         expect(room.messages.length).toBe(0);
-        expect(msgSpy).toHaveBeenCalled();
-        expect(msgSpy).toHaveBeenCalledWith('test', 'test');
+        expect(msgSpy).toHaveBeenCalledTimes(1);
+        expect(msgSpy).toHaveBeenCalledWith('test', 'test\ntest2');
       });
     });
   });
