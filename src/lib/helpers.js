@@ -294,27 +294,30 @@ class Helpers {
    * @returns {object} - The parsed date object
    * @static
    */
-  static parseDateStr(dateStr, robot) {
+  static parseDateStrAndFormat(dateStr, robot, formatStr = 'MMM. do yyyy') {
     if (!dateStr) {
-      return undefined;
+      return 'unknown';
     }
 
     try {
       // 2018-10-01T16:55:04.000Z
-      return parseISO(dateStr);
+      const date = parseISO(dateStr);
+      return format(date, formatStr);
     } catch (e) {
       // Mon Oct 01 2018 16:55:04 GMT+0000 (Coordinated Universal Time)
       try {
-        return parse(dateStr, 'EEE MMM dd yyyy HH:mm:ss', new Date());
+        const date = parse(dateStr, 'EEE MMM dd yyyy HH:mm:ss', new Date());
+        return format(date, formatStr);
       } catch (e2) {
         try {
           // who tf knows what this is
-          return new Date(dateStr);
+          const date = new Date(dateStr);
+          return format(date, formatStr);
         } catch (e3) {
           if (robot && robot.logger) {
             robot.logger.error('Failed to parse date string', dateStr);
           }
-          return undefined;
+          return 'unknown';
         }
       }
     }
