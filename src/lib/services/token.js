@@ -1,5 +1,9 @@
 const ScoreKeeperService = require('./scorekeeper');
 const { H } = require('../helpers');
+const { GeneratePlusPlusEventObject } = require('../../events/plusPlus');
+const {
+  GeneratePlusPlusFailureEventObject,
+} = require('../../events/plusPlusFalsePositive');
 
 class TokenService {
   /**
@@ -8,19 +12,14 @@ class TokenService {
    * @returns {Promise<void>}
    */
   static async giveTokenBetweenUsers(msg) {
-    const [fullText, premessage, name, number, conjunction, reason] = msg.match;
+    const [_fullText, _premessage, name, number, conjunction, reason] =
+      msg.match;
     if (!conjunction && reason) {
       // circuit break a plus plus
-      msg.robot.emit('plus-plus-failure', {
-        notificationMessage: `False positive detected in <#${
-          msg.message.room
-        }> from <@${
-          msg.message.user.id
-        }>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(
-          !conjunction && reason
-        )}]\n\n${fullText}`,
-        room: msg.message.room,
-      });
+      msg.robot.emit(
+        'plus-plus-failure',
+        GeneratePlusPlusFailureEventObject({ msg }),
+      );
       return;
     }
     const { room, mentions } = msg.message;
@@ -71,20 +70,16 @@ class TokenService {
 
     if (message) {
       msg.send(message);
-      msg.robot.emit('plus-plus', {
-        notificationMessage: `<@${
-          response.fromUser.slackId
-        }> sent ${number} ${H.capitalizeFirstLetter(msg.robot.name)} point${
-          parseInt(number, 10) > 1 ? 's' : ''
-        } to <@${response.toUser.slackId}> in <#${room}>`,
-        recipient: response.toUser,
-        sender: response.fromUser,
-        direction: '++',
-        amount: number,
-        room,
-        reason: cleanReason,
-        msg,
-      });
+      msg.robot.emit('plus-plus', [
+        GeneratePlusPlusEventObject({
+          msg,
+          operator: '++',
+          fromUser: response.fromUser,
+          toUser: response.toUser,
+          cleanReason,
+          amount: number,
+        }),
+      ]);
     }
   }
 }

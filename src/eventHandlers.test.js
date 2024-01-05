@@ -1,6 +1,7 @@
 const TestHelper = require('hubot-test-helper');
 
 const { relativeTestHelperPathHelper } = require('../test/test_helpers');
+const { GeneratePlusPlusEventObject } = require('./events/plusPlus');
 
 describe('EventHandlers', () => {
   let room;
@@ -9,7 +10,6 @@ describe('EventHandlers', () => {
   let msgSpy;
   beforeAll(async () => {
     process.env.HUBOT_PLUSPLUS_NOTIFICATION_ROOM = undefined;
-
     tokenHelper = new TestHelper(
       relativeTestHelperPathHelper('src/eventHandlers.js'),
     );
@@ -30,7 +30,7 @@ describe('EventHandlers', () => {
   describe('plus-plus event', () => {
     describe('when the HUBOT_PLUSPLUS_NOTIFICATION_ROOM is undefined', () => {
       it(`shouldn't do anything`, async () => {
-        room.emit('plus-plus', [{}]);
+        room.emit('plus-plus', [GeneratePlusPlusEventObject()]);
         expect(room.messages.length).toBe(0);
         expect(msgSpy).not.toHaveBeenCalled();
       });
@@ -39,7 +39,7 @@ describe('EventHandlers', () => {
     describe('when the HUBOT_PLUSPLUS_NOTIFICATION_ROOM is defined', () => {
       it('should message room with empty message if empty object in array', async () => {
         process.env.HUBOT_PLUSPLUS_NOTIFICATION_ROOM = 'test';
-        roomRobot.emit('plus-plus', [{}]);
+        roomRobot.emit('plus-plus', [GeneratePlusPlusEventObject()]);
         expect(room.messages.length).toBe(0);
         expect(msgSpy).toHaveBeenCalled();
         expect(msgSpy).toHaveBeenCalledWith('test', '');

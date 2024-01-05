@@ -31,7 +31,7 @@ class MessageFactory {
 
     if (user[`${robotName}Day`]) {
       try {
-        const dateObj = parseISO(user[`${robotName}Day`]);
+        const dateObj = H.parseDateStr(user[`${robotName}Day`]);
         baseString += `\n:birthday: ${H.capitalizeFirstLetter(
           robotName,
         )}day is ${format(dateObj, 'MMM. do yyyy')}`;

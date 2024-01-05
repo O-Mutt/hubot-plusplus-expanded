@@ -10,6 +10,8 @@ const {
   isFriday,
   isSaturday,
   getWeekOfMonth,
+  parseISO,
+  parse,
 } = require('date-fns');
 const { rpp } = require('./regExpPlusPlus');
 
@@ -284,6 +286,38 @@ class Helpers {
 
   static isSameDayOfYear(date1, date2) {
     return Helpers.getDayOfYear(date1) === Helpers.getDayOfYear(date2);
+  }
+
+  /**
+   * @param {string} dateStr - The date string to parse
+   * @param {object?} robot - The robot object
+   * @returns {object} - The parsed date object
+   * @static
+   */
+  static parseDateStr(dateStr, robot) {
+    if (!dateStr) {
+      return undefined;
+    }
+
+    try {
+      // 2018-10-01T16:55:04.000Z
+      return parseISO(dateStr);
+    } catch (e) {
+      // Mon Oct 01 2018 16:55:04 GMT+0000 (Coordinated Universal Time)
+      try {
+        return parse(dateStr, 'EEE MMM dd yyyy HH:mm:ss', new Date());
+      } catch (e2) {
+        try {
+          // who tf knows what this is
+          return new Date(dateStr);
+        } catch (e3) {
+          if (robot && robot.logger) {
+            robot.logger.error('Failed to parse date string', dateStr);
+          }
+          return undefined;
+        }
+      }
+    }
   }
 }
 

@@ -1,5 +1,6 @@
 /* eslint-disable new-cap */
 /* eslint-disable mocha/no-setup-in-describe */
+const { format } = require('date-fns');
 const { H } = require('./helpers');
 
 describe('Helpers', () => {
@@ -141,6 +142,80 @@ describe('Helpers', () => {
       const cleaned = undefined;
 
       expect(H.decode(encoded)).toBe(cleaned);
+    });
+  });
+
+  describe('parseDateStr', () => {
+    it('should parse "2018-01-01" to a date object', () => {
+      const dateStr = '2018-01-01';
+      const result = H.parseDateStr(dateStr);
+
+      expect(result).toBeInstanceOf(Date);
+      expect(format(result, 'MMM. do yyyy')).toEqual('Jan. 1st 2018');
+    });
+
+    it('should parse "2018-01-01T00:00:00.000Z" to a date object', () => {
+      const dateStr = '2018-01-01T00:00:00.000Z';
+      const result = H.parseDateStr(dateStr);
+
+      expect(result).toBeInstanceOf(Date);
+      expect(format(result, 'MMM. do yyyy')).toEqual('Dec. 31st 2017');
+    });
+
+    it('should parse "2020-01-01T00:00:00.000" to a date object', () => {
+      const dateStr = '2020-01-01T00:00:00.000';
+      const result = H.parseDateStr(dateStr);
+
+      expect(result).toBeInstanceOf(Date);
+      expect(format(result, 'MMM. do yyyy')).toEqual('Jan. 1st 2020');
+    });
+
+    it('should parse "2018-01-01T00:00:00" to a date object', () => {
+      const dateStr = '2018-01-01T00:00:00';
+      const result = H.parseDateStr(dateStr);
+
+      expect(result).toBeInstanceOf(Date);
+      expect(format(result, 'MMM. do yyyy')).toEqual('Jan. 1st 2018');
+    });
+
+    it('should parse "2020-08-18T19:10:23.500+00:00" to a date object', () => {
+      const dateStr = '2020-08-18T19:10:23.500+00:00';
+      const result = H.parseDateStr(dateStr);
+
+      expect(result).toBeInstanceOf(Date);
+      expect(format(result, 'MMM. do yyyy')).toEqual('Aug. 18th 2020');
+    });
+
+    it('should parse "2020-08-13T20" to a date object', () => {
+      const dateStr = '2020-08-13T20';
+      const result = H.parseDateStr(dateStr);
+
+      expect(result).toBeInstanceOf(Date);
+      expect(format(result, 'MMM. do yyyy')).toEqual('Aug. 13th 2020');
+    });
+
+    it('should parse "2018-01-01T" to a date object', () => {
+      const dateStr = '2018-01-01T';
+      const result = H.parseDateStr(dateStr);
+
+      expect(result).toBeInstanceOf(Date);
+      expect(format(result, 'MMM. do yyyy')).toEqual('Jan. 1st 2018');
+    });
+
+    it('should parse "2020-07-23T12:13:48.593Z" to a date object', () => {
+      const dateStr = '2020-07-23T12:13:48.593Z';
+      const result = H.parseDateStr(dateStr);
+
+      expect(result).toBeInstanceOf(Date);
+      expect(format(result, 'MMM. do yyyy')).toEqual('Jul. 23rd 2020');
+    });
+
+    it('should parse "2020-11-19T20:57:36.526+00:00" to a date object', () => {
+      const dateStr = '2020-11-19T20:57:36.526+00:00';
+      const result = H.parseDateStr(dateStr);
+
+      expect(result).toBeInstanceOf(Date);
+      expect(format(result, 'MMM. do yyyy')).toEqual('Nov. 19th 2020');
     });
   });
 });
