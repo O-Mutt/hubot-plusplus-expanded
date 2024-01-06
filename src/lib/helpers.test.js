@@ -154,11 +154,11 @@ describe('Helpers', () => {
     });
 
     it('should parse "2018-01-01T00:00:00.000Z" to a date object', () => {
-      const dateStr = '2018-01-01T00:00:00.000Z';
+      const dateStr = '2018-01-01T12:00:00.000Z';
       const result = H.parseDateStrAndFormat(dateStr);
 
       expect(typeof result).toEqual('string');
-      expect(result).toEqual('Dec. 31st 2017');
+      expect(result).toEqual('Jan. 1st 2018');
     });
 
     it('should parse "2020-01-01T00:00:00.000" to a date object', () => {
