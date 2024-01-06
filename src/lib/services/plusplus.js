@@ -2,6 +2,10 @@ const { sks } = require('./scorekeeper');
 const { H } = require('../helpers');
 const { rpp } = require('../regExpPlusPlus');
 const { mfs } = require('../messageFactory');
+const { GeneratePlusPlusEventObject } = require('../../events/plusPlus');
+const {
+  GeneratePlusPlusFailureEventObject,
+} = require('../../events/plusPlusFalsePositive');
 
 class PlusPlusService {
   static buildPlusPlusNotification(
@@ -11,6 +15,7 @@ class PlusPlusService {
     toUser,
     room,
     cleanReason,
+    amount = 1,
   ) {
     const capRobotName = H.capitalizeFirstLetter(msg.robot.name);
     const sentOrRem = operator.match(rpp.positiveOperators)
@@ -28,7 +33,7 @@ class PlusPlusService {
       sender: fromUser,
       recipient: toUser,
       direction: operator,
-      amount: 1,
+      amount,
       room,
       reason: cleanReason,
       msg,
@@ -39,25 +44,15 @@ class PlusPlusService {
    * Functions for responding to commands
    */
   static async upOrDownVote(msg) {
-    const [fullText, premessage, name, operator, conjunction, reason] =
+    const [_fullText, premessage, name, operator, conjunction, reason] =
       msg.match;
 
     if (H.isKnownFalsePositive(premessage, conjunction, reason, operator)) {
       // circuit break a plus plus
-      msg.robot.emit('plus-plus-failure', {
-        notificationMessage:
-          `False positive detected in <#${msg.message.room}> ` +
-          `from <@${msg.message.user.id}>` +
-          `\nHas pre-Message text: [${!!premessage}].\n` +
-          `Missing Conjunction: [${!!(!conjunction && reason)}]` +
-          '\n\n<redacted message> ' +
-          `${
-            fullText.length >= 150
-              ? 'It was really long (>=150)'
-              : 'It was a short message (<150)'
-          }`,
-        room: msg.message.room,
-      });
+      msg.robot.emit(
+        'plus-plus-failure',
+        GeneratePlusPlusFailureEventObject({ msg }),
+      );
       return;
     }
     const increment = operator.match(rpp.positiveOperators) ? 1 : -1;
@@ -102,38 +97,30 @@ class PlusPlusService {
     if (message) {
       msg.send(message);
 
-      msg.robot.emit(
-        'plus-plus',
-        PlusPlusService.buildPlusPlusNotification(
+      msg.robot.emit('plus-plus', [
+        GeneratePlusPlusEventObject({
           msg,
           operator,
           fromUser,
           toUser,
-          room,
           cleanReason,
-        ),
-      );
+        }),
+      ]);
     }
   }
 
   static async multipleUsersVote(msg) {
-    const [fullText, premessage, names, operator, conjunction, reason] =
+    const [_fullText, premessage, names, operator, conjunction, reason] =
       msg.match;
     if (!names) {
       return;
     }
     if (H.isKnownFalsePositive(premessage, conjunction, reason, operator)) {
       // circuit break a plus plus
-      msg.robot.emit('plus-plus-failure', {
-        notificationMessage: `False positive detected in <#${
-          msg.message.room
-        }> from <@${
-          msg.message.user.id
-        }>:\nPre-Message text: [${!!premessage}].\nMissing Conjunction: [${!!(
-          !conjunction && reason
-        )}]\n\n${fullText}`,
-        room: msg.message.room,
-      });
+      msg.robot.emit(
+        'plus-plus-failure',
+        GeneratePlusPlusFailureEventObject({ msg }),
+      );
       return;
     }
 
@@ -206,14 +193,13 @@ class PlusPlusService {
           );
 
           pointEmits.push(
-            PlusPlusService.buildPlusPlusNotification(
+            GeneratePlusPlusEventObject({
               msg,
               operator,
               fromUser,
               toUser,
-              room,
               cleanReason,
-            ),
+            }),
           );
         }
       }

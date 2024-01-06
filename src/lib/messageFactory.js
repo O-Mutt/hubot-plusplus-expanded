@@ -30,19 +30,9 @@ class MessageFactory {
     baseString += `\nTotal Points Given: ${user.totalPointsGiven}`;
 
     if (user[`${robotName}Day`]) {
-      try {
-        const dateObj = parseISO(user[`${robotName}Day`]);
-        baseString += `\n:birthday: ${H.capitalizeFirstLetter(
-          robotName,
-        )}day is ${format(dateObj, 'MMM. do yyyy')}`;
-      } catch (e) {
-        robot.logger.error(
-          `Robot day failed to be parsed: ${robotName}, ${
-            user[`${robotName}Day`]
-          }`,
-          e,
-        );
-      }
+      baseString += `\n:birthday: ${H.capitalizeFirstLetter(
+        robotName,
+      )}day is ${H.parseDateStrAndFormat(user[`${robotName}Day`])}`;
     }
     const keys = Object.keys(user.reasons || {});
     if (keys.length > 1) {

@@ -11,11 +11,13 @@ describe('PlusPlus', () => {
   let room;
   let plusPlusHelper;
   let emitSpy;
+  let onSpy;
   beforeAll(async () => {
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
-    plusPlusHelper = new TestHelper(
+    plusPlusHelper = new TestHelper([
       relativeTestHelperPathHelper('src/messageHandlers/plusplus.js'),
-    );
+      relativeTestHelperPathHelper('src/eventHandlers.js'),
+    ]);
   });
 
   afterAll(async () => {});
@@ -29,8 +31,10 @@ describe('PlusPlus', () => {
         isA1Day: jest.fn().mockReturnValue(false),
       };
     });
+
     room = await plusPlusHelper.createRoom({ httpd: false });
     emitSpy = jest.spyOn(room.robot, 'emit');
+    onSpy = jest.spyOn(room.robot, 'on');
   });
 
   afterEach(async () => {
@@ -155,6 +159,7 @@ describe('PlusPlus', () => {
             'plus-plus',
             expect.any(Array),
           );
+
           const scores = room.robot.emit.mock.calls[0][1];
 
           expect(scores[0].notificationMessage).toEqual(
@@ -269,15 +274,20 @@ describe('PlusPlus', () => {
           'matt.erickson',
           'hello, @derp -- i have no idea what you are doing',
         );
-        await wait();
-        expect(emitSpy).toHaveBeenCalledWith('plus-plus-failure', {
+        await wait(2000);
+        expect(emitSpy).toHaveBeenCalled();
+        expect(emitSpy.mock.calls[0][0]).toEqual('plus-plus-failure');
+        expect(emitSpy.mock.calls[0][1]).toEqual({
           notificationMessage:
-            'False positive detected in <#room1> from <@matt.erickson>\n' +
-            'Has pre-Message text: [true].\n' +
-            'Missing Conjunction: [true]\n' +
+            'False positive detected in <#room1> from <@matt.erickson>:\n' +
+            'Has Pre-Message: [true].\n' +
+            'Has Conjunction: [false].\n' +
+            'Has Reason: [true].\n' +
             '\n' +
-            '<redacted message> It was a short message (<150)',
-          room: 'room1',
+            '<Message Redacted For Security>\n' +
+            '\n' +
+            'It was a short message (<150)',
+          room: '<#room1>',
         });
 
         const user = await db.collection('scores').findOne({ name: 'derp' });
