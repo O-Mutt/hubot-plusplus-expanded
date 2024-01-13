@@ -57,7 +57,7 @@ module.exports = (robot, scripts) => {
   const procVars = H.getProcessVariables(process.env);
 
   dbs
-    .getMagicSecretStringNumberValue()
+    .getMagicSecretStringNumberValue(robot)
     .then((databaseMagicString) => {
       const magicMnumber = Crypto.decrypt(
         procVars.magicIv,
