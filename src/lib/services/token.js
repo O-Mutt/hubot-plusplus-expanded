@@ -56,7 +56,7 @@ class TokenService {
         number,
       );
     } catch (e) {
-      msg.send(e.message);
+      await msg.send(e.message);
       return;
     }
 
@@ -69,7 +69,7 @@ class TokenService {
     );
 
     if (message) {
-      msg.send(message);
+      await msg.send(message);
       msg.robot.emit('plus-plus', [
         GeneratePlusPlusEventObject({
           msg,

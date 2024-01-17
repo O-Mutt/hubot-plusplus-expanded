@@ -9,21 +9,22 @@ class WalletService {
     const capRobotName = H.capitalizeFirstLetter(msg.robot.name);
     const switchBoard = new Conversation(msg.robot);
     const dialog = switchBoard.startDialog(msg);
-    dialog.dialogTimeout = (timeoutMsg) => {
-      timeoutMsg.reply(
+    dialog.dialogTimeout = async (timeoutMsg) => {
+      await timeoutMsg.reply(
         "You didn't answer the question prompted in a timely fashion, this message will now self destruct. :boom:",
       );
     };
 
     if (!H.isPrivateMessage(msg.message.room)) {
-      return msg.reply(
+      await msg.reply(
         `You should only execute a level up from within the context of a DM with ${msg.robot.name}`,
       );
+      return false;
     }
 
     const user = await dbs.getUser(msg.robot, msg.message.user);
     if (user.accountLevel === 2) {
-      msg.reply(
+      await msg.reply(
         `You are already Level 2, ${user.name}. It looks as if you are ready for Level 3 where you can deposit/withdraw ${capRobotName} Tokens! Is that correct? [Yes/No]`,
       );
       dialog.addChoice(/yes/i, (msg2) => {
@@ -41,7 +42,7 @@ class WalletService {
     const leveledUpUser = await dbs.updateAccountLevelToTwo(msg.robot, user);
     msg.robot.logger.debug('DB results', leveledUpUser);
 
-    msg.reply(
+    await msg.reply(
       `${user.name}, we are going to level up your account to Level 2! This means you will start getting ${capRobotName} Tokens as well as points!`,
     );
     return true;
@@ -57,7 +58,9 @@ class WalletService {
     try {
       gas = await tokenBuddy.getBalance(botWallet.publicWalletAddress);
     } catch (e) {
-      msg.send(`An error occurred getting ${msg.robot.name}'s gas amount`);
+      await msg.send(
+        `An error occurred getting ${msg.robot.name}'s gas amount`,
+      );
     }
     msg.robot.logger.debug(
       `Get the bot wallet by user ${msg.message.user.name}, ${_.pick(
@@ -107,7 +110,7 @@ class WalletService {
       });
     }
 
-    return msg.send(message);
+    await msg.send(message);
   }
 }
 

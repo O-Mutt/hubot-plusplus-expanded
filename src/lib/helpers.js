@@ -48,8 +48,8 @@ class Helpers {
         return true;
       }
     } catch (e) {
-      if (robot) {
-        robot.logger.debug('There was an error in the isCakeDay function', e);
+      if (robot && robot.logger && robot.logger.error) {
+        robot.logger.error('There was an error in the isCakeDay function', e);
       } else {
         // eslint-disable-next-line no-console
         console.log('There was an error in the isCakeDay function', e);

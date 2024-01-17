@@ -18,7 +18,7 @@ class ScoreboardService {
     const user = await dbs.getUser(msg.robot, to);
 
     const scoreString = mfs.BuildScoreLookup(msg.robot, user);
-    msg.send(scoreString);
+    await msg.send(scoreString);
   }
 
   static async respondWithLeaderLoserBoard(msg) {
@@ -54,7 +54,7 @@ class ScoreboardService {
     const graphSize = Math.min(tops.length, Math.min(amount, 20));
     message.splice(0, 0, clark(_.take(_.map(tops, 'score'), graphSize)));
 
-    return msg.send(message.join('\n'));
+    await msg.send(message.join('\n'));
   }
 
   static async respondWithLeaderLoserTokenBoard(msg) {
@@ -87,7 +87,7 @@ class ScoreboardService {
     const graphSize = Math.min(tops.length, Math.min(amount, 20));
     message.splice(0, 0, clark(_.take(_.map(tops, 'token'), graphSize)));
 
-    return msg.send(message.join('\n'));
+    await msg.send(message.join('\n'));
   }
 
   static async getTopPointSenders(msg) {
@@ -121,7 +121,7 @@ class ScoreboardService {
       clark(_.take(_.map(tops, 'totalPointsGiven'), graphSize)),
     );
 
-    return msg.send(message.join('\n'));
+    await msg.send(message.join('\n'));
   }
 }
 

@@ -6,46 +6,22 @@ const { GeneratePlusPlusEventObject } = require('../../events/plusPlus');
 const {
   GeneratePlusPlusFailureEventObject,
 } = require('../../events/plusPlusFalsePositive');
+const ReactionService = require('./reactionService');
 
 class PlusPlusService {
-  static buildPlusPlusNotification(
-    msg,
-    operator,
-    fromUser,
-    toUser,
-    room,
-    cleanReason,
-    amount = 1,
-  ) {
-    const capRobotName = H.capitalizeFirstLetter(msg.robot.name);
-    const sentOrRem = operator.match(rpp.positiveOperators)
-      ? 'sent'
-      : 'removed';
-    const toOrFrom = operator.match(rpp.positiveOperators) ? 'to' : 'from';
-
-    const fromValue = fromUser.slackId
-      ? `<@${fromUser.slackId}>`
-      : fromUser.name;
-    const toValue = toUser.slackId ? `<@${toUser.slackId}>` : toUser.name;
-
-    return {
-      notificationMessage: `${fromValue} ${sentOrRem} a ${capRobotName} point ${toOrFrom} ${toValue} in <#${room}>`,
-      sender: fromUser,
-      recipient: toUser,
-      direction: operator,
-      amount,
-      room,
-      reason: cleanReason,
-      msg,
-    };
-  }
-
   /**
    * Functions for responding to commands
    */
   static async upOrDownVote(msg) {
-    const [_fullText, premessage, name, operator, conjunction, reason] =
-      msg.match;
+    const [
+      _fullText,
+      premessage,
+      name,
+      operator,
+      conjunction,
+      reason,
+      silentFlag = false,
+    ] = msg.match;
 
     if (H.isKnownFalsePositive(premessage, conjunction, reason, operator)) {
       // circuit break a plus plus
@@ -65,7 +41,6 @@ class PlusPlusService {
     }
     const cleanReason = H.cleanAndEncode(reason);
     const from = msg.message.user;
-
     msg.robot.logger.debug(
       `${increment} score for [${to.name}] from [${from}]${
         cleanReason ? ` because ${cleanReason}` : ''
@@ -83,10 +58,9 @@ class PlusPlusService {
         increment,
       ));
     } catch (e) {
-      msg.send(e.message);
+      await msg.send(e.message);
       return;
     }
-
     const message = mfs.BuildNewScoreMessage(
       msg.robot,
       toUser,
@@ -95,7 +69,10 @@ class PlusPlusService {
     );
 
     if (message) {
-      msg.send(message);
+      await ReactionService.addPlusPlusReaction(msg, silentFlag);
+      if (!silentFlag) {
+        await msg.send(message);
+      }
 
       msg.robot.emit('plus-plus', [
         GeneratePlusPlusEventObject({
@@ -104,14 +81,22 @@ class PlusPlusService {
           fromUser,
           toUser,
           cleanReason,
+          silent: silentFlag,
         }),
       ]);
     }
   }
 
   static async multipleUsersVote(msg) {
-    const [_fullText, premessage, names, operator, conjunction, reason] =
-      msg.match;
+    const [
+      _fullText,
+      premessage,
+      names,
+      operator,
+      conjunction,
+      reason,
+      silentFlag = false,
+    ] = msg.match;
     if (!names) {
       return;
     }
@@ -156,7 +141,7 @@ class PlusPlusService {
     const increment = operator.match(rpp.positiveOperators) ? 1 : -1;
 
     if (cleanNames.length !== toList.length) {
-      msg.send(
+      await msg.send(
         'We are having trouble mapping your multi-user plusplus. Please try again and only include @ mentions.',
       );
       return;
@@ -212,7 +197,10 @@ class PlusPlusService {
       `These are the original messages \n ${deDupedMessages.join('\n')}\n\n`,
       `These are the de-duped messages \n ${deDupedMessages.join('\n')}`,
     );
-    msg.send(deDupedMessages.join('\n'));
+    ReactionService.addPlusPlusReaction(msg, silentFlag);
+    if (!silentFlag) {
+      await msg.send(deDupedMessages.join('\n'));
+    }
   }
 
   /**
@@ -244,7 +232,7 @@ class PlusPlusService {
       (msg.robot.auth ? msg.robot.auth.hasRole(user, 'admin') : undefined);
 
     if (!msg.robot.auth || !isAdmin) {
-      msg.reply("Sorry, you don't have authorization to do that.");
+      await msg.reply("Sorry, you don't have authorization to do that.");
       return;
     }
     if (isAdmin) {
@@ -256,7 +244,7 @@ class PlusPlusService {
       const message = !decodedReason
         ? `Erased the following reason from ${to.name}: ${decodedReason}`
         : `Erased points for ${to.name}`;
-      msg.send(message);
+      await msg.send(message);
     }
   }
 }

@@ -9,6 +9,7 @@
 //  O'Mutt (Matt@OKeefe.dev)
 
 const { ehs } = require('./lib/services/eventHandler');
+const ReactionService = require('./lib/services/reactionService');
 
 module.exports = function events(robot) {
   // Reference ./events/plusPlusEvent.js for the event object
@@ -20,4 +21,8 @@ module.exports = function events(robot) {
     ehs.sendPlusPlusFalsePositiveNotification(robot, ...args),
   );
   robot.on('plus-plus-spam', (...args) => ehs.logAndNotifySpam(robot, ...args));
+
+  robot.on('plus-plus-reaction', (...args) =>
+    ReactionService.addReaction(robot, ...args),
+  );
 };

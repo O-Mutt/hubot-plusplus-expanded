@@ -17,7 +17,11 @@ describe('RegExpPlusPlus', () => {
   });
 
   describe('positiveOperators', () => {
-    const positiveRegexp = new RegExp(RegExpPlusPlus.positiveOperators);
+    let positiveRegexp;
+    beforeEach(() => {
+      positiveRegexp = new RegExp(RegExpPlusPlus.positiveOperators);
+    });
+
     it('should match base-line ++', () => {
       expect('++').toMatch(positiveRegexp);
     });
@@ -44,7 +48,11 @@ describe('RegExpPlusPlus', () => {
   });
 
   describe('negativeOperators', () => {
-    const negativeRegexp = new RegExp(RegExpPlusPlus.negativeOperators);
+    let negativeRegexp;
+    beforeEach(() => {
+      negativeRegexp = new RegExp(RegExpPlusPlus.negativeOperators);
+    });
+
     it('should match base-line --', () => {
       expect('--').toMatch(negativeRegexp);
     });
@@ -63,6 +71,7 @@ describe('RegExpPlusPlus', () => {
     beforeEach(() => {
       askForScoreRegExp = RegExpPlusPlus.createAskForScoreRegExp();
     });
+
     it('should match `score for @matt`', () => {
       const fullText = 'score for @matt';
       expect(askForScoreRegExp).toBeInstanceOf(RegExp);
@@ -217,6 +226,27 @@ describe('RegExpPlusPlus', () => {
         '@user, @phil.user',
         '--',
         undefined,
+        undefined,
+      ];
+      expected.index = 0;
+      expected.input = expected[0];
+      expected.groups = undefined;
+
+      expect(multiUserVoteRegExp).toBeInstanceOf(RegExp);
+
+      const match = fullText.match(multiUserVoteRegExp);
+      expect(match).toEqual(expected);
+    });
+
+    it.skip("should match '{@user, @phil.user}-- --silent'", () => {
+      const fullText = '{@user, @phil.user}-- --silent';
+      const expected = [
+        fullText,
+        undefined,
+        '@user, @phil.user',
+        '--',
+        undefined,
+        '--silent',
         undefined,
       ];
       expected.index = 0;
@@ -488,6 +518,30 @@ describe('RegExpPlusPlus', () => {
           '++',
           undefined,
           undefined,
+        ];
+        expected.index = 0;
+        expected.input = '@matt++';
+        expected.groups = undefined;
+
+        const upVoteOrDownVoteRegExp = RegExpPlusPlus.createUpDownVoteRegExp();
+        expect(upVoteOrDownVoteRegExp).toBeInstanceOf(RegExp);
+
+        const fullMatch = fullText.match(upVoteOrDownVoteRegExp);
+        expect(fullText).toMatch(upVoteOrDownVoteRegExp);
+        expect(Array.isArray(fullMatch)).toBe(true);
+        expect(fullMatch.length).toBe(6);
+        expect(fullMatch).toEqual(expected);
+      });
+
+      it.skip('should match name [@matt] up/down [++] with reason [undefined] and [--silent] flag', () => {
+        const fullText = '@matt++ --silent';
+        const expected = [
+          fullText,
+          undefined,
+          'matt',
+          '++',
+          undefined,
+          '--silent',
         ];
         expected.index = 0;
         expected.input = '@matt++';

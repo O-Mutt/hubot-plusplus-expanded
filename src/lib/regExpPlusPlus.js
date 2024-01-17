@@ -18,7 +18,10 @@ class RegExpPlusPlus {
     this.negativeOperators =
       '--|—|\u2013|\u2014|:thumbsdown:(?::skin-tone-[0-9]:)?';
     this.operator = `(${this.positiveOperators}|${this.negativeOperators})`;
+    // has reason conjunction maybe spaces and then not --silent or -s and then the reason
+    // this.reasonForVote = `(?:\\s+(${reasonConjunctions})?\\s*((?!\\s+--silent|\\s+-s).+))?`;
     this.reasonForVote = `(?:\\s+(${reasonConjunctions})?\\s*(.+))?`;
+    this.silentFlag = '(\\s+(--silent|-s))?';
     this.eol = '$';
   }
 
@@ -54,6 +57,7 @@ class RegExpPlusPlus {
     const multiUserVotedObject = `(.*)?(?:\\{|\\[|\\()\\s?((?:${this.nonCaptureVoted}${this.nonCaptureSpace}${this.multiUserSeparator}?${this.nonCaptureSpace}?)+)\\s?(?:\\}|\\]|\\))`;
 
     return new RegExp(
+      //      `${multiUserVotedObject}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.silentFlag}${this.eol}`,
       `${multiUserVotedObject}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.eol}`,
       'i',
     );
@@ -97,6 +101,7 @@ class RegExpPlusPlus {
    */
   createUpDownVoteRegExp() {
     return new RegExp(
+      // `(.*)?${this.captureVoted}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.silentFlag}${this.eol}`,
       `(.*)?${this.captureVoted}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.eol}`,
       'i',
     );
@@ -108,6 +113,7 @@ class RegExpPlusPlus {
    */
   createGiveTokenRegExp() {
     const reg = new RegExp(
+      // `(.*)?${this.captureVoted}${this.allowSpaceAfterObject}\\+${this.allowSpaceAfterObject}([0-9]{1,})${this.reasonForVote}${this.silentFlag}${this.eol}`,
       `(.*)?${this.captureVoted}${this.allowSpaceAfterObject}\\+${this.allowSpaceAfterObject}([0-9]{1,})${this.reasonForVote}${this.eol}`,
       'i',
     );

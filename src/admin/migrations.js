@@ -35,7 +35,7 @@ module.exports = function migrations(robot) {
       msg.message.user.id !== 'UD46NSKSM' &&
       msg.message.user.id !== 'U0231VDAB1B'
     ) {
-      msg.reply("Sorry, can't do that https://i.imgur.com/Gp6wNZr.gif");
+      await msg.reply("Sorry, can't do that https://i.imgur.com/Gp6wNZr.gif");
       return;
     }
     await dbs.init();
@@ -65,7 +65,7 @@ module.exports = function migrations(robot) {
         robot.logger.error('failed to find', member, er);
       }
     }
-    msg.reply(
+    await msg.reply(
       `Ding fries are done. We mapped ${mappings.length} of ${
         members.length
       } users. \n${mappings.join('\n')}`,
@@ -77,7 +77,7 @@ module.exports = function migrations(robot) {
       msg.message.user.id !== 'UD46NSKSM' &&
       msg.message.user.id !== 'U0231VDAB1B'
     ) {
-      msg.reply("Sorry, can't do that https://i.imgur.com/Gp6wNZr.gif");
+      await msg.reply("Sorry, can't do that https://i.imgur.com/Gp6wNZr.gif");
       return;
     }
     await dbs.init();
@@ -105,7 +105,7 @@ module.exports = function migrations(robot) {
         }
       }
     }
-    msg.reply('Ding fries are done.');
+    await msg.reply('Ding fries are done.');
   }
 
   async function mapSingleUserToDb(msg) {
@@ -113,12 +113,12 @@ module.exports = function migrations(robot) {
       msg.message.user.id !== 'UD46NSKSM' &&
       msg.message.user.id !== 'U0231VDAB1B'
     ) {
-      msg.reply("Sorry, can't do that https://i.imgur.com/Gp6wNZr.gif");
+      await msg.reply("Sorry, can't do that https://i.imgur.com/Gp6wNZr.gif");
       return;
     }
     const { mentions } = msg.message;
     if (!mentions) {
-      msg.reply('You need to @ someone to map.');
+      await msg.reply('You need to @ someone to map.');
       return;
     }
     const userMentions = mentions.filter((men) => men.type === 'user');
@@ -141,7 +141,7 @@ module.exports = function migrations(robot) {
         await db
           .collection(scoresDocumentName)
           .replaceOne({ name: localMember.name }, localMember);
-        msg.reply(
+        await msg.reply(
           `Mapping completed for ${to.name}: { name: ${localMember.name}, slackId: ${localMember.slackId}, id: ${localMember._id} }`,
         );
         return;
@@ -157,7 +157,7 @@ module.exports = function migrations(robot) {
       msg.message.user.id !== 'UD46NSKSM' &&
       msg.message.user.id !== 'U0231VDAB1B'
     ) {
-      msg.reply("Sorry, can't do that https://i.imgur.com/Gp6wNZr.gif");
+      await msg.reply("Sorry, can't do that https://i.imgur.com/Gp6wNZr.gif");
       return;
     }
     await dbs.init();
@@ -170,7 +170,7 @@ module.exports = function migrations(robot) {
     } catch (er) {
       robot.logger.error('failed to unset all slack ids', er);
     }
-    msg.reply('Ding fries are done. We unmapped all users');
+    await msg.reply('Ding fries are done. We unmapped all users');
   }
 
   async function mapSlackIdToEmail(msg) {
@@ -178,7 +178,7 @@ module.exports = function migrations(robot) {
       msg.message.user.id !== 'UD46NSKSM' &&
       msg.message.user.id !== 'U0231VDAB1B'
     ) {
-      msg.reply("Sorry, can't do that https://i.imgur.com/Gp6wNZr.gif");
+      await msg.reply("Sorry, can't do that https://i.imgur.com/Gp6wNZr.gif");
       return;
     }
 
@@ -214,7 +214,7 @@ module.exports = function migrations(robot) {
             .collection(scoresDocumentName)
             .replaceOne({ slackId: replacedUser.slackId }, replacedUser);
         }
-        msg.send(
+        await msg.send(
           `Mapping completed for ${replacedUser.name}: { name: ${replacedUser.name}, slackId: <@${replacedUser.slackId}>, email: ${replacedUser.slackEmail} }`,
         );
       });

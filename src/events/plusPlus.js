@@ -11,6 +11,7 @@ module.exports.GeneratePlusPlusEventObject =
       toUser = {},
       cleanReason,
       amount = 1,
+      silent = false,
     } = {
       msg: {},
       operator: undefined,
@@ -19,6 +20,7 @@ module.exports.GeneratePlusPlusEventObject =
       toUser: {},
       cleanReason: undefined,
       amount: 1,
+      silent: false,
     },
   ) {
     // check if everything is defaults
@@ -65,13 +67,14 @@ module.exports.GeneratePlusPlusEventObject =
     }
 
     return {
-      notificationMessage: `${fromStr} sent ${amountStr} ${plusPlusEvent.capitalRobotName} point${plusPlusEvent.pluralStrAddition} to ${toStr} in ${plusPlusEvent.room}`,
-      recipient: plusPlusEvent.toUser,
-      sender: plusPlusEvent.fromUser,
-      direction: plusPlusEvent.direction,
       amount: plusPlusEvent.amount,
-      room: plusPlusEvent.room,
-      reason: plusPlusEvent.cleanReason,
+      direction: plusPlusEvent.direction,
       msg: plusPlusEvent.msg,
+      notificationMessage: `${fromStr} sent ${amountStr} ${plusPlusEvent.capitalRobotName} point${plusPlusEvent.pluralStrAddition} to ${toStr} in ${plusPlusEvent.room}`,
+      reason: plusPlusEvent.cleanReason,
+      recipient: plusPlusEvent.toUser,
+      room: plusPlusEvent.room,
+      sender: plusPlusEvent.fromUser,
+      silent,
     };
   };

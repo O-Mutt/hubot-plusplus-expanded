@@ -14,10 +14,9 @@ describe('PlusPlus', () => {
   let onSpy;
   beforeAll(async () => {
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
-    plusPlusHelper = new TestHelper([
+    plusPlusHelper = new TestHelper(
       relativeTestHelperPathHelper('src/messageHandlers/plusplus.js'),
-      relativeTestHelperPathHelper('src/eventHandlers.js'),
-    ]);
+    );
   });
 
   afterAll(async () => {});
@@ -33,6 +32,7 @@ describe('PlusPlus', () => {
     });
 
     room = await plusPlusHelper.createRoom({ httpd: false });
+    room.options = { token: 'mock-token' };
     emitSpy = jest.spyOn(room.robot, 'emit');
     onSpy = jest.spyOn(room.robot, 'on');
   });
@@ -43,9 +43,10 @@ describe('PlusPlus', () => {
 
   describe('upOrDownVote', () => {
     describe('adding points', () => {
-      it("should add a point when a user is ++'d", async () => {
-        room.user.say('matt.erickson', '@derp++');
+      it("derp should add a point when a user is ++'d", async () => {
+        await room.user.say('matt.erickson', '@derp++');
         await wait();
+
         expect(room.messages.length).toBe(2);
         expect(room.messages[1].length).toBe(2);
         expect(room.messages[1][1]).toBe(
@@ -56,7 +57,7 @@ describe('PlusPlus', () => {
       });
 
       it("should add a point when a user is ++'d with pre-text", async () => {
-        room.user.say('matt.erickson', 'where are you d00d @derp++');
+        await room.user.say('matt.erickson', 'where are you d00d @derp++');
         await wait();
         expect(room.messages.length).toBe(2);
         expect(room.messages[1].length).toBe(2);
@@ -79,7 +80,7 @@ describe('PlusPlus', () => {
       });
 
       it("should add a point when a user is ++'d without a conjunction", async () => {
-        room.user.say('matt.erickson', '@derp++ winning the business');
+        await room.user.say('matt.erickson', '@derp++ winning the business');
         await wait();
         expect(room.messages.length).toBe(2);
         expect(room.messages[1].length).toBe(2);
@@ -102,7 +103,7 @@ describe('PlusPlus', () => {
       });
 
       it("should add a point when a user is :clap:'d", async () => {
-        room.user.say('matt.erickson', '@derp :clap:');
+        await room.user.say('matt.erickson', '@derp :clap:');
         await wait();
         expect(room.messages.length).toBe(2);
         expect(room.messages[1].length).toBe(2);
@@ -112,7 +113,10 @@ describe('PlusPlus', () => {
       });
 
       it("should add a point when a user is :thumbsup:'d", async () => {
-        room.user.say('matt.erickson', '@derp :thumbsup: for being the best');
+        await room.user.say(
+          'matt.erickson',
+          '@derp :thumbsup: for being the best',
+        );
         await wait();
         expect(room.messages.length).toBe(2);
         expect(room.messages[1].length).toBe(2);
@@ -124,7 +128,7 @@ describe('PlusPlus', () => {
       });
 
       it("should add a point when a user that is already in the db is ++'d", async () => {
-        room.user.say('matt.erickson.min', '@matt.erickson++');
+        await room.user.say('matt.erickson.min', '@matt.erickson++');
         await wait();
         expect(room.messages.length).toBe(2);
         expect(room.messages[1].length).toBe(2);
@@ -137,7 +141,7 @@ describe('PlusPlus', () => {
 
       describe('multi user vote', () => {
         it('should add a point to each user in the multi-user plus plus', async () => {
-          room.user.say('matt.erickson', '{ @darf, @greg, @tank }++');
+          await room.user.say('matt.erickson', '{ @darf, @greg, @tank }++');
           await wait();
           expect(room.messages.length).toBe(2);
           expect(room.messages[1].length).toBe(2);
@@ -152,7 +156,10 @@ describe('PlusPlus', () => {
           const capRobotName = H.capitalizeFirstLetter(room.robot.name);
           const sender = 'matt.erickson';
           const recipients = ['the.thing', 'sends.the.event'];
-          room.user.say(sender, `{ @${recipients[0]}, @${recipients[1]} }++`);
+          await room.user.say(
+            sender,
+            `{ @${recipients[0]}, @${recipients[1]} }++`,
+          );
           await wait();
           expect(room.messages.length).toBe(2);
           expect(room.robot.emit).toHaveBeenCalledWith(
@@ -171,7 +178,7 @@ describe('PlusPlus', () => {
         });
 
         it('should add a point to each user in the multi-user plus plus with text before it', async () => {
-          room.user.say(
+          await room.user.say(
             'matt.erickson',
             'hello world! { @darf, @greg, @tank }++',
           );
@@ -186,7 +193,7 @@ describe('PlusPlus', () => {
         });
 
         it('should add a point to each user in the multi-user plus plus with periods in their names', async () => {
-          room.user.say(
+          await room.user.say(
             'matt.erickson',
             '{ @darf.arg, @pirate.jack123, @ted.phil } ++',
           );
@@ -200,7 +207,7 @@ describe('PlusPlus', () => {
       });
 
       it('should add a point to user with reason', async () => {
-        room.user.say(
+        await room.user.say(
           'matt.erickson.min',
           '@matt.erickson++ for being awesome',
         );
@@ -213,7 +220,7 @@ describe('PlusPlus', () => {
       });
 
       it('should add a point to user with (sans) conjunction reason', async () => {
-        room.user.say(
+        await room.user.say(
           'matt.erickson.min',
           "@matt.erickson++ gawd you're awesome",
         );
@@ -241,7 +248,7 @@ describe('PlusPlus', () => {
           .collection('scores')
           .findOne({ name: 'matt.erickson.min' });
         expect(user.score).toBe(8);
-        room.user.say('matt.erickson', '@matt.erickson.min--');
+        await room.user.say('matt.erickson', '@matt.erickson.min--');
         await wait();
         expect(room.messages.length).toBe(2);
         expect(room.messages[1].length).toBe(2);
@@ -253,7 +260,7 @@ describe('PlusPlus', () => {
       });
 
       it("should subtract a point when a user is :thumbsdown:'d", async () => {
-        room.user.say(
+        await room.user.say(
           'matt.erickson',
           '@matt.erickson.min :thumbsdown: for being the best',
         );
@@ -270,7 +277,7 @@ describe('PlusPlus', () => {
       });
 
       it("shouldn't remove a point when a user is ++'d with pre-text and no conjunction", async () => {
-        room.user.say(
+        await room.user.say(
           'matt.erickson',
           'hello, @derp -- i have no idea what you are doing',
         );

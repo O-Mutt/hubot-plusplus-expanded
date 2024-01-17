@@ -190,7 +190,7 @@ class DatabaseService {
         `${from.name} has sent a lot of points to ${to.name} suggesting further feedback ${score}`,
       );
       const toIdent = to.slackId ? `<@${to.slackId}>` : to.name;
-      robot.messageRoom(
+      await robot.messageRoom(
         from.id,
         `Looks like you've given ${toIdent} quite a few points, maybe you should look at submitting ${peerFeedbackUrl}`,
       );

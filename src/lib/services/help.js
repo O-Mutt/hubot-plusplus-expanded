@@ -4,7 +4,7 @@ const { H } = require('../helpers');
 const pjson = require('../../../package.json');
 
 class HelpService {
-  static respondWithHelpGuidance(msg) {
+  static async respondWithHelpGuidance(msg) {
     const procVars = H.getProcessVariables(process.env);
 
     const { monthlyScoreboardCron, monthlyScoreboardDayOfWeek } = procVars;
@@ -70,7 +70,7 @@ class HelpService {
         },
       });
     }
-    msg.send(message);
+    await msg.send(message);
   }
 
   static async tellHowMuchPointsAreWorth(msg) {
@@ -82,18 +82,18 @@ class HelpService {
       const bitcoin = resp.data.bpi.USD.rate_float;
       const ars = resp.data.bpi.ARS.rate_float;
       const satoshi = bitcoin / 1e8;
-      return msg.send(
+      await msg.send(
         `A bitcoin is worth ${bitcoin} USD right now (${ars} ARS), a satoshi is about ${satoshi}, and ${msg.robot.name} points are worth nothing!`,
       );
     } catch (e) {
-      return msg.send(
+      await msg.send(
         `Seems like we are having trouble getting some data... Don't worry, though, your ${msg.robot.name} points are still worth nothing!`,
       );
     }
   }
 
-  static respondWithVersion(msg) {
-    msg.send(
+  static async respondWithVersion(msg) {
+    await msg.send(
       `${H.capitalizeFirstLetter(msg.robot.name)} <${pjson.repository.url}|${
         pjson.name
       }> <https://www.npmjs.com/package/${pjson.name}|v${pjson.version}>.`,

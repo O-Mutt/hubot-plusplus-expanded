@@ -61,7 +61,7 @@ module.exports = function cron(robot) {
           0,
           `:tada: The top 10 ${robot.name} point senders over the last month! :tada:`,
         );
-        robot.messageRoom(procVars.notificationsRoom, message.join('\n'));
+        await robot.messageRoom(procVars.notificationsRoom, message.join('\n'));
 
         // Recipients
         const topRecipient = await dbs.getTopReceiverInDuration(10, 30);
@@ -98,7 +98,7 @@ module.exports = function cron(robot) {
           0,
           `:tada: The top 10 ${robot.name} point recipients over the last month! :tada:`,
         );
-        robot.messageRoom(procVars.notificationsRoom, message.join('\n'));
+        await robot.messageRoom(procVars.notificationsRoom, message.join('\n'));
 
         // Room
         const topRoom = await dbs.getTopRoomInDuration(3, 30);
@@ -131,7 +131,7 @@ module.exports = function cron(robot) {
           0,
           `:tada: The top 3 rooms that sent ${robot.name} point(s) over the last month! :tada:`,
         );
-        robot.messageRoom(procVars.notificationsRoom, message.join('\n'));
+        await robot.messageRoom(procVars.notificationsRoom, message.join('\n'));
       }
     },
     null,

@@ -46,6 +46,9 @@ const mockSlackClient = () => {
             },
           }),
         },
+        reactions: {
+          add: jest.fn(),
+        },
       }),
     };
   });
