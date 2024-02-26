@@ -20,5 +20,5 @@ module.exports = function help(robot) {
     HelpService.respondWithVersion,
   );
 
-  robot.hear(/how much .*point.*/i, HelpService.tellHowMuchPointsAreWorth);
+  robot.respond(/how much .*point.*/i, HelpService.tellHowMuchPointsAreWorth);
 };
