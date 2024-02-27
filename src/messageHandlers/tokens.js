@@ -8,7 +8,7 @@
 // Author:
 //  O'Mutt (Matt@OKeefe.dev)
 
-const { rpp } = require('../lib/regExpPlusPlus');
+const { rpp } = require('../lib/matchers/messageMatchers');
 const TokenService = require('../lib/services/token');
 
 module.exports = function tokens(robot) {

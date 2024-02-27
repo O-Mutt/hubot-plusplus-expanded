@@ -1,4 +1,11 @@
+const jestVersion = require('jest/package.json').version;
+
 module.exports = {
+  settings: {
+    jest: {
+      version: jestVersion,
+    },
+  },
   env: {
     commonjs: true,
     es2021: true,
@@ -40,15 +47,52 @@ module.exports = {
   },
   overrides: [
     {
+      // Just lint the test files
+      files: ['**/*.test.[tj]s'],
       env: {
-        mocha: true,
+        'jest/globals': true,
       },
-      plugins: ['mocha'],
-      files: ['*.test.*', '**/*.test.*'],
+      plugins: ['jest'],
+      extends: ['plugin:jest/recommended', 'plugin:jest/style'],
       rules: {
-        'no-unused-expressions': 'off',
-        'jest/no-setup-in-describe': 'warn',
-        'no-console': 'off',
+        'jest/no-disabled-tests': 'warn',
+        'jest/no-focused-tests': 'error',
+        'jest/no-identical-title': 'error',
+        'jest/prefer-to-have-length': 'warn',
+        'jest/valid-expect': 'error',
+      },
+    },
+    {
+      files: ['**/*.ts'],
+      env: {},
+      plugins: ['@typescript-eslint'],
+      extends: [
+        'plugin:@typescript-eslint/eslint-recommended',
+        'plugin:@typescript-eslint/recommended-type-checked',
+        'plugin:@typescript-eslint/stylistic-type-checked',
+        'plugin:jsdoc/recommended-typescript',
+      ],
+      rules: {
+        // typescript specific
+        '@typescript-eslint/ban-ts-comment': 'warn',
+        '@typescript-eslint/ban-types': 'warn',
+        '@typescript-eslint/explicit-function-return-type': [
+          'warn',
+          {
+            allowExpressions: true,
+          },
+        ],
+        'lines-between-class-members': [
+          'error',
+          'always',
+          {
+            exceptAfterSingleLine: true,
+          },
+        ],
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_' },
+        ],
       },
     },
   ],

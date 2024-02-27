@@ -1,5 +1,5 @@
 const { default: axios } = require('axios');
-const { conjunction } = require('../regExpPlusPlus');
+const { REASON_CONJUNCTIONS } = require('../matchers/matcherConstants');
 const { H } = require('../helpers');
 const pjson = require('../../../package.json');
 
@@ -28,7 +28,7 @@ class HelpService {
       "`<name> + <number> [<reason>]` - Transfer <number> tokens from your wallet to the receiver's wallet (for an optional reason).\n",
       `\`hot wallet\` displays info about \`@${bn}\`'s wallet\n`,
       '`[<reason>]` indicates optional message parameters\n',
-      `Each \`[<reason>]\` can be prefixed with a conjunction ${conjunction}`,
+      `Each \`[<reason>]\` can be prefixed with a conjunction ${REASON_CONJUNCTIONS}`,
     );
     const message = {
       attachments: [

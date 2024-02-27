@@ -10,7 +10,7 @@
 // Author:
 //  O'Mutt (Matt@OKeefe.dev)
 
-const { RegExpPlusPlus } = require('../lib/regExpPlusPlus');
+const { RegExpPlusPlus } = require('../lib/matchers/messageMatchers');
 const HelpService = require('../lib/services/help');
 
 module.exports = function help(robot) {

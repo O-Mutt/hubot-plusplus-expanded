@@ -1,7 +1,7 @@
 const { WebClient } = require('@slack/web-api');
 
 class ReactionService {
-  static async addPlusPlusReaction(msg, silent = true) {
+  static async addPlusPlusReaction(msg, silent = false) {
     await ReactionService.addReaction(msg.robot, {
       silent,
       msg,
@@ -58,3 +58,4 @@ class ReactionService {
 }
 
 module.exports = ReactionService;
+module.exports.rs = ReactionService;

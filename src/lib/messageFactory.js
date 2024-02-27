@@ -1,8 +1,8 @@
-const { format, parseISO } = require('date-fns');
 const _ = require('lodash');
 
 const { H } = require('./helpers');
 const { upsideDownChars, nonSequiturs } = require('./static/a1');
+const { loadConfig } = require('../config');
 
 class MessageFactory {
   /**
@@ -13,9 +13,9 @@ class MessageFactory {
    * @static
    */
   static BuildScoreLookup(robot, user) {
+    const config = loadConfig();
     const robotName = robot.name;
-    const pVars = H.getProcessVariables(process.env);
-    if (_.isEmpty(user) || _.isEmpty(pVars)) return '';
+    if (_.isEmpty(user)) return '';
     let tokenString = '.';
     if (user.accountLevel > 1) {
       tokenString = ` (*${user.token} ${H.capitalizeFirstLetter(robotName)} `;
@@ -55,7 +55,9 @@ class MessageFactory {
         '',
       );
 
-      return `${baseString}\n\n:star: Here are some ${pVars.reasonsKeyword} :star:${reasonMap}`;
+      return `${baseString}\n\n:star: Here are some ${config.get(
+        'reasonKeyword',
+      )} :star:${reasonMap}`;
     }
 
     return baseString;

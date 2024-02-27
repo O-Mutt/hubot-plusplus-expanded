@@ -1,9 +1,85 @@
-const scoreKeyword = process.env.HUBOT_PLUSPLUS_KEYWORD || 'score|scores|karma';
-const reasonConjunctions =
-  process.env.HUBOT_PLUSPLUS_CONJUNCTIONS ||
-  'for|because|cause|cuz|as|porque|just|thanks for';
+import { CatchAllMessage, Message } from 'hubot';
+import { PlusPlusMatches } from './types/plusPlusMatches';
+import {
+  extractOperator,
+  extractPreMessage,
+  extractReason,
+  extractScoreKeyword,
+  extractUserId,
+} from './extractors';
+import { SlackTextMessage } from 'hubot-slack';
 
-class RegExpPlusPlus {
+const { REASON_CONJUNCTIONS } = require('./matcherConstants');
+
+export function askForScoreMatcher(msg: CatchAllMessage) {
+  try {
+    const message = msg.message.text!;
+    const hasScoreKeyword = extractScoreKeyword(message);
+    if (hasScoreKeyword) {
+      return false;
+    }
+    const userId = extractUserId(message);
+
+    if (!userId) {
+      return false;
+    }
+
+    return {
+      hasScoreKeyword,
+      userId,
+    };
+  } catch (err) {
+    return false;
+  }
+}
+
+/**
+ *
+ * @param {string} msg the incoming message to match
+ * @returns {object} matches object
+ */
+export function plusPlusMatcher(
+  msg: SlackTextMessage,
+): PlusPlusMatches | false {
+  try {
+    const message = msg.message.text!;
+    const { foundOperator, operatorSymbol, operatorIndex, direction } =
+      extractOperator(message)!;
+    const userName = extractUserId(message, operatorIndex)!;
+    const preMessage = extractPreMessage(message);
+
+    const afterOperatorMsg = message
+      .substring(operatorIndex)
+      .replace(foundOperator, '');
+    const extractedReason = extractReason(afterOperatorMsg);
+
+    return {
+      fullText: message,
+      preMessage,
+      silent: message.indexOf('--silent') > -1 || message.indexOf('-s') > -1,
+      name: userName,
+      operator: direction,
+      usedOperator: foundOperator,
+      operatorSymbol,
+      foundConjunction: extractedReason?.foundConjunction ?? null,
+      reason: extractedReason?.reasonMessage ?? null,
+    };
+  } catch (e) {
+    return false;
+  }
+}
+
+class MessageMatcher {
+  votedObject: string;
+  captureVoted: string;
+  nonCaptureVoted: string;
+  multiUserSeparator: string;
+  allowSpaceAfterObject: string;
+  nonCaptureSpace: string;
+  reasonForVote: string;
+  silentFlag: string;
+  eol: string;
+  operator: any;
   constructor() {
     this.votedObject =
       '[\\-\\w.-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]+(?<![+-])';
@@ -13,26 +89,11 @@ class RegExpPlusPlus {
     // allow for spaces after the thing being upvoted (@user ++)
     this.allowSpaceAfterObject = '\\s*';
     this.nonCaptureSpace = `(?:${this.allowSpaceAfterObject})`;
-    this.positiveOperators =
-      '\\+\\+|:clap:(?::skin-tone-[0-9]:)?|:thumbsup:(?::skin-tone-[0-9]:)?|:thumbsup_all:|:\\+1:(?::skin-tone-[0-9]:)?';
-    this.negativeOperators =
-      '--|—|\u2013|\u2014|:thumbsdown:(?::skin-tone-[0-9]:)?';
-    this.operator = `(${this.positiveOperators}|${this.negativeOperators})`;
     // has reason conjunction maybe spaces and then not --silent or -s and then the reason
-    // this.reasonForVote = `(?:\\s+(${reasonConjunctions})?\\s*((?!\\s+--silent|\\s+-s).+))?`;
-    this.reasonForVote = `(?:\\s+(${reasonConjunctions})?\\s*(.+))?`;
-    this.silentFlag = '(\\s+(--silent|-s))?';
+    // and the .+ can't end with -s or --silent
+    this.reasonForVote = `(?:\\s+(${REASON_CONJUNCTIONS})?\\s*((?!-s|--silent).+(?!-s|--silent)))?`;
+    this.silentFlag = '(?:\\s+(--silent|-s))?';
     this.eol = '$';
-  }
-
-  /**
-   * botName score for user1
-   */
-  createAskForScoreRegExp() {
-    return new RegExp(
-      `(.*)?(?:${scoreKeyword})\\s(\\w+\\s)?${this.captureVoted}`,
-      'i',
-    );
   }
 
   /**
@@ -57,8 +118,8 @@ class RegExpPlusPlus {
     const multiUserVotedObject = `(.*)?(?:\\{|\\[|\\()\\s?((?:${this.nonCaptureVoted}${this.nonCaptureSpace}${this.multiUserSeparator}?${this.nonCaptureSpace}?)+)\\s?(?:\\}|\\]|\\))`;
 
     return new RegExp(
-      //      `${multiUserVotedObject}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.silentFlag}${this.eol}`,
-      `${multiUserVotedObject}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.eol}`,
+      `${multiUserVotedObject}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.silentFlag}${this.eol}`,
+      // `${multiUserVotedObject}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.eol}`,
       'i',
     );
   }
@@ -90,19 +151,6 @@ class RegExpPlusPlus {
     const digits = '(\\d+)';
     return new RegExp(
       `${topOrBottom}${this.allowSpaceAfterObject}(?:point givers?|point senders?|givers?|senders?)${this.allowSpaceAfterObject}${digits}`,
-      'i',
-    );
-  }
-
-  /**
-   * user1++ for being dope
-   * user1-- cuz nope
-   * billy @bob++
-   */
-  createUpDownVoteRegExp() {
-    return new RegExp(
-      // `(.*)?${this.captureVoted}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.silentFlag}${this.eol}`,
-      `(.*)?${this.captureVoted}${this.allowSpaceAfterObject}${this.operator}${this.reasonForVote}${this.eol}`,
       'i',
     );
   }
@@ -145,9 +193,9 @@ class RegExpPlusPlus {
   }
 }
 
-const regExpPlusPlus = new RegExpPlusPlus();
+const regExpPlusPlus = new MessageMatcher();
 
-module.exports = regExpPlusPlus;
-module.exports.rpp = regExpPlusPlus;
-module.exports.RegExpPlusPlus = regExpPlusPlus;
-module.exports.conjunctions = reasonConjunctions;
+export default regExpPlusPlus;
+export const rpp = regExpPlusPlus;
+export const RegExpPlusPlus = regExpPlusPlus;
+export const Class = MessageMatcher;

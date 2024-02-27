@@ -10,19 +10,25 @@ const {
 describe('PlusPlus', () => {
   let room;
   let plusPlusHelper;
-  let emitSpy;
-  let onSpy;
+  let spies = {};
+  let ReactionService;
   beforeAll(async () => {
     process.env.HUBOT_CRYPTO_FURTHER_HELP_URL = undefined;
-    plusPlusHelper = new TestHelper(
-      relativeTestHelperPathHelper('src/messageHandlers/plusplus.js'),
-    );
   });
 
   afterAll(async () => {});
 
   beforeEach(async () => {
     mockSlackClient();
+    jest.mock('../lib/services/reactionService', () => {
+      const actual = jest.requireActual('../lib/services/reactionService');
+      return {
+        ...actual,
+        addPlusPlusReaction: jest.fn(),
+      };
+    });
+    ReactionService = require('../lib/services/reactionService');
+
     jest.mock('../lib/helpers', () => {
       const actual = jest.requireActual('../lib/helpers');
       return {
@@ -30,11 +36,14 @@ describe('PlusPlus', () => {
         isA1Day: jest.fn().mockReturnValue(false),
       };
     });
-
+    plusPlusHelper = new TestHelper(
+      relativeTestHelperPathHelper('src/messageHandlers/plusplus.js'),
+    );
     room = await plusPlusHelper.createRoom({ httpd: false });
     room.options = { token: 'mock-token' };
-    emitSpy = jest.spyOn(room.robot, 'emit');
-    onSpy = jest.spyOn(room.robot, 'on');
+    spies.emit = jest.spyOn(room.robot, 'emit');
+    spies.on = jest.spyOn(room.robot, 'on');
+    spies.send = jest.spyOn(room.robot, 'send');
   });
 
   afterEach(async () => {
@@ -56,6 +65,89 @@ describe('PlusPlus', () => {
         expect(user.score).toBe(1);
       });
 
+      describe('when --silent or -s', () => {
+        it('should add a point but not send the message w/ -s', async () => {
+          const beforeUser = await db
+            .collection('scores')
+            .findOne({ name: 'derpy' });
+          expect(beforeUser).toBeNull();
+
+          await room.user.say('matt.erickson', '@derpy++ -s');
+          await wait();
+
+          expect(room.messages.length).toBe(1);
+          expect(room.messages[0].length).toBe(2);
+
+          expect(ReactionService.addPlusPlusReaction).toHaveBeenCalled();
+          expect(ReactionService.addPlusPlusReaction.mock.calls.length).toEqual(
+            1,
+          );
+          expect(ReactionService.addPlusPlusReaction).toHaveBeenCalledWith(
+            expect.any(Object),
+            '-s',
+          );
+          expect(spies.send).not.toHaveBeenCalled();
+
+          const user = await db.collection('scores').findOne({ name: 'derpy' });
+          expect(user.score).toBe(1);
+        });
+
+        it('should add a point but not send the message w/ --silent', async () => {
+          const beforeUser = await db
+            .collection('scores')
+            .findOne({ name: 'kreg' });
+          expect(beforeUser).toBeNull();
+
+          await room.user.say('phil.johnson', '@kreg++ --silent');
+          await wait();
+
+          expect(room.messages.length).toBe(1);
+          expect(room.messages[0].length).toBe(2);
+
+          expect(ReactionService.addPlusPlusReaction).toHaveBeenCalled();
+          expect(ReactionService.addPlusPlusReaction.mock.calls.length).toEqual(
+            1,
+          );
+          expect(ReactionService.addPlusPlusReaction).toHaveBeenCalledWith(
+            expect.any(Object),
+            '--silent',
+          );
+          expect(spies.send).not.toHaveBeenCalled();
+
+          const user = await db.collection('scores').findOne({ name: 'kreg' });
+          expect(user.score).toBe(1);
+        });
+
+        it('should add a point but not send the message w/ --silent and a reason', async () => {
+          const beforeUser = await db
+            .collection('scores')
+            .findOne({ name: 'john' });
+          expect(beforeUser).toBeNull();
+
+          await room.user.say(
+            'phil.johnson',
+            '@john++  for being awesome --silent',
+          );
+          await wait();
+
+          expect(room.messages.length).toBe(1);
+          expect(room.messages[0].length).toBe(2);
+
+          expect(ReactionService.addPlusPlusReaction).toHaveBeenCalled();
+          expect(ReactionService.addPlusPlusReaction.mock.calls.length).toEqual(
+            1,
+          );
+          expect(ReactionService.addPlusPlusReaction).toHaveBeenCalledWith(
+            expect.any(Object),
+            '--silent',
+          );
+          expect(spies.send).not.toHaveBeenCalled();
+
+          const user = await db.collection('scores').findOne({ name: 'john' });
+          expect(user.score).toBe(1);
+        });
+      });
+
       it("should add a point when a user is ++'d with pre-text", async () => {
         await room.user.say('matt.erickson', 'where are you d00d @derp++');
         await wait();
@@ -64,7 +156,7 @@ describe('PlusPlus', () => {
         expect(room.messages[1][1]).toBe(
           "derp has 1 point.\n:birthday: Today is derp's hubotday! :birthday:",
         );
-        expect(emitSpy).not.toHaveBeenCalledWith('plus-plus-failure', {
+        expect(spies.emit).not.toHaveBeenCalledWith('plus-plus-failure', {
           notificationMessage:
             'False positive detected in <#room1> from <@matt.erickson>:\n' +
             'Pre-Message text: [true].\n' +
@@ -87,7 +179,7 @@ describe('PlusPlus', () => {
         expect(room.messages[1][1]).toMatch(
           /derp has 1 point for winning the business\.\n:birthday: Today is derp's hubotday! :birthday:/,
         );
-        expect(emitSpy).not.toHaveBeenCalledWith('plus-plus-failure', {
+        expect(spies.emit).not.toHaveBeenCalledWith('plus-plus-failure', {
           notificationMessage:
             'False positive detected in <#room1> from <@matt.erickson>:\n' +
             'Pre-Message text: [false].\n' +
@@ -230,7 +322,7 @@ describe('PlusPlus', () => {
         expect(room.messages[1][1]).toBe(
           "<@matt.erickson> has 228 points, 1 of which is for gawd you're awesome.",
         );
-        expect(emitSpy).not.toHaveBeenCalledWith('plus-plus-failure', {
+        expect(spies.emit).not.toHaveBeenCalledWith('plus-plus-failure', {
           notificationMessage:
             'False positive detected in <#room1> from <@derp>:\n' +
             'Pre-Message text: [false].\n' +
@@ -282,9 +374,9 @@ describe('PlusPlus', () => {
           'hello, @derp -- i have no idea what you are doing',
         );
         await wait(2000);
-        expect(emitSpy).toHaveBeenCalled();
-        expect(emitSpy.mock.calls[0][0]).toEqual('plus-plus-failure');
-        expect(emitSpy.mock.calls[0][1]).toEqual({
+        expect(spies.emit).toHaveBeenCalled();
+        expect(spies.emit.mock.calls[0][0]).toEqual('plus-plus-failure');
+        expect(spies.emit.mock.calls[0][1]).toEqual({
           notificationMessage:
             'False positive detected in <#room1> from <@matt.erickson>:\n' +
             'Has Pre-Message: [true].\n' +

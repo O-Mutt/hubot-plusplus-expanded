@@ -1,9 +1,9 @@
 const { MongoClient } = require('mongodb');
 const { formatISO, subMinutes } = require('date-fns');
 
-const scores = require('../data/scores');
-const logDocumentName = require('../data/scoreLog');
-const botTokenDocumentName = require('../data/botToken');
+const scores = require('../dataModels/user');
+const logDocumentName = require('../dataModels/scoreLog');
+const botTokenDocumentName = require('../dataModels/botToken');
 const { H } = require('../helpers');
 
 class DatabaseService {

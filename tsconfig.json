@@ -1,0 +1,31 @@
+{
+  "extends": "@tsconfig/node-lts/tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "alwaysStrict": true,
+    "baseUrl": "./",
+    "declaration": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "outDir": "dist",
+    "rootDir": ".",
+    "strict": true,
+    "paths": {
+      "@message/*": ["src/messageHandlers/*"]
+    },
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
+  },
+  "include": ["package.json", "*.[jt]s", "**/*.[jt]s", "global.d.ts"],
+  "ts-node": {
+    "files": true
+  },
+  "exclude": ["node_modules", "dist"],
+  "typeRoots": ["node_modules/@types"]
+}

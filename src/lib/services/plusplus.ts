@@ -1,29 +1,31 @@
-const { sks } = require('./scorekeeper');
-const { H } = require('../helpers');
-const { rpp } = require('../regExpPlusPlus');
-const { mfs } = require('../messageFactory');
-const { GeneratePlusPlusEventObject } = require('../../events/plusPlus');
-const {
-  GeneratePlusPlusFailureEventObject,
-} = require('../../events/plusPlusFalsePositive');
-const ReactionService = require('./reactionService');
+import { PlusPlusMatchesMessage } from '../matchers/types/plusPlusMatches';
+import { sks } from './scorekeeper';
+import { rpp } from '../matchers/messageMatchers';
+import { mfs } from '../messageFactory';
+import { GeneratePlusPlusEventObject } from '../../events/plusPlus';
+import { GeneratePlusPlusFailureEventObject } from '../../events/plusPlusFalsePositive';
+import ReactionService from './reactionService';
+import { Adapter, Message, Response } from 'hubot';
+import { isKnownFalsePositive } from '../helpers';
 
 class PlusPlusService {
   /**
    * Functions for responding to commands
    */
-  static async upOrDownVote(msg) {
-    const [
-      _fullText,
-      premessage,
+  static async upOrDownVote(msg: PlusPlusMatchesMessage) {
+    const {
+      fullText,
+      silent,
       name,
       operator,
-      conjunction,
+      usedOperator,
+      operatorSymbol,
+      preMessage,
+      foundConjunction,
       reason,
-      silentFlag = false,
-    ] = msg.match;
+    } = msg.match;
 
-    if (H.isKnownFalsePositive(premessage, conjunction, reason, operator)) {
+    if (isKnownFalsePositive(preMessage, foundConjunction, reason, operator)) {
       // circuit break a plus plus
       msg.robot.emit(
         'plus-plus-failure',
@@ -31,7 +33,7 @@ class PlusPlusService {
       );
       return;
     }
-    const increment = operator.match(rpp.positiveOperators) ? 1 : -1;
+
     const { room, mentions } = msg.message;
     const cleanName = H.cleanName(name);
     let to = { name: cleanName };
@@ -42,7 +44,7 @@ class PlusPlusService {
     const cleanReason = H.cleanAndEncode(reason);
     const from = msg.message.user;
     msg.robot.logger.debug(
-      `${increment} score for [${to.name}] from [${from}]${
+      `${operator} score for [${to.name}] from [${from}]${
         cleanReason ? ` because ${cleanReason}` : ''
       } in [${room}]`,
     );
@@ -55,33 +57,35 @@ class PlusPlusService {
         from,
         room,
         cleanReason,
-        increment,
+        operator,
       ));
     } catch (e) {
       await msg.send(e.message);
       return;
     }
-    const message = mfs.BuildNewScoreMessage(
-      msg.robot,
-      toUser,
-      cleanReason,
-      msg.robot.name,
-    );
+    const message = mfs.BuildNewScoreMessage(msg.robot, toUser, cleanReason);
 
     if (message) {
-      await ReactionService.addPlusPlusReaction(msg, silentFlag);
-      if (!silentFlag) {
+      console.log(
+        `$$$$ === name, _fullText, silentFlag plusplus.js [67] ===`,
+        name,
+        fullText,
+        silent,
+      );
+      await ReactionService.addPlusPlusReaction(msg, silent);
+      if (!silent) {
         await msg.send(message);
       }
 
       msg.robot.emit('plus-plus', [
         GeneratePlusPlusEventObject({
           msg,
-          operator,
+          operator: operatorSymbol,
+          direction: operator,
           fromUser,
           toUser,
           cleanReason,
-          silent: silentFlag,
+          silent,
         }),
       ]);
     }

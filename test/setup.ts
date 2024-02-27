@@ -33,8 +33,8 @@ beforeEach(async () => {
   await mongoUnit.load(testData);
   process.env.HUBOT_PEER_FEEDBACK_URL = `'Formal Praise' (company.formal-praise.com)`;
   process.env.HUBOT_SPAM_MESSAGE = 'Please slow your roll.';
-  process.env.HUBOT_FURTHER_FEEDBACK_SCORE = 10;
-  process.env.SPAM_TIME_LIMIT = 5;
+  process.env.HUBOT_FURTHER_FEEDBACK_SCORE = '10';
+  process.env.SPAM_TIME_LIMIT = '5';
 });
 
 afterEach(async () => {});

@@ -1,6 +1,8 @@
-const { RegExpPlusPlus } = jest.requireActual('./regExpPlusPlus');
+const { plusPlusMatcher } = require('./messageMatchers');
 
-describe('RegExpPlusPlus', () => {
+const { Class: RegExpPlusPlus } = jest.requireActual('./messageMatchers');
+
+describe('MessageMatchers', () => {
   describe('createGiveTokenRegExp', () => {
     it('should match a name + number', () => {
       const fullText = '@matt + 5';
@@ -12,7 +14,7 @@ describe('RegExpPlusPlus', () => {
       const giveTokenMatcher = RegExpPlusPlus.createGiveTokenRegExp();
       const match = fullText.match(giveTokenMatcher);
       expect(fullText).toMatch(giveTokenMatcher);
-      expect(match).toEqual(expected);
+      expect(match).toStrictEqual(expected);
     });
   });
 
@@ -156,7 +158,7 @@ describe('RegExpPlusPlus', () => {
       const match = fullText.match(eraseUserScoreRegExp);
       expect(Array.isArray(match)).toBe(true);
       expect(match.length).toBe(5);
-      expect(match).toEqual(expected);
+      expect(match).toStrictEqual(expected);
     });
     it('`erase @frank` should match the erase user regexp', () => {
       const fullText = 'erase @frank';
@@ -187,6 +189,7 @@ describe('RegExpPlusPlus', () => {
         '++',
         undefined,
         undefined,
+        undefined,
       ];
       expected.index = 0;
       expected.input = expected[0];
@@ -195,7 +198,8 @@ describe('RegExpPlusPlus', () => {
       expect(multiUserVoteRegExp).toBeInstanceOf(RegExp);
 
       const match = fullText.match(multiUserVoteRegExp);
-      expect(match).toEqual(expected);
+      expect(match.length).toStrictEqual(expected.length);
+      expect(match).toStrictEqual(expected);
     });
 
     it("should match '{@matt, @phil}-- cuz they are the best team'", () => {
@@ -207,6 +211,7 @@ describe('RegExpPlusPlus', () => {
         '--',
         'cuz',
         'they are the best team',
+        undefined,
       ];
       expected.index = 0;
       expected.input = expected[0];
@@ -215,7 +220,8 @@ describe('RegExpPlusPlus', () => {
       expect(multiUserVoteRegExp).toBeInstanceOf(RegExp);
 
       const match = fullText.match(multiUserVoteRegExp);
-      expect(match).toEqual(expected);
+      expect(match.length).toStrictEqual(expected.length);
+      expect(match).toStrictEqual(expected);
     });
 
     it("should match '{@user, @phil.user}--'", () => {
@@ -227,6 +233,7 @@ describe('RegExpPlusPlus', () => {
         '--',
         undefined,
         undefined,
+        undefined,
       ];
       expected.index = 0;
       expected.input = expected[0];
@@ -235,10 +242,11 @@ describe('RegExpPlusPlus', () => {
       expect(multiUserVoteRegExp).toBeInstanceOf(RegExp);
 
       const match = fullText.match(multiUserVoteRegExp);
-      expect(match).toEqual(expected);
+      expect(match.length).toStrictEqual(expected.length);
+      expect(match).toStrictEqual(expected);
     });
 
-    it.skip("should match '{@user, @phil.user}-- --silent'", () => {
+    it("should match '{@user, @phil.user}-- --silent'", () => {
       const fullText = '{@user, @phil.user}-- --silent';
       const expected = [
         fullText,
@@ -246,8 +254,8 @@ describe('RegExpPlusPlus', () => {
         '@user, @phil.user',
         '--',
         undefined,
-        '--silent',
         undefined,
+        '--silent',
       ];
       expected.index = 0;
       expected.input = expected[0];
@@ -256,7 +264,8 @@ describe('RegExpPlusPlus', () => {
       expect(multiUserVoteRegExp).toBeInstanceOf(RegExp);
 
       const match = fullText.match(multiUserVoteRegExp);
-      expect(match).toEqual(expected);
+      expect(match.length).toStrictEqual(expected.length);
+      expect(match).toStrictEqual(expected);
     });
 
     it("should match '{ @darf, @greg, @tank } ++'", () => {
@@ -268,6 +277,7 @@ describe('RegExpPlusPlus', () => {
         '++',
         undefined,
         undefined,
+        undefined,
       ];
       expected.index = 0;
       expected.input = expected[0];
@@ -276,7 +286,8 @@ describe('RegExpPlusPlus', () => {
       expect(multiUserVoteRegExp).toBeInstanceOf(RegExp);
 
       const match = fullText.match(multiUserVoteRegExp);
-      expect(match).toEqual(expected);
+      expect(match.length).toStrictEqual(expected.length);
+      expect(match).toStrictEqual(expected);
     });
 
     it("should match 'where in the world is Carmen Sandiego { @carmen.sandiego, @sarah.nade, @eartha.brute, @double.trouble, @wonder.rat } ++'", () => {
@@ -289,6 +300,7 @@ describe('RegExpPlusPlus', () => {
         '++',
         undefined,
         undefined,
+        undefined,
       ];
       expected.index = 0;
       expected.input = expected[0];
@@ -297,7 +309,8 @@ describe('RegExpPlusPlus', () => {
       expect(multiUserVoteRegExp).toBeInstanceOf(RegExp);
 
       const match = fullText.match(multiUserVoteRegExp);
-      expect(match).toEqual(expected);
+      expect(match.length).toStrictEqual(expected.length);
+      expect(match).toStrictEqual(expected);
     });
 
     it("should match '{@matt @phil}++'", () => {
@@ -309,6 +322,7 @@ describe('RegExpPlusPlus', () => {
         '++',
         undefined,
         undefined,
+        undefined,
       ];
       expected.index = 0;
       expected.input = expected[0];
@@ -317,7 +331,8 @@ describe('RegExpPlusPlus', () => {
       expect(multiUserVoteRegExp).toBeInstanceOf(RegExp);
 
       const match = fullText.match(multiUserVoteRegExp);
-      expect(match).toEqual(expected);
+      expect(match.length).toStrictEqual(expected.length);
+      expect(match).toStrictEqual(expected);
     });
 
     it("should match '( @matt, @phil )++'", () => {
@@ -329,6 +344,7 @@ describe('RegExpPlusPlus', () => {
         '++',
         undefined,
         undefined,
+        undefined,
       ];
       expected.index = 0;
       expected.input = expected[0];
@@ -337,7 +353,8 @@ describe('RegExpPlusPlus', () => {
       expect(multiUserVoteRegExp).toBeInstanceOf(RegExp);
 
       const match = fullText.match(multiUserVoteRegExp);
-      expect(match).toEqual(expected);
+      expect(match.length).toStrictEqual(expected.length);
+      expect(match).toStrictEqual(expected);
     });
 
     it("should match '[ @matt : @phil ]++'", () => {
@@ -349,6 +366,7 @@ describe('RegExpPlusPlus', () => {
         '++',
         undefined,
         undefined,
+        undefined,
       ];
       expected.index = 0;
       expected.input = expected[0];
@@ -357,7 +375,8 @@ describe('RegExpPlusPlus', () => {
       expect(multiUserVoteRegExp).toBeInstanceOf(RegExp);
 
       const match = fullText.match(multiUserVoteRegExp);
-      expect(match).toEqual(expected);
+      expect(match.length).toStrictEqual(expected.length);
+      expect(match).toStrictEqual(expected);
     });
 
     it("should match '[ @matt: @phil ]++'", () => {
@@ -369,6 +388,7 @@ describe('RegExpPlusPlus', () => {
         '++',
         undefined,
         undefined,
+        undefined,
       ];
       expected.index = 0;
       expected.input = expected[0];
@@ -377,7 +397,8 @@ describe('RegExpPlusPlus', () => {
       expect(multiUserVoteRegExp).toBeInstanceOf(RegExp);
 
       const match = fullText.match(multiUserVoteRegExp);
-      expect(match).toEqual(expected);
+      expect(match.length).toStrictEqual(expected.length);
+      expect(match).toStrictEqual(expected);
     });
 
     it("should match '[ @matt:@phil ]++'", () => {
@@ -389,6 +410,7 @@ describe('RegExpPlusPlus', () => {
         '++',
         undefined,
         undefined,
+        undefined,
       ];
       expected.index = 0;
       expected.input = expected[0];
@@ -397,7 +419,8 @@ describe('RegExpPlusPlus', () => {
       expect(multiUserVoteRegExp).toBeInstanceOf(RegExp);
 
       const match = fullText.match(multiUserVoteRegExp);
-      expect(match).toEqual(expected);
+      expect(match.length).toStrictEqual(expected.length);
+      expect(match).toStrictEqual(expected);
     });
 
     it("should match '{@matt,@phil}++'", () => {
@@ -409,6 +432,7 @@ describe('RegExpPlusPlus', () => {
         '++',
         undefined,
         undefined,
+        undefined,
       ];
       expected.index = 0;
       expected.input = expected[0];
@@ -417,7 +441,8 @@ describe('RegExpPlusPlus', () => {
       expect(multiUserVoteRegExp).toBeInstanceOf(RegExp);
 
       const match = fullText.match(multiUserVoteRegExp);
-      expect(match).toEqual(expected);
+      expect(match.length).toStrictEqual(expected.length);
+      expect(match).toStrictEqual(expected);
     });
 
     it('should match `{ @Chelo, @Kahou_Lei, @wimdec_PTO_back_Aug_21 , @guillaume_Back_Aug_6th, @Cherry,   @singaravelan   } ++  you’re all awesome, I’m only here for the fun!`', () => {
@@ -431,6 +456,7 @@ describe('RegExpPlusPlus', () => {
         '++',
         undefined,
         'you’re all awesome, I’m only here for the fun!',
+        undefined,
       ];
       expected.index = 0;
       expected.input = expected[0];
@@ -441,7 +467,7 @@ describe('RegExpPlusPlus', () => {
       const match = fullText.match(multiUserVoteRegExp);
       expect(typeof match).toBe('object');
       expect(match.length).toBe(expected.length);
-      expect(match).toEqual(expected);
+      expect(match).toStrictEqual(expected);
     });
   });
 
@@ -458,7 +484,7 @@ describe('RegExpPlusPlus', () => {
       const match = expected[0].match(topBottomRegExp);
       expect(Array.isArray(match)).toBe(true);
       expect(match.length).toBe(expected.length);
-      expect(match).toEqual(expected);
+      expect(match).toStrictEqual(expected);
     });
     it('should match bottom 5', () => {
       const topBottomRegExp = RegExpPlusPlus.createTopBottomRegExp();
@@ -472,7 +498,7 @@ describe('RegExpPlusPlus', () => {
       const match = expected[0].match(topBottomRegExp);
       expect(Array.isArray(match)).toBe(true);
       expect(match.length).toBe(expected.length);
-      expect(match).toEqual(expected);
+      expect(match).toStrictEqual(expected);
     });
   });
 
@@ -489,7 +515,7 @@ describe('RegExpPlusPlus', () => {
       const match = expected[0].match(topBottomTokenRegExp);
       expect(Array.isArray(match)).toBe(true);
       expect(match.length).toBe(expected.length);
-      expect(match).toEqual(expected);
+      expect(match).toStrictEqual(expected);
     });
     it('should match bottom tokens 5', () => {
       const topBottomRegExp = RegExpPlusPlus.createTopBottomTokenRegExp();
@@ -503,202 +529,253 @@ describe('RegExpPlusPlus', () => {
       const match = expected[0].match(topBottomRegExp);
       expect(Array.isArray(match)).toBe(true);
       expect(match.length).toBe(expected.length);
-      expect(match).toEqual(expected);
+      expect(match).toStrictEqual(expected);
     });
   });
 
   describe('createUpDownVoteRegExp', () => {
     describe('Matching names with @ symbols', () => {
-      it('should match name [@matt] up/down [++] with reason [undefined]', () => {
+      it('derp should match name [@matt] up/down [++] with reason [undefined]', () => {
         const fullText = '@matt++';
-        const expected = [
+        const expected = {
           fullText,
-          undefined,
-          'matt',
-          '++',
-          undefined,
-          undefined,
-        ];
-        expected.index = 0;
-        expected.input = '@matt++';
-        expected.groups = undefined;
+          silent: false,
+          operator: 1,
+          usedOperator: '++',
+          operatorSymbol: '++',
+          reason: null,
+          name: 'matt',
+        };
 
-        const upVoteOrDownVoteRegExp = RegExpPlusPlus.createUpDownVoteRegExp();
-        expect(upVoteOrDownVoteRegExp).toBeInstanceOf(RegExp);
+        const matches = plusPlusMatcher(fullText);
 
-        const fullMatch = fullText.match(upVoteOrDownVoteRegExp);
-        expect(fullText).toMatch(upVoteOrDownVoteRegExp);
-        expect(Array.isArray(fullMatch)).toBe(true);
-        expect(fullMatch.length).toBe(6);
-        expect(fullMatch).toEqual(expected);
+        expect(matches).not.toBeNull();
+        expect(Object.keys(matches)).toStrictEqual([
+          'fullText',
+          'silent',
+          'name',
+          'operator',
+          'usedOperator',
+          'operatorSymbol',
+          'reason',
+        ]);
+        expect(matches).toEqual(expected);
       });
 
-      it.skip('should match name [@matt] up/down [++] with reason [undefined] and [--silent] flag', () => {
+      it('should match name [@matt] up/down [++] with reason [undefined] and [--silent] flag', () => {
         const fullText = '@matt++ --silent';
-        const expected = [
+        const expected = {
           fullText,
-          undefined,
-          'matt',
-          '++',
-          undefined,
-          '--silent',
-        ];
-        expected.index = 0;
-        expected.input = '@matt++';
-        expected.groups = undefined;
+          silent: true,
+          operator: 1,
+          usedOperator: '++',
+          operatorSymbol: '++',
+          reason: null,
+          name: 'matt',
+        };
 
-        const upVoteOrDownVoteRegExp = RegExpPlusPlus.createUpDownVoteRegExp();
-        expect(upVoteOrDownVoteRegExp).toBeInstanceOf(RegExp);
+        const matches = plusPlusMatcher(fullText);
 
-        const fullMatch = fullText.match(upVoteOrDownVoteRegExp);
-        expect(fullText).toMatch(upVoteOrDownVoteRegExp);
-        expect(Array.isArray(fullMatch)).toBe(true);
-        expect(fullMatch.length).toBe(6);
-        expect(fullMatch).toEqual(expected);
+        expect(matches).not.toBeNull();
+        expect(Object.keys(matches)).toStrictEqual([
+          'fullText',
+          'silent',
+          'name',
+          'operator',
+          'usedOperator',
+          'operatorSymbol',
+          'reason',
+        ]);
+        expect(matches).toEqual(expected);
       });
 
       it('should match name [@matt] up/down [++] with reason [for being "great"]', () => {
         const fullText = '@matt  ++   for being "great"';
-        const expected = [
+        const expected = {
           fullText,
-          undefined,
-          'matt',
-          '++',
-          'for',
-          'being "great"',
-        ];
-        expected.index = 0;
-        expected.input = fullText;
-        expected.groups = undefined;
+          silent: false,
+          operator: 1,
+          usedOperator: '++',
+          operatorSymbol: '++',
+          reason: 'being "great"',
+          name: 'matt',
+        };
 
-        const upVoteOrDownVoteRegExp = RegExpPlusPlus.createUpDownVoteRegExp();
-        expect(upVoteOrDownVoteRegExp).toBeInstanceOf(RegExp);
+        const matches = plusPlusMatcher(fullText);
 
-        const fullMatch = fullText.match(upVoteOrDownVoteRegExp);
-        expect(fullText).toMatch(upVoteOrDownVoteRegExp);
-        expect(Array.isArray(fullMatch)).toBe(true);
-        expect(fullMatch.length).toBe(6);
-        expect(fullMatch).toEqual(expected);
+        expect(matches).not.toBeNull();
+        expect(Object.keys(matches)).toStrictEqual([
+          'fullText',
+          'silent',
+          'name',
+          'operator',
+          'usedOperator',
+          'operatorSymbol',
+          'reason',
+        ]);
+        expect(matches).toEqual(expected);
       });
 
       it('should match name [@matt] up/down [++] with reason [cuz he is awesome]', () => {
         const fullText = '@matt++ cuz he is awesome';
-        const expected = [
+        const expected = {
           fullText,
-          undefined,
-          'matt',
-          '++',
-          'cuz',
-          'he is awesome',
-        ];
-        expected.index = 0;
-        expected.input = fullText;
-        expected.groups = undefined;
+          silent: false,
+          operator: 1,
+          usedOperator: '++',
+          operatorSymbol: '++',
+          reason: 'he is awesome',
+          name: 'matt',
+        };
 
-        const upVoteOrDownVoteRegExp = RegExpPlusPlus.createUpDownVoteRegExp();
-        expect(upVoteOrDownVoteRegExp).toBeInstanceOf(RegExp);
+        const matches = plusPlusMatcher(fullText);
 
-        const fullMatch = fullText.match(upVoteOrDownVoteRegExp);
-        expect(fullText).toMatch(upVoteOrDownVoteRegExp);
-        expect(Array.isArray(fullMatch)).toBe(true);
-        expect(fullMatch.length).toBe(6);
-        expect(fullMatch).toEqual(expected);
+        expect(matches).not.toBeNull();
+        expect(Object.keys(matches)).toStrictEqual([
+          'fullText',
+          'silent',
+          'name',
+          'operator',
+          'usedOperator',
+          'operatorSymbol',
+          'reason',
+        ]);
+        expect(matches).toEqual(expected);
       });
 
       it('should match name [@matt] up/down [++] with reason [thanks for being awesome]', () => {
         const fullText = '@matt ++ thanks for being awesome';
-        const expected = [
+        const expected = {
           fullText,
-          undefined,
-          'matt',
-          '++',
-          'thanks for',
-          'being awesome',
-        ];
-        expected.index = 0;
-        expected.input = fullText;
-        expected.groups = undefined;
+          silent: false,
+          operator: 1,
+          usedOperator: '++',
+          operatorSymbol: '++',
+          reason: 'being awesome',
+          name: 'matt',
+        };
 
-        const upVoteOrDownVoteRegExp = RegExpPlusPlus.createUpDownVoteRegExp();
-        expect(upVoteOrDownVoteRegExp).toBeInstanceOf(RegExp);
+        const matches = plusPlusMatcher(fullText);
 
-        const fullMatch = fullText.match(upVoteOrDownVoteRegExp);
-        expect(fullText).toMatch(upVoteOrDownVoteRegExp);
-        expect(Array.isArray(fullMatch)).toBe(true);
-        expect(fullMatch.length).toBe(6);
-        expect(fullMatch).toEqual(expected);
+        expect(matches).not.toBeNull();
+        expect(Object.keys(matches)).toStrictEqual([
+          'fullText',
+          'silent',
+          'name',
+          'operator',
+          'usedOperator',
+          'operatorSymbol',
+          'reason',
+        ]);
+        expect(matches).toEqual(expected);
       });
 
-      it('should match name [@matt] up/down [—] with reason [undefined]', () => {
+      it('should match name [@matt] up/down [—] (u2014) with reason [undefined]', () => {
         const fullText = '@matt—';
-        const expected = [
+        const expected = {
           fullText,
-          undefined,
-          'matt',
-          '—',
-          undefined,
-          undefined,
-        ];
-        expected.index = 0;
-        expected.input = fullText;
-        expected.groups = undefined;
+          silent: false,
+          operator: -1,
+          usedOperator: '—',
+          operatorSymbol: '--',
+          reason: null,
+          name: 'matt',
+        };
 
-        const upVoteOrDownVoteRegExp = RegExpPlusPlus.createUpDownVoteRegExp();
-        expect(upVoteOrDownVoteRegExp).toBeInstanceOf(RegExp);
+        const matches = plusPlusMatcher(fullText);
 
-        const fullMatch = fullText.match(upVoteOrDownVoteRegExp);
-        expect(fullText).toMatch(upVoteOrDownVoteRegExp);
-        expect(Array.isArray(fullMatch)).toBe(true);
-        expect(fullMatch.length).toBe(6);
-        expect(fullMatch).toEqual(expected);
+        expect(matches).not.toBeNull();
+        expect(Object.keys(matches)).toStrictEqual([
+          'fullText',
+          'silent',
+          'name',
+          'operator',
+          'usedOperator',
+          'operatorSymbol',
+          'reason',
+        ]);
+        expect(matches).toEqual(expected);
+      });
+
+      it('should match name [@matt] up/down [–] (u2013) with reason [undefined]', () => {
+        const fullText = '@matt–';
+        const expected = {
+          fullText,
+          silent: false,
+          operator: -1,
+          usedOperator: '–',
+          operatorSymbol: '--',
+          reason: null,
+          name: 'matt',
+        };
+
+        const matches = plusPlusMatcher(fullText);
+
+        expect(matches).not.toBeNull();
+        expect(Object.keys(matches)).toStrictEqual([
+          'fullText',
+          'silent',
+          'name',
+          'operator',
+          'usedOperator',
+          'operatorSymbol',
+          'reason',
+        ]);
+        expect(matches).toEqual(expected);
       });
 
       it('should match name [@matt] up/down [++] with reason [undefined]', () => {
         const fullText = 'hello world this is @matt++';
-        const expected = [
+        const expected = {
           fullText,
-          'hello world this is ',
-          'matt',
-          '++',
-          undefined,
-          undefined,
-        ];
-        expected.index = 0;
-        expected.input = fullText;
-        expected.groups = undefined;
+          silent: false,
+          operator: 1,
+          usedOperator: '++',
+          operatorSymbol: '++',
+          reason: null,
+          name: 'matt',
+        };
 
-        const upVoteOrDownVoteRegExp = RegExpPlusPlus.createUpDownVoteRegExp();
-        expect(upVoteOrDownVoteRegExp).toBeInstanceOf(RegExp);
+        const matches = plusPlusMatcher(fullText);
 
-        const fullMatch = fullText.match(upVoteOrDownVoteRegExp);
-        expect(fullText).toMatch(upVoteOrDownVoteRegExp);
-        expect(Array.isArray(fullMatch)).toBe(true);
-        expect(fullMatch.length).toBe(6);
-        expect(fullMatch).toEqual(expected);
+        expect(matches).not.toBeNull();
+        expect(Object.keys(matches)).toStrictEqual([
+          'fullText',
+          'silent',
+          'name',
+          'operator',
+          'usedOperator',
+          'operatorSymbol',
+          'reason',
+        ]);
+        expect(matches).toEqual(expected);
       });
 
       it("should match name [@matt] up/down [++] with reason [man, you're awesome]", () => {
         const fullText = "@matt ++ man, you're awesome";
-        const expected = [
+        const expected = {
           fullText,
-          undefined,
-          'matt',
-          '++',
-          undefined,
-          "man, you're awesome",
-        ];
-        expected.index = 0;
-        expected.input = fullText;
-        expected.groups = undefined;
+          silent: false,
+          operator: 1,
+          usedOperator: '++',
+          operatorSymbol: '++',
+          reason: "man, you're awesome",
+          name: 'matt',
+        };
 
-        const upVoteOrDownVoteRegExp = RegExpPlusPlus.createUpDownVoteRegExp();
-        expect(upVoteOrDownVoteRegExp).toBeInstanceOf(RegExp);
+        const matches = plusPlusMatcher(fullText);
 
-        const fullMatch = fullText.match(upVoteOrDownVoteRegExp);
-        expect(fullText).toMatch(upVoteOrDownVoteRegExp);
-        expect(Array.isArray(fullMatch)).toBe(true);
-        expect(fullMatch.length).toBe(6);
-        expect(fullMatch).toEqual(expected);
+        expect(matches).not.toBeNull();
+        expect(Object.keys(matches)).toStrictEqual([
+          'fullText',
+          'silent',
+          'name',
+          'operator',
+          'usedOperator',
+          'operatorSymbol',
+          'reason',
+        ]);
+        expect(matches).toEqual(expected);
       });
     });
 

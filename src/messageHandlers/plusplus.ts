@@ -23,14 +23,16 @@
 //
 // Author: O-Mutt
 
-const { rpp } = require('../lib/regExpPlusPlus');
-const { pps } = require('../lib/services/plusplus');
+import { SlackBot } from 'hubot-slack';
+import { rpp, plusPlusMatcher } from '../lib/matchers/messageMatchers';
+import { pps } from '../lib/services/plusplus';
+import { Robot } from 'hubot';
 
-module.exports = function plusplus(robot) {
+export default function plusplus(robot: Robot<SlackBot>) {
   // listen to everything
-  robot.hear(rpp.createUpDownVoteRegExp(), pps.upOrDownVote);
+  robot.listen(plusPlusMatcher, pps.upOrDownVote);
   robot.hear(rpp.createMultiUserVoteRegExp(), pps.multipleUsersVote);
 
   // admin
   robot.respond(rpp.createEraseUserScoreRegExp(), pps.eraseUserScore);
-};
+}

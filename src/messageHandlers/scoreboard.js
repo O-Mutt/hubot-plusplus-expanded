@@ -8,14 +8,11 @@
 //
 // Author:
 //  O'Mutt (Matt@OKeefe.dev)
-const { rpp } = require('../lib/regExpPlusPlus');
+const { rpp, askForScoreMatcher } = require('../lib/matchers/messageMatchers');
 const ScoreboardService = require('../lib/services/scoreboard');
 
 module.exports = function scoreboard(robot) {
-  robot.respond(
-    rpp.createAskForScoreRegExp(),
-    ScoreboardService.respondWithScore,
-  );
+  robot.listen(askForScoreMatcher, ScoreboardService.respondWithScore);
   robot.respond(
     rpp.createTopBottomRegExp(),
     ScoreboardService.respondWithLeaderLoserBoard,

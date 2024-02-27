@@ -10,7 +10,7 @@
 
 const _ = require('lodash');
 
-const { rpp } = require('../lib/regExpPlusPlus');
+const { rpp } = require('../lib/matchers/messageMatchers');
 const { ws } = require('../lib/services/wallet');
 
 module.exports = function wallet(robot) {
