@@ -14,11 +14,17 @@ const { RegExpPlusPlus } = require('../lib/regExpPlusPlus');
 const HelpService = require('../lib/services/help');
 
 module.exports = function help(robot) {
+  const bn = robot.name || 'hubot';
+
   robot.respond(RegExpPlusPlus.getHelp(), HelpService.respondWithHelpGuidance);
   robot.respond(
     /(plusplus version|-v|--version)/i,
     HelpService.respondWithVersion,
   );
 
-  robot.respond(/how much .*qrafty point.*/i, HelpService.tellHowMuchPointsAreWorth);
+  const howMuchRegexp = new RegExp(
+    `how much .*${bn} point.*`,
+    'i',
+  );
+  robot.respond(howMuchRegexp, HelpService.tellHowMuchPointsAreWorth);
 };
