@@ -55,7 +55,7 @@
     "@snyk/protect": "^1.1127.0",
     "axios": "^1.4.0",
     "clark": "^0.0.6",
-    "cron": "^3.1.6",
+    "cron": "^4.1.0",
     "date-fns": "^3.2.0",
     "hubot-conversation": "^1.1.1",
     "jsdoc-api": "^8.0.0",
