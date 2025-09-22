@@ -64,7 +64,7 @@
     "token-buddy": "^1.0.0"
   },
   "devDependencies": {
-    "eslint": "^8.56.0",
+    "eslint": "^9.36.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^9.1.0",
