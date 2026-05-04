@@ -58,7 +58,7 @@
     "cron": "^3.1.6",
     "date-fns": "^3.2.0",
     "hubot-conversation": "^1.1.1",
-    "jsdoc-api": "^8.0.0",
+    "jsdoc-api": "^9.3.6",
     "lodash": "^4.17.21",
     "mongodb": "^5.1.0",
     "token-buddy": "^1.0.0"
